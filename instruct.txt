@@ -1,0 +1,37 @@
+project/
+├── backend/
+│   ├── app/
+│   │   ├── api/
+│   │   │   ├── v1/
+│   │   │   │   ├── endpoints/
+│   │   │   │   │   ├── users.py        # API liên quan đến người dùng
+│   │   │   │   │   ├── items.py        # API liên quan đến sản phẩm
+│   │   │   │   │   └── auth.py         # API liên quan đến xác thực
+│   │   │   │   └── __init__.py
+│   │   │   └── __init__.py
+│   │   ├── core/
+│   │   │   ├── config.py               # Cấu hình ứng dụng (cổng, DB URL, JWT keys)
+│   │   │   ├── security.py             # Logic bảo mật (JWT, OAuth2)
+│   │   │   └── __init__.py
+│   │   ├── db/
+│   │   │   ├── database.py             # Kết nối MongoDB bằng pymongo/motor
+│   │   │   ├── init_db.py              # Khởi tạo cơ sở dữ liệu (tùy chọn)
+│   │   │   └── __init__.py
+│   │   ├── models/
+│   │   │   ├── user.py                 # Định nghĩa User schema (tùy chọn)
+│   │   │   ├── item.py                 # Định nghĩa Item schema (tùy chọn)
+│   │   │   └── __init__.py
+│   │   ├── schemas/
+│   │   │   ├── user.py                 # Schema (Pydantic) cho User
+│   │   │   ├── item.py                 # Schema cho Item
+│   │   │   └── __init__.py
+│   │   ├── main.py                     # Entry point của backend
+│   │   ├── tests/
+│   │   │   ├── test_main.py            # Kiểm thử API chính
+│   │   │   ├── test_users.py           # Kiểm thử API người dùng
+│   │   │   └── __init__.py
+│   │   └── __init__.py
+│   ├── Dockerfile                      # Định nghĩa Docker cho backend
+│   ├── requirements.txt                # Thư viện cần thiết
+│   └── README.md                       # Hướng dẫn sử dụng backend
+
