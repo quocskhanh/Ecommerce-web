@@ -1,0 +1,10 @@
+{
+  "users": [
+    { "id": 1, "firstName": "Trung Kien", "lastName": "Hoang","active": true,"posts": 10,"messages": 50 },
+    { "id": 2, "firstName": "Khanh Ngoc", "lastName": "Thanh","active": true,"posts": 8,"messages": 5 }
+  ],
+  "comments": [
+    { "id": 1, "body": "Nice post!", "postId": 1 },
+    { "id": 2, "body": "Thanks!", "postId": 1 }
+  ]
+}

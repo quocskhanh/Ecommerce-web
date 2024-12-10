@@ -1,0 +1,54 @@
+{
+  "name": "react-movie",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "@heroicons/react": "^2.2.0",
+    "@reduxjs/toolkit": "^2.4.0",
+    "@testing-library/jest-dom": "^5.17.0",
+    "@testing-library/react": "^13.4.0",
+    "@testing-library/user-event": "^13.5.0",
+    "prop-types": "^15.8.1",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-error-boundary": "^4.1.2",
+    "react-hook-form": "^7.54.0",
+    "react-paginate": "^8.2.0",
+    "react-redux": "^9.1.2",
+    "react-router-dom": "^7.0.1",
+    "react-scripts": "5.0.1",
+    "redux-logger": "^3.0.6",
+    "redux-saga": "^1.3.0",
+    "sass": "^1.81.0",
+    "swiper": "^11.1.15",
+    "swr": "^2.2.5",
+    "web-vitals": "^2.1.4"
+  },
+  "scripts": {
+    "start": "../../node_modules/.bin/react-scripts start",
+    "build": "../../node_modules/.bin/react-scripts build",
+    "test": "../../node_modules/.bin/react-scripts test",
+    "eject": "../../node_modules/.bin/react-scripts eject"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4.15"
+  }
+}
