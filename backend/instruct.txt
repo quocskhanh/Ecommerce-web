@@ -4,12 +4,12 @@ project/
 │   │   ├── api/
 │   │   │   ├── v1/
 │   │   │   │   ├── endpoints/
-│   │   │   │   │   ├── users.py        # API liên quan đến người dùng
+│   │   │   │   │   ├── account.py        # API liên quan đến người dùng
 │   │   │   │   │   ├── items.py        # API liên quan đến sản phẩm
 │   │   │   │   │   └── auth.py         # API liên quan đến xác thực
 │   │   │   │   └── __init__.py
 │   │   │   └── __init__.py
-│   │   ├── core/
+│   │   ├── core/   
 │   │   │   ├── config.py               # Cấu hình ứng dụng (cổng, DB URL, JWT keys)
 │   │   │   ├── security.py             # Logic bảo mật (JWT, OAuth2)
 │   │   │   └── __init__.py
@@ -35,3 +35,80 @@ project/
 │   ├── requirements.txt                # Thư viện cần thiết
 │   └── README.md                       # Hướng dẫn sử dụng backend
 
+
+backend/
+├── src/
+│   ├── api/
+│   │   ├── dependencies/               # Dependency injections
+│   │   │   ├── session.py
+│   │   │   ├── repository.py
+│   │   ├── routes/                     # Endpoints
+│   │   │   ├── account.py              # Account routes (đăng ký, đăng nhập)
+│   │   │   ├── authentication.py       # Authentication routes
+│   │   │   ├── products.py             # API quản lý sản phẩm
+│   │   │   ├── orders.py               # API quản lý đơn hàng
+│   │   │   ├── cart.py                 # API quản lý giỏ hàng
+│   │   │   ├── payment.py              # API thanh toán
+│   │   │   └── reviews.py              # API quản lý đánh giá sản phẩm
+│   │   ├── endpoints.py                # Endpoint registration
+│   │   └── __init__.py
+│   ├── config/
+│   │   ├── settings/
+│   │   │   ├── base.py                 # Base settings
+│   │   │   ├── development.py          # Development settings
+│   │   │   ├── production.py           # Production settings
+│   │   │   ├── staging.py              # Staging settings
+│   │   └── events.py                   # Global events registration
+│   ├── models/
+│   │   ├── db/
+│   │   │   ├── user.py                 # User entity
+│   │   │   ├── product.py              # Product entity
+│   │   │   ├── order.py                # Order entity
+│   │   │   ├── cart.py                 # Cart entity
+│   │   │   ├── payment.py              # Payment entity
+│   │   │   └── review.py               # Review entity
+│   │   ├── schemas/
+│   │   │   ├── user.py                 # User validation schemas
+│   │   │   ├── product.py              # Product validation schemas
+│   │   │   ├── order.py                # Order validation schemas
+│   │   │   ├── cart.py                 # Cart validation schemas
+│   │   │   ├── payment.py              # Payment validation schemas
+│   │   │   └── review.py               # Review validation schemas
+│   │   └── __init__.py
+│   ├── repository/
+│   │   ├── crud/
+│   │   │   ├── user.py                 # CRUD cho người dùng
+│   │   │   ├── product.py              # CRUD cho sản phẩm
+│   │   │   ├── order.py                # CRUD cho đơn hàng
+│   │   │   ├── cart.py                 # CRUD cho giỏ hàng
+│   │   │   ├── payment.py              # CRUD cho thanh toán
+│   │   │   └── review.py               # CRUD cho đánh giá
+│   │   ├── database.py                 # Kết nối cơ sở dữ liệu
+│   │   └── __init__.py
+│   ├── security/
+│   │   ├── hashing/
+│   │   │   ├── hash.py
+│   │   │   ├── password.py
+│   │   ├── authorizations/
+│   │   │   ├── jwt.py                  # JWT tokens cho xác thực
+│   │   └── verifications/
+│   │       ├── credentials.py
+│   ├── utilities/
+│   │   ├── exceptions/
+│   │   ├── formatters/
+│   │   │   ├── currency_formatter.py   # Format giá tiền
+│   │   └── messages/
+│   │       └── http_exc_details.py
+│   ├── main.py                         # Entry point của backend
+│   └── __init__.py
+├── tests/
+│   ├── unit_tests/
+│   │   ├── test_products.py            # Test API sản phẩm
+│   │   ├── test_orders.py              # Test API đơn hàng
+│   │   ├── test_cart.py                # Test API giỏ hàng
+│   │   └── __init__.py
+│   ├── integration_tests/              # Integration tests
+│   └── conftest.py
+├── Dockerfile
+├── requirements.txt
+└── README.md
