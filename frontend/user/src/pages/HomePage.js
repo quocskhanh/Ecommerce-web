@@ -6,6 +6,8 @@ function HomePage() {
         <div>
             <Header />
             <Banner />
+	    <Logo />
+	    <Footer />
         </div>
             
         
