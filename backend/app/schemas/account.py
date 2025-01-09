@@ -14,6 +14,8 @@ class AccountBase(BaseModel):
     address: Optional[str] = None
     date_of_birth: Optional[date] = None
     gender: Optional[str] = None
+    password: Optional[str] = None  # Mật khẩu
+    role: Optional[bool] = None  # Vai trò (True = Admin, False = User)
 
 
 class AccountCreate(AccountBase):
@@ -27,7 +29,7 @@ class AccountCreate(AccountBase):
     address: str
     date_of_birth: date
     gender: str
-
+    password: str
 
 
 class AccountUpdate(AccountBase):
