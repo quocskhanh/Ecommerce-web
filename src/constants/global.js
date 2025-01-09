@@ -1,1 +1,0 @@
-export const defaultImage = "https://tse1.mm.bing.net/th?id=OIP.8B0tM6omMkBMnNLqC4Po1QHaEK&pid=Api&P=0&h=180"

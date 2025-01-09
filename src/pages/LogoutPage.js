@@ -9,7 +9,7 @@ const LogoutPage = () => {
         // Logic đăng xuất (ví dụ: xóa token từ localStorage)
         localStorage.removeItem('token');
         alert('Bạn đã đăng xuất thành công!');
-        navigate('/sign-in'); // Chuyển hướng về trang đăng nhập
+        navigate('/auth/sign-in'); // Chuyển hướng về trang đăng nhập
     };
 
     const handleCancel = () => {
@@ -32,7 +32,7 @@ const LogoutPage = () => {
                         </button>
                         <button
                             onClick={handleLogout}
-                            className="px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-all"
+                            className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-all"
                         >
                             Đăng Xuất
                         </button>

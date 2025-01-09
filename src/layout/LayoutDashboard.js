@@ -1,18 +1,18 @@
 import React from 'react';
 import DashboardTopbar from "../modules/dashboard/DashboardTopbar";
 import DashboardSidebar from "../modules/dashboard/DashboardSidebar";
-import Overlay from "../components/common/Overlay";
 
-const LayoutDashboard = ({children}) => {
+const LayoutDashboard = ({ children }) => {
     return (
-        <div className="p-10 bg-lite">
-            <DashboardTopbar></DashboardTopbar>
-            <div className="flex gap-x-10 items-start min-h-screen">
-                <Overlay></Overlay>
-                <DashboardSidebar></DashboardSidebar>
-            <div className="flex-1">
-                {children}
-            </div>
+        <div className="min-h-screen bg-lite flex flex-col">
+            {/* Topbar */}
+            <DashboardTopbar />
+
+            <div className="flex h-screen mt-16"> {/* Thêm mt-16 để đẩy Sidebar xuống dưới Topbar */}
+                {/* Sidebar */}
+                <DashboardSidebar />
+                {/* Main content */}
+                <div className="flex-1 overflow-hidden">{children}</div>
             </div>
         </div>
     );

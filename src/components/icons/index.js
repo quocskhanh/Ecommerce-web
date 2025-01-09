@@ -1,22 +1,22 @@
 import IconEyeToggle from "./IconEyeToggle";
-import IconDashborad from "./IconDashborad";
-import IconPayment from "./IconPayment";
+import IconDashboard from "./IconDashboard";
+import IconCategories from "./IconCategories";
 import IconProduct from "./IconProduct";
-import IconDarkMode from "./IconDarkMode";
-import IconFolder from "./IconFolder";
-import IconSettings from "./IconSettings";
-import IconHistory  from "./IconHistory";
-import IconLanguage from "./IconLanguage";
+import IconGlobalSettings from "./IconGlobalSettings";
+import IconReports  from "./IconReports";
+import IconInbox from "./IconInbox";
 import IconOrder from "./IconOrder";
-import IconShipping from "./IconShipping";
-export {IconDarkMode}
+import IconCoupons from "./IconCoupons";
+import IconKnowledgeBase from "./IconKnowledgeBase";
+import IconProductUpdates from "./IconProductUpdates";
 export {IconEyeToggle}
-export {IconDashborad}
-export {IconPayment}
+export {IconDashboard}
+export {IconCategories}
 export {IconProduct}
-export {IconFolder}
-export {IconSettings}
-export {IconHistory}
-export {IconLanguage}
+export {IconGlobalSettings}
+export {IconReports}
+export {IconInbox}
 export {IconOrder}
-export {IconShipping}
+export {IconCoupons}
+export {IconKnowledgeBase}
+export {IconProductUpdates}

@@ -1,90 +1,171 @@
 import React from 'react';
-import IconDashborad from "../../components/icons/IconDashborad";
 import { NavLink } from "react-router-dom";
-import IconPayment from "../../components/icons/IconPayment";
+import IconCategories from "../../components/icons/IconCategories";
 import IconProduct from "../../components/icons/IconProduct";
 import IconLogout from "../../components/icons/IconLogout";
-import IconSettings from "../../components/icons/IconSettings";
-import IconHistory from "../../components/icons/IconHistory";
-import IconLanguage from "../../components/icons/IconLanguage";
+import IconGlobalSettings from "../../components/icons/IconGlobalSettings";
+import IconReports from "../../components/icons/IconReports";
+import IconInbox from "../../components/icons/IconInbox";
 import IconOrder from "../../components/icons/IconOrder";
-import IconShipping from "../../components/icons/IconShipping";
+import IconCoupons from "../../components/icons/IconCoupons";
+import IconDashboard from "../../components/icons/IconDashboard";
+import IconKnowledgeBase from "../../components/icons/IconKnowledgeBase";
+import IconProductUpdates from "../../components/icons/IconProductUpdates";
+import IconCustomer from "../../components/icons/IconCustomer";
+import IconPersonalSetting from "../../components/icons/IconPersonalSetting";
 
 const sidebarLink = [
     {
-        icon: <IconDashborad />,
+        icon: <IconDashboard />,
         title: "Dashboard",
-        url: "/"
+        url: "/",
     },
     {
         icon: <IconOrder />,
-        title: "Order",
+        title: "Orders",
         url: "/order",
-    },
-    {
-        icon: <IconPayment />,
-        title: "Payment",
-        url: "/payment",
+        badge: 16,
     },
     {
         icon: <IconProduct />,
-        title: "Product",
-        url: "/product"
+        title: "Products",
+        url: "/product",
     },
+    {
+        icon: <IconCategories />,
+        title: "Categories",
+        url: "/categories",
+    },
+    {
+        icon: <IconCustomer />,
+        title: "Customer",
+        url: "/customer",
+    },
+    {
+        icon: <IconReports />,
+        title: "Reports",
+        url: "/reports",
+    },
+    {
+        icon: <IconCoupons />,
+        title: "Coupons",
+        url: "/coupons",
+    },
+    {
+        icon: <IconInbox />,
+        title: "Inbox",
+        url: "/inbox",
+    },
+];
 
+const otherLinks = [
     {
-        icon: <IconHistory />,
-        title: "History",
-        url: "/history"
+        icon: <IconKnowledgeBase />,
+        title: "Knowledge Base",
+        url: "/knowledge",
     },
     {
-        icon: <IconShipping />,
-        title: "Shipping",
-        url: "/shipping"
+        icon: <IconProductUpdates />,
+        title: "Product Updates",
+        url: "/productupdate",
+    },
+];
+
+const settingsLinks = [
+    {
+        icon: <IconPersonalSetting />,
+        title: "Personal Settings",
+        url: "/personal",
     },
     {
-        icon: <IconLanguage />,
-        title: "Language",
-        url: "/language"
-    },
-    {
-        icon: <IconSettings />,
-        title: "Settings",
-        url: "/setting"
+        icon: <IconGlobalSettings />,
+        title: "Global Settings",
+        url: "/global",
     },
     {
         icon: <IconLogout />,
         title: "Logout",
         url: "/logout",
-
     },
 ];
 
 const DashboardSidebar = () => {
     const navLinkClass =
-        "flex items-center gap-x-4 px-4 py-3 rounded-lg transition-all duration-300 text-gray-700 hover:bg-gradient-to-r hover:from-blue-500 hover:to-black-500 hover:text-white";
-
+        "flex items-center px-4 py-3 rounded-lg transition-all duration-300 text-gray-300 text-sm font-medium hover:bg-gray-200 hover:text-gray-900";
     const activeClass =
-        "bg-gradient-to-r from-gray-500 to-black-500 text-white shadow-lg";
+        "bg-white text-gray-900 shadow-lg";
 
     return (
-        <div className="w-full md:w-[200px] rounded-3xl bg-gray-100 shadow-lg px-6 py-6 flex flex-col flex-shrink-0 gap-4">
-            {sidebarLink.map((link) => (
-                <NavLink
-                    to={link.url}
-                    key={link.title}
-                    className={({ isActive }) =>
-                        isActive ? `${navLinkClass} ${activeClass}` : navLinkClass
-                    }
-                >
-                    <span className="text-2xl">{link.icon}</span>
-                    <span className="md:block font-semibold text-black hidden">
-                        {link.title}
-                    </span>
-                </NavLink>
-            ))}
+        <div
+            className="h-screen w-[260px] bg-[#1e2753] px-5 py-6 flex flex-col gap-8 overflow-auto sticky top-0"
+        >
+            {/* Main Links */}
+            <div>
+                {sidebarLink.map((link) => (
+                    <NavLink
+                        to={link.url}
+                        key={link.title}
+                        className={({ isActive }) =>
+                            isActive ? `${navLinkClass} ${activeClass}` : navLinkClass
+                        }
+                    >
+                        <div className="flex items-center gap-x-4">
+                            <span>{link.icon}</span>
+                            <span>{link.title}</span>
+                        </div>
+                        {link.badge && (
+                            <span className="ml-auto bg-black text-white text-xs px-2 py-0.5 rounded-full">
+                                {link.badge}
+                            </span>
+                        )}
+                    </NavLink>
+                ))}
+            </div>
+
+            {/* Other Information */}
+            <div>
+                <h3 className="text-sm font-bold text-gray-400 uppercase mb-3">
+                    Other Information
+                </h3>
+                {otherLinks.map((link) => (
+                    <NavLink
+                        to={link.url}
+                        key={link.title}
+                        className={({ isActive }) =>
+                            isActive ? `${navLinkClass} ${activeClass}` : navLinkClass
+                        }
+                    >
+                        <div className="flex items-center gap-x-4">
+                            <span>{link.icon}</span>
+                            <span>{link.title}</span>
+                        </div>
+                    </NavLink>
+                ))}
+            </div>
+
+            {/* Settings */}
+            <div>
+                <h3 className="text-sm font-bold text-gray-400 uppercase mb-3">
+                    Settings
+                </h3>
+                {settingsLinks.map((link) => (
+                    <NavLink
+                        to={link.url}
+                        key={link.title}
+                        className={({ isActive }) =>
+                            isActive ? `${navLinkClass} ${activeClass}` : navLinkClass
+                        }
+                    >
+                        <div className="flex items-center gap-x-4">
+                            <span>{link.icon}</span>
+                            <span>{link.title}</span>
+                        </div>
+                    </NavLink>
+                ))}
+            </div>
         </div>
     );
 };
 
 export default DashboardSidebar;
+
