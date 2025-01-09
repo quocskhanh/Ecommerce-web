@@ -5,22 +5,29 @@ from datetime import date
 
 class AccountBase(BaseModel):
     """
-    Schema cơ bản cho tài khoản, chứa các trường chung.
+    Schema cơ bản cho tài khoản, dùng làm nền tảng.
     """
-    first_name: str
-    last_name: str
-    email: EmailStr
-    phone_number: Optional[str]
-    address: Optional[str]
-    date_of_birth: Optional[date]
-    gender: Optional[str]
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+    email: Optional[EmailStr] = None
+    phone_number: Optional[str] = None
+    address: Optional[str] = None
+    date_of_birth: Optional[date] = None
+    gender: Optional[str] = None
 
 
 class AccountCreate(AccountBase):
     """
     Schema được sử dụng khi tạo tài khoản mới.
     """
-    pass
+    first_name: str
+    last_name: str
+    email: EmailStr
+    phone_number: str
+    address: str
+    date_of_birth: date
+    gender: str
+
 
 
 class AccountUpdate(AccountBase):
