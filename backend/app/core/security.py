@@ -1,10 +1,11 @@
 from datetime import datetime, timedelta
 from jose import jwt
 from passlib.context import CryptContext
-
+from decouple import config
+from app.db.blacklist import blacklist_tokens
 # JWT Settings
-SECRET_KEY = "your_secret_key"
-ALGORITHM = "HS256"
+SECRET_KEY = config("SECRET_KEY")
+ALGORITHM = config("ALGORITHM")
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
 # Password hashing context
@@ -44,6 +45,7 @@ def decode_access_token(token: str) -> dict:
     """
     Giải mã JWT token và trả về payload.
     """
+    
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         return payload

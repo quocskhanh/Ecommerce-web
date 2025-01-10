@@ -4,12 +4,13 @@ from jose import jwt, JWTError
 from sqlalchemy.orm import Session
 from app.models.account import Account
 from app.db.database import SessionLocal
-from app.core.security import verify_password, hash_password, create_access_token
-
+from app.core.security import verify_password, hash_password, create_access_token,decode_access_token
+from decouple import config
+from app.db.blacklist import blacklist_tokens
 # Cấu hình OAuth2 scheme
-SECRET_KEY = "your_secret_key"
-ALGORITHM = "HS256"
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+SECRET_KEY = config("SECRET_KEY")
+ALGORITHM = config("ALGORITHM")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
 # Dependency: Lấy session cơ sở dữ liệu
 def get_db():
@@ -25,7 +26,14 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
     Lấy thông tin người dùng hiện tại từ JWT token.
     """
     try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        if token in blacklist_tokens:
+            print(f"Token {token} is blacklisted from get_cur_user")
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Token has been revoked",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+        payload = decode_access_token(token)
         email: str = payload.get("sub")
         if email is None:
             raise HTTPException(
@@ -69,18 +77,3 @@ def authenticate_user(db: Session, email: str, password: str):
     if not user or not verify_password(password, user.password):
         return None
     return user
-
-# Endpoint để xử lý login và tạo token
-def login_for_access_token(db: Session, username: str, password: str):
-    """
-    Xử lý xác thực và tạo JWT token.
-    """
-    user = authenticate_user(db, username, password)
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect username or password",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-    access_token = create_access_token(data={"sub": user.email})
-    return {"access_token": access_token, "token_type": "bearer"}

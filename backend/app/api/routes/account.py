@@ -23,15 +23,6 @@ def get_db():
     finally:
         db.close()
 
-# API: Tạo tài khoản mới
-@router.post("/", response_model=AccountResponse)
-def create_new_account(account: AccountCreate, db: Session = Depends(get_db)):
-    try:
-        new_account = create_account(db, account)
-        return new_account
-    except ValueError as e:  # Bắt lỗi trùng lặp từ hàm CRUD
-        raise HTTPException(status_code=400, detail=str(e))
-
 
 # API: Lấy danh sách tài khoản
 @router.get("/", response_model=list[AccountResponse])
@@ -68,7 +59,7 @@ def update_existing_account(
     current_user: dict = Depends(get_current_user)  # Lấy thông tin người dùng hiện tại
 ):
     # Kiểm tra nếu người dùng đang cố gắng cập nhật tài khoản của người khác
-    if current_user.id != account_id:
+    if current_user.id != account_id and not current_user.role:
         raise HTTPException(
             status_code=403,
             detail="You are not authorized to update this account"
@@ -87,7 +78,7 @@ def delete_existing_account(
     current_user: dict = Depends(get_current_user)  # Lấy thông tin người dùng hiện tại
 ):
     # Kiểm tra nếu người dùng đang cố gắng xóa tài khoản của người khác
-    if current_user.id != account_id:
+    if current_user.id != account_id and not current_user.role:
         raise HTTPException(
             status_code=403,
             detail="You are not authorized to delete this account"
