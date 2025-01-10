@@ -9,6 +9,8 @@ from app.db.crud.account import (
     delete_account,
     change_account_role,
 )
+from app.models.account import Account
+
 from app.db.database import SessionLocal
 from app.api.authentication import get_current_user, get_current_admin_user
 
@@ -32,7 +34,13 @@ def list_all_accounts(db: Session = Depends(get_db), current_user: dict = Depend
     """
     return get_accounts(db)
 
-
+# API: Lấy thông tin tài khoản của người dùng hiện tại
+@router.get("/me", response_model=AccountResponse)
+def retrieve_current_account(current_user: Account = Depends(get_current_user)):
+    """
+    Lấy thông tin tài khoản của người dùng hiện tại.
+    """
+    return current_user
 # API: Lấy thông tin tài khoản theo ID
 @router.get("/{account_id}", response_model=AccountResponse)
 def retrieve_account(account_id: int, db: Session = Depends(get_db), current_user: dict = Depends(get_current_user)):
@@ -49,14 +57,28 @@ def retrieve_account(account_id: int, db: Session = Depends(get_db), current_use
 
     return account
 
-
+# API: Cập nhật tài khoản
+@router.put("/me", response_model=AccountResponse)
+def update_existing_account(
+    account_update: AccountUpdate, 
+    db: Session = Depends(get_db), 
+    current_user: Account = Depends(get_current_user)  # Lấy thông tin người dùng hiện tại
+):
+    
+    
+    try:
+        updated_account = update_account(db, current_user.id, account_update)
+        return updated_account
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    
 # API: Cập nhật tài khoản
 @router.put("/{account_id}", response_model=AccountResponse)
 def update_existing_account(
     account_id: int, 
     account_update: AccountUpdate, 
     db: Session = Depends(get_db), 
-    current_user: dict = Depends(get_current_user)  # Lấy thông tin người dùng hiện tại
+    current_user: Account = Depends(get_current_user)  # Lấy thông tin người dùng hiện tại
 ):
     # Kiểm tra nếu người dùng đang cố gắng cập nhật tài khoản của người khác
     if current_user.id != account_id and not current_user.role:
@@ -70,12 +92,28 @@ def update_existing_account(
         return updated_account
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+
+
+# API: Xóa tài khoản
+@router.delete("/me")
+def delete_existing_account(
+     
+    db: Session = Depends(get_db), 
+    current_user: Account = Depends(get_current_user)  # Lấy thông tin người dùng hiện tại
+):
+    
+    deleted_account = delete_account(db, current_user.id)
+    if not deleted_account:
+        raise HTTPException(status_code=404, detail="Account not found")
+    return {"message": "Account deleted successfully"}
+
 # API: Xóa tài khoản
 @router.delete("/{account_id}")
 def delete_existing_account(
     account_id: int, 
     db: Session = Depends(get_db), 
-    current_user: dict = Depends(get_current_user)  # Lấy thông tin người dùng hiện tại
+    current_user: Account = Depends(get_current_user)  # Lấy thông tin người dùng hiện tại
 ):
     # Kiểm tra nếu người dùng đang cố gắng xóa tài khoản của người khác
     if current_user.id != account_id and not current_user.role:
