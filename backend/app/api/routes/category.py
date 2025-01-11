@@ -16,7 +16,7 @@ def get_db():
         db.close()
         
 @router.get("/", response_model=list[CategoryResponse])
-def list_all_accounts(db: Session = Depends(get_db)):
+def list_all_categories(db: Session = Depends(get_db)):
     
     return get_categories(db)
 
