@@ -42,6 +42,6 @@ class AccountResponse(AccountBase):
     """
     Schema được sử dụng để trả về thông tin tài khoản cho client.
     """
-
+    id: int
     class Config:
         from_attributes = True  # Cho phép chuyển đổi từ SQLAlchemy model sang Pydantic schema
