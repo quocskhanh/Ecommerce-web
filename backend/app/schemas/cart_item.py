@@ -8,14 +8,15 @@ class CartItemBase(BaseModel):
     product_id: int
     quantity: int
     price_per_item: int
-
+    is_chosen: Optional[bool] = None
 
 class CartItemCreate(CartItemBase):
     pass
 
 
 class CartItemUpdate(BaseModel):
-    quantity: int
+    quantity:Optional[int] = None
+    is_chosen: Optional[bool] = None
 
 
 class CartItemResponse(CartItemBase):
