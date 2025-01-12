@@ -5,7 +5,7 @@ const Header = () => {
     return (
         <div className="header">
             <div className="container">
-                <div className="wrap">
+                <div className="head-home-wrap">
                     <div className="logo">
                         Fasco
                     </div>
@@ -16,7 +16,7 @@ const Header = () => {
                             <li><a href="#">New Arrivals</a></li>
                             <li><a href="#">Packages</a></li>
                             <li><a href="#">Sign In</a></li>
-                            <li><a href="#"><button className="signup-button">Sign Up</button></a></li>
+                            <li><a href="#"><button className="home-signup-button">Sign Up</button></a></li>
                         </ul>
                     </div>
                 </div>
