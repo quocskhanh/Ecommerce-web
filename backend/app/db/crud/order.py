@@ -12,11 +12,12 @@ def create_order(db: Session, order: OrderCreate, account_id: int):
         raise ValueError("Trạng thái phải là 'Chưa thanh toán' hoặc 'Đã thanh toán'")
     
     cart = get_cart_by_account(db, account_id)
-    chosen_items = [item for item in cart.cart_items]
+    chosen_items = [item for item in cart.cart_items if item.is_chosen == True]
     if not cart:
         raise ValueError("Không tìm thấy giỏ hàng cho tài khoản này")
     total_price = sum(item.quantity * item.price_per_item for item in chosen_items)
-
+    if total_price == 0:
+        raise ValueError("Bạn phải chọn ít nhất 1 món hàng để thanh toán")
     new_order = Order(
         account_id=account_id,
         cart_id=cart.id,
