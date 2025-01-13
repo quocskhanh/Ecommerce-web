@@ -1,3 +1,5 @@
+import React from 'react'; 
+import { Link } from 'react-router-dom';
 import "./Header.css"
 
 
@@ -12,7 +14,7 @@ const Header = () => {
                     <div className="inner-list">
                         <ul>
                             <li><a href="#">Home</a></li>
-                            <li><a href="#">Shop</a></li>
+                            <li><a href="#"><Link to="/shop">Shop</Link></a></li>
                             <li><a href="#">New Arrivals</a></li>
                             <li><a href="#">Packages</a></li>
                             <li><a href="#">Sign In</a></li>
