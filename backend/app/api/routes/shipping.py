@@ -6,7 +6,7 @@ from app.db.crud.shipping import *
 from app.api.authentication import get_current_user
 from app.models.account import Account
 
-router = APIRouter(prefix="/shippings", tags=["Shipping"])
+router = APIRouter(prefix="/shippings", tags=["shippings"])
 
 def get_db():
     db = SessionLocal()
@@ -33,7 +33,10 @@ def get_shipping(order_id: int, db: Session = Depends(get_db), current_user: Acc
 
 @router.put("/{shipping_id}", response_model=ShippingResponse)
 def update_shipping_status(shipping_id: int, shipping_update: ShippingUpdate, db: Session = Depends(get_db), current_user: Account = Depends(get_current_user)):
-    updated_shipping = update_shipping(db, shipping_id, shipping_update)
-    if not updated_shipping:
-        raise HTTPException(status_code=404, detail="Shipping not found")
-    return updated_shipping
+    try:
+        updated_shipping = update_shipping(db, shipping_id, shipping_update)
+        if not updated_shipping:
+            raise HTTPException(status_code=404, detail="Shipping not found")
+        return updated_shipping
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))

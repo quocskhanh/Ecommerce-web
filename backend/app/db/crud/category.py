@@ -8,6 +8,7 @@ def create_category(db : Session, category: CategoryCreate):
         raise ValueError(f"Loại này đã tồn tại")
     new_category = Category(
         name = category.name,
+        image = category.image
     )
     db.add(new_category)
     db.commit()

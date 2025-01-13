@@ -18,6 +18,7 @@ def create_product(db: Session, product: ProductCreate):
         status=product.status,
         colors=product.colors,
         sizes=product.sizes,
+        image = product.image
     )
     db.add(new_product)
     db.commit()

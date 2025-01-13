@@ -16,5 +16,5 @@ class Order(Base):
     # Relationships
     account = relationship("Account", back_populates="orders")  # Liên kết với Account
     cart = relationship("Cart")  # Liên kết với Cart
-    #payments = relationship("Payment", back_populates="order")  # Liên kết với Payment
+    payment = relationship("Payment", back_populates="order")  # Liên kết với Payment
     shipping = relationship("Shipping", back_populates="order")  # Liên kết với Shipping

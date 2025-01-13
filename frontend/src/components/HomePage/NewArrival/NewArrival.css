@@ -1,0 +1,56 @@
+.newarrival-container {
+    width: 100%;
+    height: auto;
+}
+
+.newarrival-wrap {
+    width: 100%;
+    height: 100%;
+    max-width: 1200px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 40px;
+    background-color: rgb(248, 246, 246)
+}
+
+.newarrival-wrap h3 {
+    text-decoration: none;
+    color: #484848;
+    text-align: center;
+    font-family: Volkhov;
+    font-size: 45px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: normal;
+}
+
+.newarrival-wrap p {
+    margin-left: 28%;
+    margin-right: 28%;
+    text-align: center;
+    font-family: Poppins;
+    font-size: 18px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 26px;
+}
+
+.newarrival-wrap button {
+    margin-top: 5%;
+    padding: 10px 30px;
+    font-size: 20px;
+    margin-left: 43%;
+    border-radius: 10px;
+}   
+
+.newarrival-wrap .newarr-product {
+    width: auto;
+    height: 70%;
+    margin-top: 5%;
+    margin-left: 10px;
+    margin-right: 10px;
+}
+
+.newarr-product {
+    width: 100%;
+}

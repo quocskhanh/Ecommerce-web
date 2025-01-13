@@ -8,5 +8,7 @@ class Category(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, unique=True, nullable=False)
     is_deleted = Column(Boolean, default=False)
+    image = Column(String, nullable=True)  # URL hoặc path của ảnh
+
     
     products = relationship("Product", back_populates="category")

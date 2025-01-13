@@ -2,7 +2,8 @@ from pydantic import BaseModel
 from typing import Optional
 
 class CategoryBase(BaseModel):
-    name: str
+    name: Optional[str] = None
+    image: Optional[str] = None
     
 
 class CategoryCreate(CategoryBase):

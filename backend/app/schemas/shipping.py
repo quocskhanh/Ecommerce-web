@@ -16,8 +16,7 @@ class ShippingCreate(BaseModel):
 
 class ShippingUpdate(BaseModel):
     status: Optional[str] = None
-    shipped_at: Optional[datetime] = None
-    delivered_at: Optional[datetime] = None
+    
 
 
 class ShippingResponse(ShippingBase):

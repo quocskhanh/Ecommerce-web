@@ -10,6 +10,7 @@ class ProductBase(BaseModel):
     status: str
     colors: List[str]
     sizes: List[str]
+    image: Optional[str] = None
 
 # Schema để tạo sản phẩm mới
 class ProductCreate(ProductBase):
@@ -24,10 +25,12 @@ class ProductUpdate(BaseModel):
     status: Optional[str] = None
     colors: Optional[List[str]] = None
     sizes: Optional[List[str]] = None
+    image: Optional[str] = None
 
 # Schema để trả về thông tin sản phẩm
 class ProductResponse(ProductBase):
     id: int
+    
 
     class Config:
         from_attributes = True  # Để chuyển đổi từ SQLAlchemy model sang Pydantic schema
