@@ -1,5 +1,0 @@
--- JWT
--- auth/register POST
--- auth/login POST
--- permissions
--- authentication(chung thuc)/ authorization(uy quyen)
