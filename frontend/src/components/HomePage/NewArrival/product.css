@@ -1,0 +1,115 @@
+.newar_product_list {
+    display: flex;
+    /* justify-content: space-between; */
+    flex-wrap: wrap;
+}   
+
+.newar_product_list .newar_product_item {
+    width: 27%;
+    border-radius: 10px;
+    margin-top: 10px;
+    background: #FFF;
+    box-shadow: 0px 40px 90px 0px rgba(0, 0, 0, 0.06);
+}
+
+
+
+.newar_product_list .newar_product_item h3{
+    font-size: 16px;
+}
+
+.newar_product_list .newar_product_item p {
+    color: #000;
+}
+
+.newar_product_img {
+    width: 100%;
+    aspect-ratio: 4/3;
+}
+
+.newar_product_img img {
+    width: 100%;
+    height: 90%;
+    object-fit: cover;
+    border-radius: 10px;
+}
+
+.pagination {
+    display: flex;
+}
+.pagination li {
+    margin-right: 15px;
+    list-style-type: none;
+}
+
+.tabs-container {
+    width: 100%;
+    max-width: 1200px;
+}
+
+.tabs-container .tabs-wrap {
+    display: flex;
+    flex-wrap: wrap;
+    width: 100%;
+    justify-content: space-between;
+}
+
+.tabs-container .tabs-wrap button {
+    width: 180px;
+    margin: 0;
+    border: 1px solid rgb(77, 69, 69);
+    color: #828282;
+}
+
+.tab { 
+    padding: 10px 20px; 
+    cursor: pointer; 
+    background-color: #f1f1f1; 
+    border: none; 
+    border-radius: 5px; 
+    transition: background-color 0.3s; 
+} 
+.tab.activeTab { 
+    background-color: black; 
+}
+
+.pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin: 20px 0;
+    padding: 0;
+    list-style: none;
+}
+
+.pagination li {
+    width: 35px;
+    height: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    background: #f8f9fa;
+    color: #333;
+}
+
+.pagination li:hover {
+    background: #e9ecef;
+}
+
+.pagination li.active {
+    background: #0d6efd;
+    color: white;
+}
+
+/* Add next/prev arrows if needed */
+.pagination li.next,
+.pagination li.prev {
+    background: transparent;
+    width: auto;
+    padding: 0 10px;
+}
