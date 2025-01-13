@@ -42,7 +42,7 @@ def create_new_cart_item(
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 @router.put("/me/{item_id}", response_model=CartItemResponse)
-def update_cart_item_quantity(
+def update_cart_item_quantity_or_choosing(
     item_id: int,
     cart_item_update: CartItemUpdate,
     db: Session = Depends(get_db),

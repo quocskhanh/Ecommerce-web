@@ -18,3 +18,4 @@ class Account(Base):
     role = Column(Boolean, nullable=False, default=False)  #False = user
     
     cart = relationship("Cart", back_populates= "account")
+    orders = relationship("Order", back_populates="account")
