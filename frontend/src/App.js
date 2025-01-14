@@ -1,6 +1,5 @@
 import { Routes, Route } from "react-router-dom";
 import { lazy, Suspense } from "react";
-import AccountPage from "./pages/auth/AccountPage";
 import CategoriesPage from "./pages/category/CategoriesPage";
 import ReportPage from "./pages/report/ReportPage";
 import SettingPage from "./pages/SettingPage";
@@ -12,6 +11,7 @@ import AccountsPage from "./pages/account/AccountsPage";
 import AddAccountPage from "./pages/account/AddAccountPage";
 import AddOrderPage from "./pages/order/AddOrderPage";
 import EditCategoryPage from "./pages/category/EditCategoryPage";
+import AccountPage from "./pages/auth/AccountPage";
 
 // Lazy load components
 const ProductPage = lazy(() => import("./pages/product/ProductPage"));

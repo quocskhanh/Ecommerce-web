@@ -4,7 +4,7 @@ import DashboardSidebar from "../dashboard/DashboardSidebar";
 
 const AdminLayout = ({ children }) => {
     return (
-        <div className="min-h-screen bg-lite flex flex-col overflow-hidden">
+        <div className="min-h-screen bg-lite flex flex-col overflow-y-hidden">
             {/* Topbar */}
             <DashboardTopbar />
 

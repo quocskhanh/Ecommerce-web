@@ -11,6 +11,7 @@ import useToggleValue from "../../components/hooks/useToogleValue";
 import { Button } from "../../components/button";
 import IconEyeToggle from "../../components/icons/IconEyeToggle";
 import axios from "axios";
+import GoogleLogin from "react-google-login";
 
 const schema = yup.object({
     email: yup.string().email("Invalid email address").required("This field is required"),
@@ -53,40 +54,19 @@ const SignInPage = () => {
         setLoading(false);
     };
 
-    const handleGoogleSignIn = () => {
-        console.log("Google Sign-In clicked");
-        // Integrate Google Sign-In API logic here
-    };
 
-    const handleFacebookSignIn = () => {
-        console.log("Facebook Sign-In clicked");
-        // Integrate Facebook Login API logic here
-    };
+
+
 
     return (
         <LayoutAuthentication heading="FASCO">
             <div className="flex justify-center gap-4">
-                <div className="w-[294px] h-[55px] bg-white rounded-lg border border-[#5b86e5] flex items-center justify-center">
-                    <img src="/Google__G__logo.svg.webp" alt="Google Logo" className="w-6 h-6 mr-2" />
-                    <div className="text-black text-base font-normal font-['Poppins'] leading-10 tracking-wider whitespace-nowrap">
-                        Đăng nhập với Google
-                    </div>
-                </div>
 
-                <div className="w-[310px] h-[55px] bg-white rounded-lg border border-[#5b86e5] flex items-center justify-center">
-                    <img src="/fb.png" alt="Facebook Logo" className="w-6 h-6 mr-2" />
-                    <div className="text-black text-base font-normal font-['Poppins'] leading-10 tracking-wider whitespace-nowrap">
-                        Đăng nhập với Facebook
-                    </div>
-                </div>
             </div>
 
 
             <div className="flex flex-col items-center mt-20 mb-10">
                 <div className="flex items-center gap-4">
-                    <div className="w-[30px] h-[5px] bg-[#828282]"></div>
-                    <div className="text-[#828282] text-3xl font-bold font-['Poppins'] leading-10 tracking-widest">Hoặc</div>
-                    <div className="w-[30px] h-[5px] bg-[#828282]"></div>
                 </div>
             </div>
 
@@ -109,7 +89,7 @@ const SignInPage = () => {
                         control={control}
                         name="email"
                         type="email"
-                        className="text-[#9d9d9d] text-base font-normal font-['Poppins'] leading-10 tracking-wider w-full border-b border-gray-400 focus:border-[#9d9d9d] focus:outline-none"
+                        className="text-base font-normal font-['Poppins'] leading-10 tracking-wider w-full border-b border-gray-400 focus:border-[#9d9d9d] focus:outline-none"
                         placeholder="Email"
                         error={errors.email?.message}
                     />
@@ -126,7 +106,7 @@ const SignInPage = () => {
                         control={control}
                         name="password"
                         type={`${showPassword ? "text" : "password"}`}
-                        className="text-[#9d9d9d] text-base font-normal font-['Poppins'] leading-10 tracking-wider w-full border-b border-gray-400 focus:border-[#9d9d9d] focus:outline-none"
+                        className=" text-base font-normal font-['Poppins'] leading-10 tracking-wider w-full border-b border-gray-400 focus:border-[#9d9d9d] focus:outline-none"
                         placeholder="Mật khẩu"
                         error={errors.password?.message}
                     >

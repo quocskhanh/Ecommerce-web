@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, {useEffect, useState} from "react";
 import AdminLayout from "../../layout/AdminLayout";
 import { useNavigate } from "react-router-dom";
 import colors from "tailwindcss/colors";
@@ -7,7 +7,7 @@ const AddProductPage = () => {
     const [productName, setProductName] = useState("");
     const [productDescription, setProductDescription] = useState("");
     const [productPrice, setProductPrice] = useState("");
-    const [categories, setCategories] = useState([]);
+    const [categories, setCategories] = useState("");
     const [images, setImages] = useState([]);
     const [colorsList, setColors] = useState([]); // Updated color state name
     const [sizes, setSizes] = useState([]); // Updated sizes state name
@@ -29,10 +29,12 @@ const AddProductPage = () => {
             price: productPrice,
             image: images, // Updated field name for discount
             status: status, // Updated field name for discount
-            category: categories.join(", "), // Join categories into a string for simplicity
+            category_id: categories, // Join categories into a string for simplicity
             colors: colorsList, // Use colorsList for color data
             sizes: sizes, // Use sizes for size data
         };
+
+
 
         try {
             const response = await fetch("http://localhost:5000/products", {
@@ -52,6 +54,28 @@ const AddProductPage = () => {
             console.error("Error:", error);
         }
     };
+
+
+
+    const [availableCategories, setAvailableCategories] = useState([]);
+
+    useEffect(() => {
+        const fetchCategories = async () => {
+            try {
+                const response = await fetch("http://localhost:5000/categories"); // URL API của danh mục
+                if (response.ok) {
+                    const data = await response.json();
+                    setAvailableCategories(data); // Dữ liệu cần chứa { id, name }
+                } else {
+                    console.error("Failed to fetch categories");
+                }
+            } catch (error) {
+                console.error("Error:", error);
+            }
+        };
+
+        fetchCategories();
+    }, []);
 
     const handleImageURLInput = (e) => {
         const url = e.target.value;
@@ -199,27 +223,20 @@ const AddProductPage = () => {
 
                         {/* Right Column */}
                         <div className="space-y-6">
-                            {/* Categories */}
                             <div className="bg-white p-4 rounded-lg shadow-md">
                                 <label className="block font-semibold mb-2">Danh mục sản phẩm</label>
-                                <div className="space-y-2">
-                                    {["Thời trang nữ", "Thời trang nam", "Giày dép", "Phụ kiện", "Đồ công nghệ"].map((category) => (
-                                        <label key={category} className="block">
-                                            <input
-                                                type="checkbox"
-                                                value={category}
-                                                onChange={(e) =>
-                                                    setCategories((prev) =>
-                                                        e.target.checked
-                                                            ? [...prev, e.target.value]
-                                                            : prev.filter((cat) => cat !== e.target.value)
-                                                    )
-                                                }
-                                            />
-                                            <span className="ml-2">{category}</span>
-                                        </label>
+                                <select
+                                    value={categories}
+                                    onChange={(e) => setCategories(e.target.value)}
+                                    className="border px-4 py-2 w-full rounded"
+                                >
+                                    <option value="">Chọn danh mục</option>
+                                    {availableCategories.map((category) => (
+                                        <option key={category.id} value={category.id}>
+                                            {category.name}
+                                        </option>
                                     ))}
-                                </div>
+                                </select>
                             </div>
                         </div>
                     </div>
@@ -228,7 +245,7 @@ const AddProductPage = () => {
                     <div className="flex justify-end mt-6 gap-4">
                         <button
                             type="button"
-                            onClick={() => navigate("/product")}
+                            onClick={() => navigate("/admin/product")}
                             className="px-6 py-2 bg-gray-200 text-gray-700 rounded shadow-md hover:bg-gray-300"
                         >
                             Hủy

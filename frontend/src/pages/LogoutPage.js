@@ -1,15 +1,36 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import React from "react";
+import { useNavigate } from "react-router-dom";
+import axios from "axios"; // Thêm axios để gọi API
 import AdminLayout from "../layout/AdminLayout";
 
 const LogoutPage = () => {
     const navigate = useNavigate();
 
-    const handleLogout = () => {
-        // Logic đăng xuất (ví dụ: xóa token từ localStorage)
-        localStorage.removeItem('token');
-        alert('Bạn đã đăng xuất thành công!');
-        navigate('/auth/sign-in'); // Chuyển hướng về trang đăng nhập
+    const handleLogout = async () => {
+        try {
+            // Gọi API đăng xuất tới localhost:5000
+            const response = await axios.post(
+                "http://localhost:8000/logout'", // Đường dẫn tới API giả lập
+                {}, // Dữ liệu nếu cần, để trống ở đây
+                {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem("token")}`, // Đính kèm token nếu cần
+                    },
+                }
+            );
+
+            // Kiểm tra phản hồi
+            if (response.status === 200) {
+                localStorage.removeItem("token"); // Xóa token khỏi localStorage
+                alert("Bạn đã đăng xuất thành công!");
+                navigate("/auth/sign-in"); // Chuyển hướng về trang đăng nhập
+            } else {
+                alert("Có lỗi xảy ra. Vui lòng thử lại!");
+            }
+        } catch (error) {
+            console.error("Lỗi đăng xuất:", error);
+            alert("Không thể đăng xuất. Vui lòng thử lại sau!");
+        }
     };
 
     const handleCancel = () => {

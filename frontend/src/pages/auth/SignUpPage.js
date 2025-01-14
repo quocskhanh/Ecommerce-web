@@ -18,11 +18,11 @@ const schema = yup.object({
         .string()
         .email("Invalid email address")
         .required("Email is required"),
-    phone: yup
+    phone_number: yup
         .string()
         .required("Phone number is required")
         .matches(/^[0-9]{10,15}$/, "Invalid phone number"),
-    birth: yup
+    date_of_birth: yup
         .date()
         .required("Date of birth is required")
         .typeError("Invalid date format"),
@@ -39,7 +39,7 @@ const schema = yup.object({
         .matches(/[a-z]/, "Password must contain at least one lowercase letter")
         .matches(/[0-9]/, "Password must contain at least one number")
         .matches(/[@$!%*?&]/, "Password must contain at least one special character"),
-    confirm: yup
+    confirm_password: yup
         .string()
         .oneOf([yup.ref("password")], "Passwords do not match")
         .required("Confirm password is required"),
@@ -80,7 +80,6 @@ const SignUpPage = () => {
     return (
         <LayoutAuthentication heading="FASCO">
             <div className="text-black text-3xl font-normal font-['Volkhov'] leading-10 mb-5">
-                Đăng Ký Tài Khoản
             </div>
 
             <form onSubmit={handleSubmit(handleSignUp)}>
@@ -90,7 +89,7 @@ const SignUpPage = () => {
                         control={control}
                         name="firstname"
                         type="text"
-                        className="text-[#9d9d9d] text-base font-normal font-['Poppins'] leading-10 tracking-wider w-full border-b border-gray-400 focus:border-[#9d9d9d] focus:outline-none"
+                        className=" text-base font-normal font-['Poppins'] leading-10 tracking-wider w-full border-b border-gray-400 focus:border-[#9d9d9d] focus:outline-none"
 
                         placeholder="Họ"
                         error={errors.firstname?.message}
@@ -103,30 +102,42 @@ const SignUpPage = () => {
                         name="lastname"
                         type="text"
                         placeholder="Tên"
-                        className="text-[#9d9d9d] text-base font-normal font-['Poppins'] leading-10 tracking-wider w-full border-b border-gray-400 focus:border-[#9d9d9d] focus:outline-none"
+                        className=" text-base font-normal font-['Poppins'] leading-10 tracking-wider w-full border-b border-gray-400 focus:border-[#9d9d9d] focus:outline-none"
                         error={errors.lastname?.message}
                     />
                 </FormGroup>
+
                 <FormGroup>
-                    <Label htmlFor="phone"></Label>
+                    <Label htmlFor="email"></Label>
                     <Input
                         control={control}
-                        name="phone"
-                        type="text"
-                        className="text-[#9d9d9d] text-base font-normal font-['Poppins'] leading-10 tracking-wider w-full border-b border-gray-400 focus:border-[#9d9d9d] focus:outline-none"
-                        placeholder="Số điện thoại"
-                        error={errors.phone?.message}
+                        name="email"
+                        type="email"
+                        className=" text-base font-normal font-['Poppins'] leading-10 tracking-wider w-full border-b border-gray-400 focus:border-[#9d9d9d] focus:outline-none"
+                        placeholder="Email"
+                        error={errors.email?.message}
                     />
                 </FormGroup>
                 <FormGroup>
-                    <Label htmlFor="birth"></Label>
+                    <Label htmlFor="phone_number"></Label>
                     <Input
                         control={control}
-                        name="birth"
+                        name="phone_number"
+                        type="text"
+                        className="text-base font-normal font-['Poppins'] leading-10 tracking-wider w-full border-b border-gray-400 focus:border-[#9d9d9d] focus:outline-none"
+                        placeholder="Số điện thoại"
+                        error={errors.phone_number?.message}
+                    />
+                </FormGroup>
+                <FormGroup>
+                    <Label htmlFor="date_of_birth"></Label>
+                    <Input
+                        control={control}
+                        name="date_of_birth"
                         type="date"
-                        className="text-[#9d9d9d] text-base font-normal font-['Poppins'] leading-10 tracking-wider w-full border-b border-gray-400 focus:border-[#9d9d9d] focus:outline-none"
+                        className=" text-base font-normal font-['Poppins'] leading-10 tracking-wider w-full border-b border-gray-400 focus:border-[#9d9d9d] focus:outline-none"
                         placeholder="Ngày sinh"
-                        error={errors.birth?.message}
+                        error={errors.date_of_birth?.message}
                     />
                 </FormGroup>
                 <FormGroup>
@@ -142,37 +153,27 @@ const SignUpPage = () => {
                     </select>
                     <p className="text-red-500">{errors.gender?.message}</p>
                 </FormGroup>
-                <FormGroup>
-                    <Label htmlFor="email"></Label>
-                    <Input
-                        control={control}
-                        name="email"
-                        type="email"
-                        className="text-[#9d9d9d] text-base font-normal font-['Poppins'] leading-10 tracking-wider w-full border-b border-gray-400 focus:border-[#9d9d9d] focus:outline-none"
-                        placeholder="Email"
-                        error={errors.email?.message}
-                    />
-                </FormGroup>
+
                 <FormGroup>
                     <Label htmlFor="password"></Label>
                     <Input
                         control={control}
                         name="password"
-                        className="text-[#9d9d9d] text-base font-normal leading-10 tracking-wider w-full border-b border-gray-400 focus:border-[#9d9d9d] focus:outline-none"
+                        className="text-base font-normal leading-10 tracking-wider w-full border-b border-gray-400 focus:border-[#9d9d9d] focus:outline-none"
                         type={showPassword ? "text" : "password"}
                         placeholder="Mật khẩu"
                         error={errors.password?.message}
                     />
                 </FormGroup>
                 <FormGroup>
-                    <Label htmlFor="confirm"></Label>
+                    <Label htmlFor="confirm_password"></Label>
                     <Input
                         control={control}
-                        name="confirm"
-                        className="text-[#9d9d9d] text-base font-normal font-['Poppins'] leading-10 tracking-wider w-full border-b border-gray-400 focus:border-[#9d9d9d] focus:outline-none"
+                        name="confirm_password"
+                        className=" text-base font-normal font-['Poppins'] leading-10 tracking-wider w-full border-b border-gray-400 focus:border-[#9d9d9d] focus:outline-none"
                         type={showPassword ? "text" : "password"}
                         placeholder="Xác nhận mật khẩu"
-                        error={errors.confirm?.message}
+                        error={errors.confirm_password?.message}
                     />
                 </FormGroup>
                 <Button type="submit" className="w-full bg-black text-white py-3">

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import AdminLayout from '../../layout/AdminLayout';
 import { useNavigate } from 'react-router-dom';
 
@@ -11,13 +11,37 @@ const AddOrderPage = () => {
         account_id: '',
         cart_id: '',
         total_price: '',
-        status: 'Đã thanh toán', // Default value
+        status: '', // Default value
     });
 
-    // State to show API loading status
+    // State for fetching statuses from the orders API
+    const [statuses, setStatuses] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [showModal, setShowModal] = useState(false); // Modal state
+
+    // Fetch statuses from API on component mount
+    useEffect(() => {
+        const fetchStatuses = async () => {
+            try {
+                const response = await fetch('http://localhost:5000/orders'); // Update with the correct endpoint for fetching orders
+                if (!response.ok) {
+                    throw new Error('Failed to fetch orders');
+                }
+                const data = await response.json();
+
+                // Extract unique statuses from the orders
+                const uniqueStatuses = [...new Set(data.orders.map(order => order.status))];
+
+                setStatuses(uniqueStatuses);
+            } catch (err) {
+                console.error(err);
+                setError('Không thể tải trạng thái đơn hàng');
+            }
+        };
+
+        fetchStatuses();
+    }, []);
 
     // Handle input change
     const handleChange = (e) => {
@@ -44,7 +68,10 @@ const AddOrderPage = () => {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(order),
+                body: JSON.stringify({
+                    ...order, // Spread the order object to send all fields
+                    createdDate: new Date().toISOString(), // Adding the createdDate field
+                }),
             });
 
             if (!response.ok) {
@@ -131,14 +158,24 @@ const AddOrderPage = () => {
 
                         <div>
                             <h2 className="text-xl font-semibold text-gray-700 mb-3">Trạng thái đơn hàng</h2>
+                            {error && <p className="text-red-500">{error}</p>}
                             <select
                                 name="status"
                                 value={order.status}
                                 onChange={handleChange}
                                 className="border rounded-md p-4 w-full"
+                                disabled={loading} // Disable dropdown while loading
                             >
-                                <option value="Đang giao hàng">Đang giao hàng</option>
-                                <option value="Đã giao hàng">Đã giao hàng</option>
+                                <option value="">Chọn trạng thái</option>
+                                {statuses.length > 0 ? (
+                                    statuses.map((status) => (
+                                        <option key={status} value={status}>
+                                            {status}
+                                        </option>
+                                    ))
+                                ) : (
+                                    <option disabled>Không có trạng thái</option>
+                                )}
                             </select>
                         </div>
 
@@ -152,9 +189,10 @@ const AddOrderPage = () => {
                             </button>
                             <button
                                 type="submit"
-                                className="px-6 py-3 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+                                className={`px-6 py-3 bg-blue-500 text-white rounded-md hover:bg-blue-600 ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                disabled={loading}
                             >
-                                Lưu
+                                {loading ? 'Đang thêm...' : 'Lưu'}
                             </button>
                         </div>
                     </form>

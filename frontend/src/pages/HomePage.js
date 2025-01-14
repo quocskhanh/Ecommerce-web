@@ -7,7 +7,6 @@ import Feature from "../components/ShopPage/Feature/Feature"
 import Gallery from "../components/ShopPage/Gallery/Gallery"
 import Subscribe from "../components/ShopPage/Subscribe/Subscribe"
 import Footer from "../components/ShopPage/Footer/Footer"
-import NewArrival from "../components/HomePage/NewArrival"
 
 function HomePage() {
     return (
@@ -16,7 +15,6 @@ function HomePage() {
             <Banner />
             <Logo />
             <DealsOfTheMonth />
-            <NewArrival />
             <Slider />
             <Feature />
             <Gallery />

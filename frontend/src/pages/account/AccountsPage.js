@@ -41,22 +41,7 @@ const AccountsPage = () => {
     const [showDeleteModal, setShowDeleteModal] = useState(null); // Track the order being deleted
     const [showSuccessModal, setShowSuccessModal] = useState(false); // Track success modal visibility
 
-
     // Xử lý xóa tài khoản
-    const handleDelete = (id) => {
-        axios
-            .delete(`http://localhost:5000/api/accounts/${id}`)
-            .then(() => {
-                setAccounts((prevAccounts) => {
-                    const updatedAccounts = prevAccounts.filter((account) => account.id !== id);
-                    setTotalPages(Math.ceil(updatedAccounts.length / itemsPerPage));
-                    return updatedAccounts;
-                });
-            })
-            .catch((error) => {
-                console.error("Lỗi khi xóa tài khoản:", error);
-            });
-    };
 
     const handleEditAccount = () => {
         if (selectedAccounts.length === 1) {
@@ -150,20 +135,19 @@ const AccountsPage = () => {
 
     // Filter and paginate orders
 // Giả sử `accounts` là một mảng các tài khoản
-    const [filteredAccounts, setFilteredAccounts] = useState(accounts);  // Lưu tài khoản đã lọc
+    const [filteredAccounts, setFilteredAccounts] = useState([]);  // Lưu tài khoản đã lọc
 
     const handleSearch = (e) => {
-        const value = e.target.value.toLowerCase(); // Chuyển về chữ thường để so sánh không phân biệt chữ hoa chữ thường
-        setSearchTerm(value); // Cập nhật searchTerm
+        const value = e.target.value.toLowerCase(); // Không sử dụng trim() để giữ lại khoảng trắng
+        setSearchTerm(value);
 
-        // Kiểm tra và lọc các tài khoản dựa trên first_name
-        const searchedAccounts = value
+        const searchedProducts = value
             ? accounts.filter((account) =>
-                account.first_name && account.first_name.toLowerCase().includes(value) // Lọc theo first_name
+                account.phone_number?.includes(value)
             )
-            : accounts; // Nếu không có giá trị tìm kiếm, trả về toàn bộ accounts
+            : accounts;
 
-        setFilteredAccounts(searchedAccounts); // Cập nhật danh sách tài khoản đã lọc
+        setFilteredAccounts(searchedProducts);
     };
 
 
@@ -181,27 +165,53 @@ const AccountsPage = () => {
     const startIndex = (currentPage - 1) * itemsPerPage;
     const currentAccounts = accounts.slice(startIndex, startIndex + itemsPerPage);
 
+    const handleExport = () => {
+        const csvContent = `data:text/csv;charset=utf-8,${[
+            ["ID", "Họ", "Tên", "Email", "Số điện thoại", "Địa chỉ", "Ngày sinh","Gioi tinh","Mật khẩu"],
+            ...filteredAccounts.map((account) => [
+                account.id,
+                account.first_name,
+                account.last_name,
+                account.email,
+                account.phone_number,
+                account.address,
+                account.date_of_birth,
+                account.gender,
+                account.password,
+            ]),
+        ]
+            .map((e) => e.join(","))
+            .join("\n")}`;
+
+        const link = document.createElement("a");
+        link.setAttribute("href", encodeURI(csvContent));
+        link.setAttribute("download", "accounts.csv");
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+
     return (
         <div>
             <AdminLayout>
                 <div className="p-6">
                     <div className="flex justify-between items-center mb-6 flex-wrap">
                         <h1 className="text-2xl font-bold text-gray-800 w-full sm:w-auto">Tài khoản</h1>
+                        <div className="flex gap-4 w-full sm:w-auto justify-between sm:justify-end">
+                            <button
+                                className="px-4 py-2 bg-white rounded border border-[#d6daec] hover:bg-gray-200"
+                                onClick={handleExport}
+                            >
+                                Xuất
+                            </button>
 
+
+                        </div>
                     </div>
 
 
                     <div className="bg-white rounded-lg shadow-lg">
                         <div className="flex flex-col sm:flex-row justify-between items-center p-4 border-b">
-                                <select
-                                    className="border-gray-400 border rounded-lg px-4 py-2 mb-4 sm:mb-0"
-                                    value={filterStatus}
-                                    onChange={(e) => setFilterStatus(e.target.value)}
-                                >
-                                    <option value="">Tất cả</option>
-                                    <option value="Đang giao hàng">Đang giao hàng</option>
-                                    <option value="Đã giao hàng">Đã giao hàng</option>
-                                </select>
 
                             <div className="relative ml-4 mb-4 sm:mb-0">
                                 <input
@@ -211,6 +221,7 @@ const AccountsPage = () => {
                                     value={searchTerm}
                                     onChange={handleSearch}
                                 />
+
                                 <svg
                                     xmlns="http://www.w3.org/2000/svg"
                                     height="24px"
@@ -221,6 +232,9 @@ const AccountsPage = () => {
                                 >
                                     <path d="M784-120 532-372q-30 24-69 38t-83 14q-109 0-184.5-75.5T120-580q0-109 75.5-184.5T380-840q109 0 184.5 75.5T640-580q0 44-14 83t-38 69l252 252-56 56ZM380-400q75 0 127.5-52.5T560-580q0-75-52.5-127.5T380-760q-75 0-127.5 52.5T200-580q0 75 52.5 127.5T380-400Z" />
                                 </svg>
+
+
+
 
 
 
@@ -490,7 +504,7 @@ const AccountsPage = () => {
                         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
                             <div className="bg-white p-8 rounded-lg max-w-md sm:max-w-xs modal-enter-active">
                                 <h3 className="text-xl font-semibold mb-4">Thông báo</h3>
-                                <p>Khách hàng đã được xóa thành công!</p>
+                                <p>Tài khoản đã được xóa thành công!</p>
                                 <div className="flex justify-end gap-4 mt-4">
                                     <button
                                         onClick={() => setShowSuccessModal(false)}
