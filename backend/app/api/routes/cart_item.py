@@ -62,7 +62,7 @@ def update_cart_item_quantity_or_choosing(
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
-@router.delete("/me/{item_id}", response_model=dict)
+@router.delete("/me", response_model=dict)
 def delete_cart_item_from_cart(
     item_id: int,
     db: Session = Depends(get_db),

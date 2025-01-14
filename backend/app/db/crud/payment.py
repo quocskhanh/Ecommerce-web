@@ -15,7 +15,7 @@ def create_payment(db: Session, payment_data: PaymentCreate):
     # Kiểm tra xem đã có thanh toán nào cho đơn hàng này chưa
     existing_payment = db.query(Payment).filter(Payment.order_id == payment_data.order_id).first()
     if existing_payment:
-        raise ValueError(f"Đơn hàng ID {payment_data.order_id} đã có thanh toán.")
+        return existing_payment
     new_payment = Payment(
         order_id=payment_data.order_id,
         method=payment_data.method,

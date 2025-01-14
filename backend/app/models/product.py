@@ -1,12 +1,12 @@
 from sqlalchemy import Column, Integer, String, ForeignKey, Text, JSON
 from sqlalchemy.orm import relationship
-from app.db.database import Base
+from app.models.base import Base
 
 class Product(Base):
     __tablename__ = "product"
 
-    id = Column(Integer, primary_key=True, index=True)
-    name = Column(String, nullable=False)
+    id = Column(Integer, primary_key=True, index=True,server_default="nextval('product_id_seq'::regclass')")
+    name = Column(String(255), nullable=False)
     price = Column(Integer, nullable=False)
     description = Column(Text, nullable=True)
     category_id = Column(Integer, ForeignKey("category.id"), nullable=False)

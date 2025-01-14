@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String, ForeignKey, Text, JSON,DateTime,Float,Boolean
 from sqlalchemy.orm import relationship
-from app.db.database import Base
+from app.models.base import Base
 class CartItem(Base):
     __tablename__ = "cart_item"
 

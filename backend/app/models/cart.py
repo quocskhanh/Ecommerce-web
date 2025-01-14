@@ -1,7 +1,7 @@
 from sqlalchemy import Column, Integer, ForeignKey, DateTime, UniqueConstraint
 from sqlalchemy.orm import relationship
 from datetime import datetime
-from app.db.database import Base
+from app.models.base import Base
 
 class Cart(Base):
     __tablename__ = "cart"

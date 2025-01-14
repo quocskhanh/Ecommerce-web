@@ -30,12 +30,11 @@ def get_my_orders(
 # Tạo đơn hàng mới
 @router.post("/", response_model=OrderResponse)
 def create_new_order(
-    order: OrderCreate,
     db: Session = Depends(get_db),
     current_user: Account = Depends(get_current_user)
 ):
     try:
-        new_order = create_order(db, order=order, account_id=current_user.id)
+        new_order = create_order(db, account_id=current_user.id)
         return new_order
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))

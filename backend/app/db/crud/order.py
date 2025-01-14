@@ -4,13 +4,10 @@ from app.schemas.order import OrderCreate, OrderUpdate
 from app.db.crud.cart import get_cart_by_account
 from app.models.cart_item import CartItem
 
-def create_order(db: Session, order: OrderCreate, account_id: int):
+def create_order(db: Session, account_id: int):
     """
     Tạo đơn hàng mới cho tài khoản hiện tại.
     """
-    if order.status not in ["Chưa thanh toán", "Đã thanh toán"]:
-        raise ValueError("Trạng thái phải là 'Chưa thanh toán' hoặc 'Đã thanh toán'")
-    
     cart = get_cart_by_account(db, account_id)
     chosen_items = [item for item in cart.cart_items if item.is_chosen == True]
     if not cart:
@@ -22,8 +19,6 @@ def create_order(db: Session, order: OrderCreate, account_id: int):
         account_id=account_id,
         cart_id=cart.id,
         total_price=total_price,
-        status=order.status,
-        #shipping_id=order.shipping_id
     )
     db.add(new_order)
     db.commit()
