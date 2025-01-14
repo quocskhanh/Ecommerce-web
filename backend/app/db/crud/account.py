@@ -31,7 +31,7 @@ def create_account(db: Session, account: AccountCreate):
         date_of_birth=account.date_of_birth,
         gender=account.gender,
         password=hashed_password,  # Lưu mật khẩu
-        role=False,  # Mặc định là User
+        role=account.role,  # Mặc định là User
     )
     db.add(new_account)
     db.commit()

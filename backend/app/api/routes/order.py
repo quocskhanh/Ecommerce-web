@@ -3,9 +3,9 @@ from sqlalchemy.orm import Session
 from typing import List
 from app.schemas.order import OrderCreate, OrderUpdate, OrderResponse
 from app.db.crud.order import (
-    create_order, get_order_by_id, update_order, delete_order, get_orders_by_account
+    create_order, get_order_by_id, update_order, delete_order, get_orders_by_account,get_orders
 )
-from app.api.authentication import get_current_user
+from app.api.authentication import get_current_user,get_current_admin_user
 from app.db.database import SessionLocal
 from app.models.account import Account
 from app.models.order import Order
@@ -17,6 +17,14 @@ def get_db():
         yield db
     finally:
         db.close()
+
+# API: Lấy danh sách tài khoản
+@router.get("/", response_model=list[OrderResponse])
+def list_all_orders(db: Session = Depends(get_db), current_user: dict = Depends(get_current_admin_user)):
+    """
+    Chỉ Admin mới có thể lấy danh sách tài khoản.
+    """
+    return get_orders(db)
 
 # Lấy danh sách đơn hàng của người dùng hiện tại
 @router.get("/me", response_model=List[OrderResponse])

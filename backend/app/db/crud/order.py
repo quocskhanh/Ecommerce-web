@@ -4,6 +4,8 @@ from app.schemas.order import OrderCreate, OrderUpdate
 from app.db.crud.cart import get_cart_by_account
 from app.models.cart_item import CartItem
 
+def get_orders(db: Session):
+    return db.query(Order).all()
 def create_order(db: Session, account_id: int):
     """
     Tạo đơn hàng mới cho tài khoản hiện tại.
