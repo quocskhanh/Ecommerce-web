@@ -1,6 +1,6 @@
 from pydantic import BaseModel, EmailStr
 from typing import Optional
-from datetime import date
+from datetime import date,datetime
 
 
 class AccountBase(BaseModel):
@@ -15,7 +15,7 @@ class AccountBase(BaseModel):
     date_of_birth: Optional[date] = None
     gender: Optional[str] = None
     password: Optional[str] = None  # Mật khẩu
-
+    role: Optional[bool] = False
 
 class AccountCreate(AccountBase):
     """
@@ -43,5 +43,6 @@ class AccountResponse(AccountBase):
     Schema được sử dụng để trả về thông tin tài khoản cho client.
     """
     id: int
+    created_at: datetime
     class Config:
         from_attributes = True  # Cho phép chuyển đổi từ SQLAlchemy model sang Pydantic schema

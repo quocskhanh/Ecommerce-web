@@ -1,5 +1,5 @@
-from sqlalchemy import Column, Integer, String, Date, Boolean
-from app.db.database import Base
+from sqlalchemy import Column, Integer, String, Date, Boolean,DateTime,func
+from app.models.base import Base
 from sqlalchemy.orm import relationship
 
 
@@ -16,6 +16,7 @@ class Account(Base):
     gender = Column(String(10), nullable=True)
     password = Column(String(255), nullable=False)  
     role = Column(Boolean, nullable=False, default=False)  #False = user
+    created_at = Column(DateTime, server_default=func.now(), nullable=False)
     
     cart = relationship("Cart", back_populates= "account")
     orders = relationship("Order", back_populates="account")

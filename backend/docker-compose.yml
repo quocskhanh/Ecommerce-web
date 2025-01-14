@@ -1,20 +1,18 @@
-version: "3.9"
-
 services:
   db:
-      image: postgres:17
-      container_name: ecommerce_postgres
-      restart: always
-      environment:
-        POSTGRES_USER: postgres
-        POSTGRES_PASSWORD: phamkien12345
-        POSTGRES_DB: ecommerce
-      ports:
-        - "5432:5432"
-      volumes:
-        - postgres_data:/var/lib/postgresql/data
-      networks:
-        - ecommerce-network
+    image: postgres:17  # Sử dụng phiên bản PostgreSQL ổn định
+    container_name: ecommerce_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: phamkien12345
+      POSTGRES_DB: ecommerce
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - ecommerce-network
   backend:
     build:
       context: .
@@ -23,12 +21,12 @@ services:
       - "8000:8000"
     environment:
       - DB_URL=postgresql://postgres:phamkien12345@db:5432/ecommerce
+      - SECRET_KEY=phamkien12345
+      - ALGORITHM=HS256
     depends_on:
       - db
     networks:
       - ecommerce-network
-
-  
 
 networks:
   ecommerce-network:
