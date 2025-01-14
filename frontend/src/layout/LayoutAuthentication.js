@@ -8,28 +8,24 @@ const LayoutAuthentication = (props) => {
     const { children, heading = "" } = props;
 
     return (
-        <div className="flex flex-col md:flex-row w-full min-h-screen">
+        <div className="flex flex-col md:flex-row w-full min-h-screen ">
             {/* Phần bên trái: Ảnh nền */}
             <div
-                className="flex-1 bg-cover bg-center min-h-[50vh] md:min-h-screen"
+                className="flex-1 bg-cover bg-center min-h-[40vh] md:min-h-screen"
                 style={{ backgroundImage: `url('/signin.png')` }}
             >
             </div>
 
             {/* Phần bên phải: Form Sign In */}
-            <div className="flex-1 flex items-center justify-center p-6 md:p-10 ">
-                <div className="w-full max-w-[556px] bg-white rounded-xl px-6 py-10 lg:px-16 lg:py-14 mx-auto dark:text-white">
+            <div className="flex-1 flex items-center justify-center p-6 md:p-10 overflow-y-hidden">
+                <div className="w-full max-w-[556px] bg-white rounded-xl px-6 py-8 lg:px-16 lg:py-14 mx-auto dark:text-white">
                     {/* Logo */}
                     <Link to="/admin" className="absolute top-5 left-5">
-                        <img
-                            className="w-auto h-12 object-contain"
-                            aria-label="Trang chủ"
-                            src={"https://upload.wikimedia.org/wikipedia/en/thumb/0/0c/Liverpool_FC.svg/800px-Liverpool_FC.svg.png"}
-                        />
+
                     </Link>
 
                     {/* Heading */}
-                    <h1 className="leading-[66.60px] text-[#484848] text-[36px] md:text-[66.60px] font-normal font-['Volkhov'] mb-5">
+                    <h1 className="leading-[66.60px] text-[#484848] text-[36px] md:text-[66.60px] text-center font-normal font-['Volkhov'] mb-5">
                         {heading}
                     </h1>
 

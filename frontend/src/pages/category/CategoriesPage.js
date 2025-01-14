@@ -20,7 +20,7 @@ const CategoriesPage = () => {
             axios.delete(`http://localhost:5000/categories/${id}`) // Cập nhật với URL API của bạn
                 .then(() => {
                     // Sau khi xóa thành công, loại bỏ danh mục khỏi state
-                    setCategories(categories.filter(category => category.id !== id));
+                    setCategories(categories.filter(category => category.id !== id)); // So sánh theo kiểu số
                     console.log(`Category with ID: ${id} deleted.`);
                 })
                 .catch(error => {
@@ -28,6 +28,7 @@ const CategoriesPage = () => {
                 });
         }
     };
+
 
     const handleEdit = (id) => {
         navigate(`/admin/categories/${id}`); // Navigate to the edit page

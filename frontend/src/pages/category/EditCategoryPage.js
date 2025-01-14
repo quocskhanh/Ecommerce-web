@@ -6,12 +6,13 @@ import AdminLayout from "../../layout/AdminLayout";
 const EditCategoryPage = () => {
     const { id } = useParams();  // Get category ID from the URL
     const navigate = useNavigate();
+    const [error, setError] = useState("");
+
     const [category, setCategory] = useState({
         name: '',
         items: 0,
         image: '',
     });
-    const [imageFile, setImageFile] = useState(null); // State for the selected image file
 
     useEffect(() => {
         // Fetch the category data by ID when the component is mounted
@@ -24,37 +25,31 @@ const EditCategoryPage = () => {
             });
     }, [id]);
 
-    const handleChange = (e) => {
+    const handleInputChange = (e) => {
         const { name, value } = e.target;
-        setCategory(prevState => ({
-            ...prevState,
-            [name]: value,
-        }));
-    };
-
-    const handleImageChange = (e) => {
-        const file = e.target.files[0];
-        setImageFile(file); // Store the selected file
+        setCategory({
+            ...category,
+            [name]: value
+        });
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        const formData = new FormData();
-        formData.append('name', category.name);
-        formData.append('image', imageFile); // Append the image file
-        formData.append('items', category.items);
+        // Prepare updated data
+        const updatedCategory = {
+            name: category.name,
+            items: Number(category.items), // Ensure items is a number
+            image: category.image,         // Use the image URL
+        };
 
         try {
-            await axios.put(`http://localhost:5000/categories/${id}`, formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data', // Specify that it's a file upload
-                },
-            });
+            await axios.put(`http://localhost:5000/categories/${id}`, updatedCategory);
             alert('Category updated successfully');
             navigate('/admin/categories');  // Navigate back to the categories list
         } catch (error) {
             console.error('Error updating category:', error);
+            setError('Cập nhật danh mục thất bại, vui lòng thử lại!');
         }
     };
 
@@ -88,23 +83,25 @@ const EditCategoryPage = () => {
                                 name="name"
                                 type="text"
                                 value={category.name}
-                                onChange={handleChange}
+                                onChange={handleInputChange}
                                 className="mt-2 p-3 w-full border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 placeholder="Nhập tên danh mục"
-                                required
                             />
                         </div>
 
-                        {/* Category Image File Upload */}
+
+
+                        {/* Category Image URL */}
                         <div className="mb-4">
-                            <label htmlFor="image" className="block text-lg font-medium text-gray-700">Chọn ảnh danh mục</label>
+                            <label htmlFor="image" className="block text-lg font-medium text-gray-700">URL ảnh danh mục</label>
                             <input
-                                type="file"
+                                type="text"
                                 id="image"
                                 name="image"
-                                onChange={handleImageChange}
+                                value={category.image}
+                                onChange={handleInputChange}
                                 className="mt-2 p-3 w-full border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                accept="image/*"  // Accept only image files
+                                placeholder="Nhập URL ảnh danh mục"
                             />
                         </div>
 
@@ -117,6 +114,7 @@ const EditCategoryPage = () => {
                                 Cập nhật danh mục
                             </button>
                         </div>
+                        {error && <p className="text-red-500 mt-4">{error}</p>}
                     </form>
                 </div>
             </div>

@@ -18,49 +18,64 @@ const ProductPage = () => {
     const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
     const startIndex = (currentPage - 1) * itemsPerPage;
     const currentProducts = filteredProducts.slice(startIndex, startIndex + itemsPerPage);
+    const [categories, setCategories] = useState([]);
 
     useEffect(() => {
-        const fetchProducts = async () => {
+        const fetchProductsAndCategories = async () => {
             try {
-                const response = await fetch("http://localhost:5000/products");
-                const data = await response.json();
-                setProducts(data);
-                setFilteredProducts(data);
+                // Fetch products
+                const productResponse = await fetch("http://localhost:5000/products");
+                const productsData = await productResponse.json();
+
+
+                // Fetch categories
+                const categoryResponse = await fetch("http://localhost:5000/categories");
+                const categoriesData = await categoryResponse.json();
+                setCategories(categoriesData);
+
+                // Enrich products with category data
+                const enrichedProducts = productsData.map(product => {
+                    const category = categoriesData.find(cat => cat.id === product.category_id);
+                    return {
+                        ...product,
+                        category_name: category ? category.name : "Uncategorized",
+                    };
+                });
+
+                setProducts(enrichedProducts);
+                setFilteredProducts(enrichedProducts);
             } catch (error) {
-                console.error("Error fetching products:", error);
+                console.error("Error fetching data:", error);
             }
         };
-        fetchProducts();
+
+        fetchProductsAndCategories();
     }, []);
 
     const handleFilterChange = (e) => {
-        const value = e.target.value;
-        setFilter(value);
+        const selectedCategory = e.target.value;
+        setFilter(selectedCategory);
+        const filtered = selectedCategory
+            ? products.filter(product => product.category_id === parseInt(selectedCategory))
+            : products;
+        setFilteredProducts(filtered);
     };
 
     useEffect(() => {
         let updatedProducts = [...products];
-        if (filter) {
-            updatedProducts = updatedProducts.filter((product) =>
-                product.category.toLowerCase().includes(filter.toLowerCase())
+
+        if (searchTerm) {
+            updatedProducts = updatedProducts.filter(product =>
+                product.name?.toLowerCase().includes(searchTerm.toLowerCase())
             );
         }
+
         setFilteredProducts(updatedProducts);
-    }, [filter, products]);
+    }, [searchTerm, products]);
 
     const handleSearch = (e) => {
-        const value = e.target.value.toLowerCase(); // Không sử dụng trim() để giữ lại khoảng trắng
-        setSearchTerm(value);
-
-        const searchedProducts = value
-            ? products.filter((product) =>
-                product.name?.toLowerCase().includes(value)
-            )
-            : products;
-
-        setFilteredProducts(searchedProducts);
+        setSearchTerm(e.target.value.toLowerCase());
     };
-
 
     const changePage = (page) => {
         if (page > 0 && page <= totalPages) {
@@ -78,7 +93,8 @@ const ProductPage = () => {
 
     const handleEditProduct = () => {
         if (selected.length === 1) {
-            const productToEdit = products.find(product => product.id === selected[0]);
+            const selectedId = Number(selected[0]); // Chuyển selected[0] thành số nguyên nếu cần
+            const productToEdit = products.find(product => product.id === selectedId);
             setEditingProduct(productToEdit);
             setShowEditModal(true);
         } else if (selected.length === 0) {
@@ -117,7 +133,6 @@ const ProductPage = () => {
             alert("Cập nhật sản phẩm thất bại, vui lòng thử lại.");
         }
     };
-
     const handleDeleteProducts = async () => {
         if (selected.length === 0) {
             alert("Vui lòng chọn ít nhất một sản phẩm để xóa.");
@@ -125,22 +140,47 @@ const ProductPage = () => {
         }
 
         try {
+            // Chuyển selected[0] thành kiểu số nguyên nếu cần
+            const selectedIds = selected.map(id => Number(id)); // Đảm bảo selected chứa các số nguyên
+
+            // Xóa các sản phẩm đã chọn từ cơ sở dữ liệu
             await Promise.all(
-                selected.map(id =>
+                selectedIds.map(id =>
                     fetch(`http://localhost:5000/products/${id}`, { method: 'DELETE' })
                 )
             );
 
-            const remainingProducts = products.filter(product => !selected.includes(product.id));
+            // Cập nhật lại danh sách sản phẩm sau khi xóa
+            const remainingProducts = products.filter(product => !selectedIds.includes(product.id));
+
+            // Cập nhật lại filteredProducts để không có sản phẩm bị xóa
             setProducts(remainingProducts);
-            setFilteredProducts(remainingProducts);
+
+            // Cập nhật filteredProducts với điều kiện tìm kiếm hoặc lọc hiện tại
+            let updatedFilteredProducts = remainingProducts;
+
+            if (filter) {
+                updatedFilteredProducts = updatedFilteredProducts.filter(product => product.category_name === filter);
+            }
+
+            if (searchTerm) {
+                updatedFilteredProducts = updatedFilteredProducts.filter(product =>
+                    product.name?.toLowerCase().includes(searchTerm.toLowerCase())
+                );
+            }
+
+            setFilteredProducts(updatedFilteredProducts);
+
+            // Reset các sản phẩm đã chọn
             setSelected([]);
+
+            // Đóng modal xóa sau khi thành công
             setShowDeleteModal(false);
 
-            // Hiển thị thông báo sau khi xóa thành công
+            // Hiển thị thông báo thành công sau khi xóa
             setShowSuccessModal(true);
 
-            // Tự động ẩn thông báo sau 3 giây
+            // Tự động ẩn thông báo thành công sau 3 giây
             setTimeout(() => {
                 setShowSuccessModal(false);
             }, 3000);
@@ -151,16 +191,15 @@ const ProductPage = () => {
     };
     const handleExport = () => {
         const csvContent = `data:text/csv;charset=utf-8,${[
-            ["ID", "Product", "Category", "Inventory", "Color", "Price", "Rating"],
+            ["ID", "Product Name", "Category", "Description", "Status", "Colors", "Sizes", "Price"],
             ...filteredProducts.map((product) => [
                 product.id,
                 product.name,
-                product.price,
                 product.description,
-                product.category,
                 product.status,
-                product.colors,
-                product.sizes,
+                product.colors.join(", "),
+                product.sizes.join(", "),
+                product.price,
             ]),
         ]
             .map((e) => e.join(","))
@@ -176,16 +215,16 @@ const ProductPage = () => {
 
     const handleSelectAll = (e) => {
         if (e.target.checked) {
-            // Nếu được check, chọn tất cả sản phẩm trong danh sách hiện tại
             setSelected(filteredProducts.map((item) => item.id));
         } else {
-            // Nếu bỏ check, bỏ chọn tất cả
             setSelected([]);
         }
     };
 
 
-    return (
+
+
+return (
         <AdminLayout>
             <div className="p-6 ">
                 <div className="flex justify-between items-center mb-6 flex-wrap">
@@ -208,18 +247,11 @@ const ProductPage = () => {
                                 value={filter}
                                 onChange={handleFilterChange}
                             >
-                                <option value="">Danh mục sản phẩm</option>
-                                <option value="Thời trang nam">Thời trang nam</option>
-                                <option value="Thời trang nữ">Thời trang nữ</option>
-                                <option value="Giày dép">Giày dép</option>
-                                <option value="Phụ kiện">Phụ kiện</option>
-                                <option value="Đồ công nghệ">Đồ công nghệ</option>
+                                <option value="">Tất cả danh mục</option>
+                                {categories.map(category => (
+                                    <option key={category.id} value={category.id}>{category.name}</option>
+                                ))}
                             </select>
-
-
-
-
-
                             <div className="relative">
                                 <input
                                     type="text"
@@ -245,7 +277,7 @@ const ProductPage = () => {
                         <div className="flex flex-col sm:flex-row gap-4 ml-auto">
                             <button
                                 className="px-5 py-3 bg-white-500 text-gray-600 rounded border border-blue-400 hover:bg-blue-500 cursor-pointer w-full sm:w-auto"
-                                onClick={() => handleEditProduct()}
+                                onClick={handleEditProduct}
                             >
                                 <span>
                                     <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill=""><path d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h357l-80 80H200v560h560v-278l80-80v358q0 33-23.5 56.5T760-120H200Zm280-360ZM360-360v-170l367-367q12-12 27-18t30-6q16 0 30.5 6t26.5 18l56 57q11 12 17 26.5t6 29.5q0 15-5.5 29.5T897-728L530-360H360Zm481-424-56-56 56 56ZM440-440h56l232-232-28-28-29-28-231 231v57Zm260-260-29-28 29 28 28 28-28-28Z"/></svg>
@@ -290,7 +322,6 @@ const ProductPage = () => {
                                 <th className="border border-gray-400 p-2">Tên sản phẩm</th>
                                 <th className="border border-gray-400 p-2">Giá</th>
                                 <th className="border border-gray-400 p-2">Mô tả</th>
-                                <th className="border border-gray-400 p-2">Danh mục</th>
                                 <th className="border border-gray-400 p-2">Trạng thái</th>
                                 <th className="border border-gray-400 p-2">Màu sắc</th>
                                 <th className="border border-gray-400 p-2">Kích cỡ</th>
@@ -316,9 +347,8 @@ const ProductPage = () => {
                                         <td className="p-4 border border-gray-300">{item.name}</td>
                                         <td className="p-4 border border-gray-300">{item.price}</td>
                                         <td className="p-4 border border-gray-300">{item.description}</td>
-                                        <td className="p-4 border border-gray-300">{item.category}</td>
                                         <td className="p-4 border border-gray-300">
-                                            {item.status === "available" ? "Còn hàng" : "Hết hàng"}
+                                            {item.status }
                                         </td>
                                         <td className="p-4">
                                             {item.colors && item.colors.length > 0
@@ -372,6 +402,8 @@ const ProductPage = () => {
                                         className="border rounded w-full p-2"
                                     />
                                 </div>
+
+
                                 <div className="mb-4">
                                     <label className="block mb-2">Mô tả</label>
                                     <input
@@ -383,17 +415,11 @@ const ProductPage = () => {
                                         className="border rounded w-full p-2"
                                     />
                                 </div>
-                                <div className="mb-4">
-                                    <label className="block mb-2">Danh mục</label>
-                                    <input
-                                        type="text"
-                                        value={editingProduct.category}
-                                        onChange={(e) =>
-                                            setEditingProduct({ ...editingProduct, description: e.target.value })
-                                        }
-                                        className="border rounded w-full p-2"
-                                    />
-                                </div>
+
+
+
+
+
                                 <div className="mb-4">
                                     <label className="block mb-2">Tồn kho</label>
                                     <input
@@ -405,6 +431,34 @@ const ProductPage = () => {
                                         className="border rounded w-full p-2"
                                     />
                                 </div>
+
+                                <div className="mb-4">
+                                    <label className="block mb-2">Màu sắc</label>
+                                    <input
+                                        type="text"
+                                        value={editingProduct.colors}
+                                        onChange={(e) =>
+                                            setEditingProduct({ ...editingProduct, colors: e.target.value })
+                                        }
+                                        className="border rounded w-full p-2"
+                                    />
+                                </div>
+
+
+                                <div className="mb-4">
+                                    <label className="block mb-2">Kích cỡ</label>
+                                    <input
+                                        type="text"
+                                        value={editingProduct.sizes}
+                                        onChange={(e) =>
+                                            setEditingProduct({ ...editingProduct, sizes: e.target.value })
+                                        }
+                                        className="border rounded w-full p-2"
+                                    />
+                                </div>
+
+
+
 
                                 <div className="flex justify-between gap-4 mt-6">
                                     <button

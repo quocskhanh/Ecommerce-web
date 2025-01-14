@@ -17,13 +17,12 @@ const AddCategoryPage = () => {
             ...categoryData,
             [name]: value
         });
-        setError(""); // Reset error when user starts typing
+        setError("");
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        // Kiểm tra dữ liệu đầu vào
         if (!categoryData.name || !categoryData.image) {
             setError("Vui lòng nhập đầy đủ thông tin!");
             return;
@@ -41,8 +40,8 @@ const AddCategoryPage = () => {
             if (response.ok) {
                 setSuccess("Danh mục đã được thêm thành công!");
                 setTimeout(() => {
-                    setSuccess(""); // Xóa thông báo thành công sau 3 giây
-                    navigate("/admin/categories"); // Điều hướng đến danh sách danh mục
+                    setSuccess("");
+                    navigate("/admin/categories");
                 }, 500);
             } else {
                 alert("Thêm danh mục thất bại!");
@@ -55,15 +54,15 @@ const AddCategoryPage = () => {
 
     return (
         <AdminLayout>
-            <div className="flex bg-gradient-to-r from-blue-200 via-blue-100 to-white min-h-screen">
-                <div className="w-full max-w-2xl mx-auto p-6">
+            <div className="flex bg-gradient-to-r min-h-screen overflow-hidden">
+                <div className="w-full max-w-2xl mx-4 p-6">
                     <div className="flex items-center mb-6">
                         <button
                             onClick={() => navigate("/admin/categories")}
                             className="flex items-center px-4 py-2 text-gray-600 bg-gray-200 rounded-lg hover:bg-gray-300 transition duration-300"
                         >
                             <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#5f6368" className="mr-2">
-                                <path d="M360-240 120-480l240-240 56 56-144 144h488v-160h80v240H272l144 144-56 56Z"/>
+                                <path d="M360-240 120-480l240-240 56 56-144 144h488v-160h80v240H272l144 144-56 56Z" />
                             </svg>
                             <span>Quay Lại</span>
                         </button>
@@ -73,14 +72,12 @@ const AddCategoryPage = () => {
                         <h1 className="text-3xl font-semibold text-gray-800">Thêm danh mục sản phẩm</h1>
                     </header>
 
-                    {/* Hiển thị thông báo thành công */}
                     {success && (
                         <div className="mb-4 p-4 bg-green-100 text-green-800 border border-green-300 rounded-lg">
                             {success}
                         </div>
                     )}
 
-                    {/* Hiển thị cảnh báo khi chưa nhập thông tin */}
                     {error && (
                         <div className="mb-4 p-4 bg-red-100 text-red-800 border border-red-300 rounded-lg">
                             {error}
@@ -94,6 +91,7 @@ const AddCategoryPage = () => {
                                 type="text"
                                 id="name"
                                 name="name"
+                                placeholder="Nhập tên danh mục"
                                 value={categoryData.name}
                                 onChange={handleInputChange}
                                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm"
@@ -106,6 +104,7 @@ const AddCategoryPage = () => {
                                 type="url"
                                 id="image"
                                 name="image"
+                                placeholder="Nhập link ảnh"
                                 value={categoryData.image}
                                 onChange={handleInputChange}
                                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm"

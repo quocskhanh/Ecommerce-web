@@ -8,16 +8,16 @@ const OrderPage = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const [selectedOrders, setSelectedOrders] = useState([]);
     const [filterStatus, setFilterStatus] = useState("");
+    const [statuses, setStatuses] = useState([]); // Store unique statuses
     const itemsPerPage = 5;
     const [editingOrder, setEditingOrder] = useState(null);
     const [showSuccessModal, setShowSuccessModal] = useState(false); // Track success modal visibility
-
+    const [filtereOrders, setFilteredOrders] = useState([]); // Dữ liệu đã lọc
     const [editedCustomerData, setEditedCustomerData] = useState({
         account_id: '',
         cart_id: '',
         total_price: '',
-        status:''
-
+        status: ''
     });
     const [showDeleteModal, setShowDeleteModal] = useState(null); // Track the order being deleted
     const [showEditModal, setShowEditModal] = useState(false); // Track edit modal visibility
@@ -31,6 +31,12 @@ const OrderPage = () => {
                 const response = await fetch("http://localhost:5000/orders");
                 const data = await response.json();
                 setOrders(data);
+
+                // Extract unique statuses
+                const uniqueStatuses = [
+                    ...new Set(data.map((order) => order.status))
+                ];
+                setStatuses(uniqueStatuses);
             } catch (error) {
                 console.error("Error fetching orders:", error);
             }
@@ -38,6 +44,14 @@ const OrderPage = () => {
 
         fetchOrders();
     }, []);
+
+    useEffect(() => {
+        if (filterStatus === "") {
+            setFilteredOrders(orders); // Hiển thị tất cả nếu không có lọc
+        } else {
+            setFilteredOrders(orders.filter((order) => order.status === filterStatus));
+        }
+    }, [filterStatus, orders]);
 
     // Handle delete
 
@@ -283,8 +297,10 @@ const OrderPage = () => {
                             onChange={(e) => setFilterStatus(e.target.value)}
                         >
                             <option value="">Tất cả</option>
-                            <option value="Đang giao hàng">Đang giao hàng</option>
-                            <option value="Đã giao hàng">Đã giao hàng</option>
+                            {statuses.map((status) => (
+                                <option key={status} value={status}>
+                                    {status}
+                                </option>))}
                         </select>
 
                         <div className="relative ml-4 mb-4 sm:mb-0">
@@ -353,21 +369,21 @@ const OrderPage = () => {
                             </thead>
                             <tbody>
                             { currentOrders.length > 0 ? (currentOrders.map((order) => (
-                                <tr key={order.id} className="border-b hover:bg-gray-100 border border-gray-300">
-                                    <td className="p-4">
-                                        <input
-                                            type="checkbox"
-                                            checked={selectedOrders.includes(order.id)}
-                                            onChange={() => toggleSelectOrder(order.id)}
-                                        />
-                                    </td>
-                                    <td className="p-4 border border-gray-300">{order.id}</td>
-                                    <td className="p-4 border border-gray-300">{order.account_id}</td>
-                                    <td className="p-4 border border-gray-300">{order.status}</td>
-                                    <td className="p-4 border border-gray-300">{order.cart_id}</td>
-                                    <td className="p-4 border border-gray-300">{order.total_price}</td>
-                                </tr>
-                            ))
+                                    <tr key={order.id} className="border-b hover:bg-gray-100 border border-gray-300">
+                                        <td className="p-4">
+                                            <input
+                                                type="checkbox"
+                                                checked={selectedOrders.includes(order.id)}
+                                                onChange={() => toggleSelectOrder(order.id)}
+                                            />
+                                        </td>
+                                        <td className="p-4 border border-gray-300">{order.id}</td>
+                                        <td className="p-4 border border-gray-300">{order.account_id}</td>
+                                        <td className="p-4 border border-gray-300">{order.status}</td>
+                                        <td className="p-4 border border-gray-300">{order.cart_id}</td>
+                                        <td className="p-4 border border-gray-300">{order.total_price}</td>
+                                    </tr>
+                                ))
                             ):(
                                 <tr>
                                     <td colSpan="7" className="p-4 text-center">
