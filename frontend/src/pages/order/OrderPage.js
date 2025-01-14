@@ -276,7 +276,7 @@ const OrderPage = () => {
                     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
                         <div className="bg-white p-8 rounded-lg max-w-md sm:max-w-xs modal-enter-active">
                             <h3 className="text-xl font-semibold mb-4">Thông báo</h3>
-                            <p>Khách hàng đã được xóa thành công!</p>
+                            <p>Đơn hàng đã được xóa thành công!</p>
                             <div className="flex justify-end gap-4 mt-4">
                                 <button
                                     onClick={() => setShowSuccessModal(false)}

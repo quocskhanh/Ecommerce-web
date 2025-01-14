@@ -24,7 +24,10 @@ const AddOrderPage = () => {
     useEffect(() => {
         const fetchStatuses = async () => {
             try {
-                const response = await fetch('http://localhost:5000/orders'); // Update with the correct endpoint for fetching orders
+                const response = await fetch('http://localhost:5000/orders'); //
+
+
+                // Update with the correct endpoint for fetching orders
                 if (!response.ok) {
                     throw new Error('Failed to fetch orders');
                 }

@@ -20,35 +20,105 @@ const ProductPage = () => {
     const currentProducts = filteredProducts.slice(startIndex, startIndex + itemsPerPage);
     const [categories, setCategories] = useState([]);
 
-    useEffect(() => {
-        const fetchProductsAndCategories = async () => {
-            try {
-                // Fetch products
-                const productResponse = await fetch("http://localhost:5000/products");
-                const productsData = await productResponse.json();
+    const [productName, setProductName] = useState("");
+    const [productDescription, setProductDescription] = useState("");
+    const [productPrice, setProductPrice] = useState("");
+    const [productID, setProductID] = useState("");
+    const [status, setStatus] = useState([]);
+    const [sizes, setSizes] = useState([]); // Updated sizes state name
+    const [colorsList, setColors] = useState([]); // Updated color state name
 
 
-                // Fetch categories
-                const categoryResponse = await fetch("http://localhost:5000/categories");
-                const categoriesData = await categoryResponse.json();
-                setCategories(categoriesData);
+    const handleSave = async () => {
+        // Kiểm tra các trường đầu vào
 
-                // Enrich products with category data
-                const enrichedProducts = productsData.map(product => {
-                    const category = categoriesData.find(cat => cat.id === product.category_id);
-                    return {
-                        ...product,
-                        category_name: category ? category.name : "Uncategorized",
-                    };
-                });
-
-                setProducts(enrichedProducts);
-                setFilteredProducts(enrichedProducts);
-            } catch (error) {
-                console.error("Error fetching data:", error);
-            }
+        // Chuyển đổi giá trị trước khi gửi
+        const productData = {
+            name: productName,
+            id: parseInt(productID),
+            description: productDescription,
+            price: parseFloat(productPrice), // Chuyển price thành số thực
+            category_id: parseInt(categories), // Chuyển category_id thành số nguyên
+            status: status, // Trạng thái vẫn là chuỗi
+            colors: colorsList, // Danh sách màu sắc vẫn là chuỗi
+            sizes: sizes, // Danh sách kích cỡ vẫn là chuỗi
         };
 
+        try {
+            const response = await fetch("http://localhost:5000/products", {
+                method: "POST",
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(productData),
+            });
+
+            if (response.ok) {
+                alert("Thanh cong")
+            } else {
+                console.error("Failed to add product");
+            }
+        } catch (error) {
+            console.error("Error:", error);
+        }
+    };
+
+    const fetchProductsAndCategories = async () => {
+        try {
+            // Fetch products with Authorization header
+            const productResponse = await fetch("http://localhost:5000/products", {
+                method: "GET",
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+                    "Content-Type": "application/json",
+                },
+            });
+
+            if (!productResponse.ok) {
+                throw new Error(`Failed to fetch products: ${productResponse.statusText}`);
+            }
+
+            const productsData = await productResponse.json();
+
+            // Fetch categories with Authorization header
+            const categoryResponse = await fetch("http://localhost:5000/categories", {
+                method: "GET",
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+                    "Content-Type": "application/json",
+                },
+            });
+
+            if (!categoryResponse.ok) {
+                throw new Error(`Failed to fetch categories: ${categoryResponse.statusText}`);
+            }
+
+            const categoriesData = await categoryResponse.json();
+
+            // Enrich products with category data
+            const enrichedProducts = productsData.map((product) => {
+                const category = categoriesData.find((cat) => cat.id === product.category_id);
+                return {
+                    ...product,
+                    category_name: category ? category.name : "Uncategorized",
+                };
+            });
+
+            // Lưu dữ liệu vào state và localStorage
+            setProducts(enrichedProducts);
+            setFilteredProducts(enrichedProducts);
+            setCategories(categoriesData);
+
+            // Lưu dữ liệu vào localStorage
+            localStorage.setItem("products", JSON.stringify(enrichedProducts));
+            localStorage.setItem("categories", JSON.stringify(categoriesData));
+        } catch (error) {
+            console.error("Error fetching data:", error);
+        }
+    };
+
+    useEffect(() => {
         fetchProductsAndCategories();
     }, []);
 
@@ -110,7 +180,9 @@ const ProductPage = () => {
         try {
             const response = await fetch(`http://localhost:5000/products/${editingProduct.id}`, {
                 method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+                    'Content-Type': 'application/json' },
                 body: JSON.stringify(editingProduct),
             });
 
@@ -133,75 +205,19 @@ const ProductPage = () => {
             alert("Cập nhật sản phẩm thất bại, vui lòng thử lại.");
         }
     };
-    const handleDeleteProducts = async () => {
-        if (selected.length === 0) {
-            alert("Vui lòng chọn ít nhất một sản phẩm để xóa.");
-            return;
-        }
 
-        try {
-            // Chuyển selected[0] thành kiểu số nguyên nếu cần
-            const selectedIds = selected.map(id => Number(id)); // Đảm bảo selected chứa các số nguyên
-
-            // Xóa các sản phẩm đã chọn từ cơ sở dữ liệu
-            await Promise.all(
-                selectedIds.map(id =>
-                    fetch(`http://localhost:5000/products/${id}`, { method: 'DELETE' })
-                )
-            );
-
-            // Cập nhật lại danh sách sản phẩm sau khi xóa
-            const remainingProducts = products.filter(product => !selectedIds.includes(product.id));
-
-            // Cập nhật lại filteredProducts để không có sản phẩm bị xóa
-            setProducts(remainingProducts);
-
-            // Cập nhật filteredProducts với điều kiện tìm kiếm hoặc lọc hiện tại
-            let updatedFilteredProducts = remainingProducts;
-
-            if (filter) {
-                updatedFilteredProducts = updatedFilteredProducts.filter(product => product.category_name === filter);
-            }
-
-            if (searchTerm) {
-                updatedFilteredProducts = updatedFilteredProducts.filter(product =>
-                    product.name?.toLowerCase().includes(searchTerm.toLowerCase())
-                );
-            }
-
-            setFilteredProducts(updatedFilteredProducts);
-
-            // Reset các sản phẩm đã chọn
-            setSelected([]);
-
-            // Đóng modal xóa sau khi thành công
-            setShowDeleteModal(false);
-
-            // Hiển thị thông báo thành công sau khi xóa
-            setShowSuccessModal(true);
-
-            // Tự động ẩn thông báo thành công sau 3 giây
-            setTimeout(() => {
-                setShowSuccessModal(false);
-            }, 3000);
-        } catch (error) {
-            console.error("Lỗi khi xóa sản phẩm:", error);
-            alert("Xóa sản phẩm thất bại, vui lòng thử lại.");
-        }
-    };
     const handleExport = () => {
-        const csvContent = `data:text/csv;charset=utf-8,${[
-            ["ID", "Product Name", "Category", "Description", "Status", "Colors", "Sizes", "Price"],
+        const csvContent = `data:text/csv;charset=utf-8,${[["ID", "Product Name", "Category", "Description", "Status", "Colors", "Sizes", "Price"],
             ...filteredProducts.map((product) => [
                 product.id,
                 product.name,
+                product.category_name,  // Cập nhật lại trường category_name
                 product.description,
                 product.status,
                 product.colors.join(", "),
                 product.sizes.join(", "),
                 product.price,
-            ]),
-        ]
+            ])]
             .map((e) => e.join(","))
             .join("\n")}`;
 
@@ -221,10 +237,45 @@ const ProductPage = () => {
         }
     };
 
+    const handleDeleteProducts = async () => {
+        if (selected.length === 0) {
+            alert("Vui lòng chọn ít nhất một sản phẩm để xóa.");
+            return;
+        }
+
+        // Chuyển selected[0] thành kiểu số nguyên nếu cần
+        const selectedIds = selected.map(id => Number(id)); // Đảm bảo selected chứa các số nguyên hợp lệ
+
+        // Kiểm tra nếu tất cả selectedIds là số nguyên hợp lệ
+        if (selectedIds.some(id => isNaN(id))) {
+            alert("Có lỗi xảy ra với ID sản phẩm, vui lòng thử lại.");
+            return;
+        }
+
+        try {
+            // Xóa các sản phẩm đã chọn từ cơ sở dữ liệu
+            await Promise.all(
+                selectedIds.map(id =>
+                    fetch(`http://localhost:5000/products/${id}`, { method: 'DELETE' })
+                )
+            );
+
+            // Cập nhật lại danh sách sản phẩm sau khi xóa
+            const remainingProducts = products.filter(product => !selectedIds.includes(product.id));
+            setProducts(remainingProducts);
+            setFilteredProducts(remainingProducts);
+            setSelected([]); // Xóa danh sách sản phẩm đã chọn
+            setShowDeleteModal(false); // Đóng modal xóa
+        } catch (error) {
+            console.error("Lỗi khi xóa sản phẩm:", error);
+            alert("Xóa sản phẩm thất bại, vui lòng thử lại.");
+        }
+    };
 
 
 
-return (
+
+    return (
         <AdminLayout>
             <div className="p-6 ">
                 <div className="flex justify-between items-center mb-6 flex-wrap">
@@ -523,7 +574,7 @@ return (
                         <div className="bg-white rounded-lg p-6 w-full max-w-md shadow-lg">
                             <h2 className="text-xl font-semibold mb-4">Xác nhận xóa</h2>
                             <p className="mb-4">
-                                Bạn có chắc chắn muốn xóa khách hàng đã chọn không?
+                                Bạn có chắc chắn muốn xóa sản phẩm đã chọn không?
                             </p>
                             <div className="flex justify-between gap-2 mt-6">
                                 <button
@@ -550,7 +601,7 @@ return (
                     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
                         <div className="bg-white p-6 rounded-lg w-full max-w-md shadow-lg">
                             <h3 className="text-xl font-semibold mb-4">Thông báo</h3>
-                            <p>Khách hàng đã được xóa thành công!</p>
+                            <p>Sản phẩm đã được xóa thành công!</p>
                             <div className="flex justify-end gap-4 mt-4">
                                 <button
                                     onClick={() => setShowSuccessModal(false)}

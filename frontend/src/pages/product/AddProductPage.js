@@ -23,30 +23,29 @@ const AddProductPage = () => {
             return;
         }
 
+        // Chuyển đổi giá trị trước khi gửi
         const productData = {
             name: productName,
             description: productDescription,
-            price: productPrice,
-            image: images, // Updated field name for discount
-            status: status, // Updated field name for discount
-            category_id: categories, // Join categories into a string for simplicity
-            colors: colorsList, // Use colorsList for color data
-            sizes: sizes, // Use sizes for size data
+            price: parseFloat(productPrice), // Chuyển price thành số thực
+            category_id: parseInt(categories), // Chuyển category_id thành số nguyên
+            status: status, // Trạng thái vẫn là chuỗi
+            colors: colorsList, // Danh sách màu sắc vẫn là chuỗi
+            sizes: sizes, // Danh sách kích cỡ vẫn là chuỗi
         };
-
-
 
         try {
             const response = await fetch("http://localhost:5000/products", {
                 method: "POST",
                 headers: {
+                    Authorization: `Bearer ${localStorage.getItem("access_token")}`,
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify(productData),
             });
 
             if (response.ok) {
-                setShowModal(true); // Show success modal
+                setShowModal(true); // Hiển thị modal thành công
             } else {
                 console.error("Failed to add product");
             }
@@ -62,19 +61,54 @@ const AddProductPage = () => {
     useEffect(() => {
         const fetchCategories = async () => {
             try {
-                const response = await fetch("http://localhost:5000/categories"); // URL API của danh mục
+                const response = await fetch("http://localhost:5000/categories", {
+                    method: "GET",
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem("access_token")}`, // Sử dụng token
+                        "Content-Type": "application/json",
+                    },
+                });
+
                 if (response.ok) {
                     const data = await response.json();
-                    setAvailableCategories(data); // Dữ liệu cần chứa { id, name }
+                    setAvailableCategories(data); // Dữ liệu phải chứa { id, name }
                 } else {
-                    console.error("Failed to fetch categories");
+                    console.error(`Failed to fetch categories: ${response.statusText}`);
                 }
             } catch (error) {
-                console.error("Error:", error);
+                console.error("Error fetching categories:", error);
             }
         };
 
         fetchCategories();
+    }, []);
+
+
+    const [availableStatuses, setAvailableStatuses] = useState([]);
+
+    useEffect(() => {
+        const fetchStatuses = async () => {
+            try {
+                const response = await fetch("http://localhost:5000/products", {
+                    method: "GET",
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem("access_token")}`, // Sử dụng token
+                        "Content-Type": "application/json",
+                    },
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    setAvailableStatuses(data); // Giả sử dữ liệu là một mảng chứa các đối tượng trạng thái
+                } else {
+                    console.error(`Failed to fetch statuses: ${response.statusText}`);
+                }
+            } catch (error) {
+                console.error("Error fetching statuses:", error);
+            }
+        };
+
+        fetchStatuses();
     }, []);
 
     const handleImageURLInput = (e) => {
@@ -160,7 +194,7 @@ const AddProductPage = () => {
                                 <div className="flex-1">
                                     <label className="block font-semibold mb-2">Giá sản phẩm</label>
                                     <input
-                                        type="text"
+                                        type="number"
                                         value={productPrice}
                                         onChange={(e) => setProductPrice(e.target.value)}
                                         className="border px-4 py-2 w-full rounded"
@@ -168,13 +202,18 @@ const AddProductPage = () => {
                                 </div>
                                 <div className="flex-1">
                                     <label className="block font-semibold mb-2">Tồn kho</label>
-                                    <input
-                                        type="text"
+                                    <select
                                         value={status}
                                         onChange={(e) => setStatus(e.target.value)}
                                         className="border px-4 py-2 w-full rounded"
-                                    />
+                                    >
+                                        <option value="">Chọn trạng thái</option> {/* Default option */}
+                                        <option value="Chưa thanh toán">Chưa thanh toán</option>
+                                        <option value="Đã thanh toán">Đã thanh toán</option>
+                                        <option value="Đã hủy">Đã hủy</option>
+                                    </select>
                                 </div>
+
                             </div>
 
                             {/* Size and Color */}
