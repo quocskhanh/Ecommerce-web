@@ -1,24 +1,21 @@
 import React, { useEffect, useState, useContext } from "react";
 import "./DetailProduct.css";
 import { CartContext } from "./CartContext";
+import axios from "axios";
 
 const ProductDetail = ({ productId }) => {
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
-  const [error, setError] = useState(null); // Thêm state để quản lý lỗi
+  const [error, setError] = useState(null);
   const { addToCart } = useContext(CartContext);
 
   useEffect(() => {
     const fetchProduct = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`http://localhost:8000/products/${productId}`);
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const data = await response.json();
-        setProduct(data);
+        const response = await axios.get(`http://localhost:8000/products/${productId}`);
+        setProduct(response.data);
       } catch (err) {
         setError("Không thể tải thông tin sản phẩm. Vui lòng thử lại sau.");
         console.error("Error fetching product:", err);
