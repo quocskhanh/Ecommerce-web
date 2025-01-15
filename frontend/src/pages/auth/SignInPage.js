@@ -153,7 +153,7 @@ const SignInPage = () => {
                     {loading ? (
                         <div className="flex items-center gap-2">
                             <div className="spinner-border animate-spin inline-block w-4 h-4 border-2 rounded-full text-white"></div>
-                            <span>Signing In...</span>
+                            <span>Đang đăng nhập...</span>
                         </div>
                     ) : (
                         "Đăng nhập"
