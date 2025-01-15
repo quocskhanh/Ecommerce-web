@@ -13,15 +13,10 @@ const AccountsPage = () => {
 
     // Fetch tài khoản từ API
     useEffect(() => {
-        axios
-            .get("http://localhost:5000/accounts")
-            .then((response) => {
-                setAccounts(response.data); // Cập nhật danh sách tài khoản
-                setTotalPages(Math.ceil(response.data.length / itemsPerPage)); // Tính tổng số trang
-            })
-            .catch((error) => {
-                console.error("Lỗi khi lấy dữ liệu tài khoản:", error);
-            });
+        // Lấy danh sách các danh mục từ API khi component được render lần đầu
+        axios.get('https://testbe-1.onrender.com/categories') // Cập nhật với URL API của bạn
+            .then(response => setAccounts(response.data))
+            .catch(error => console.error("Error fetching categories:", error));
     }, []);
 
     const [searchTerm, setSearchTerm] = useState("");
@@ -67,7 +62,7 @@ const AccountsPage = () => {
     const handleConfirmDelete = async () => {
         try {
             for (const id of selectedAccounts) {
-                await fetch(`http://localhost:5000/accounts/${id}`, {
+                await fetch(`https://testbe-1.onrender.com/accounts/${id}`, {
                     method: "DELETE",
                 });
             }
@@ -102,7 +97,7 @@ const AccountsPage = () => {
     const handleSaveAccount = async () => {
         try {
             // Update order data in the backend
-            await fetch(`http://localhost:5000/orders/${editingAccount}`, {
+            await fetch(`https://testbe-1.onrender.com/accounts/${editingAccount}`, {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
@@ -290,6 +285,7 @@ const AccountsPage = () => {
                                 <th className="border border-gray-400 p-2">Ngày sinh</th>
                                 <th className="border border-gray-400 p-2">Giới tính</th>
                                 <th className="border border-gray-400 p-2">Mật khẩu</th>
+                                <th className="border border-gray-400 p-2">Quyền</th>
                             </tr>
                             </thead>
                             <tbody>
@@ -315,6 +311,7 @@ const AccountsPage = () => {
                                         <td className="py-3 border border-gray-400 text-black">{account.date_of_birth || "N/A"}</td>
                                         <td className="py-3 border border-gray-400 text-black">{account.gender || "N/A"}</td>
                                         <td className="py-3 px-4 border border-gray-400 text-black truncate">{account.password}</td>
+                                        <td className="py-3 px-4 border border-gray-400 text-black truncate">{account.role}</td>
                                     </tr>
                                 ))
                             ) : (
@@ -412,6 +409,16 @@ const AccountsPage = () => {
                                         type="text"
                                         value={editedCustomerData.password || ''}
                                         name="password"
+                                        onChange={handleInputChange}
+                                        className="border rounded w-full p-2"
+                                    />
+                                </div>
+                                <div className="mb-4">
+                                    <label className="block mb-1">Quyền</label>
+                                    <input
+                                        type="text"
+                                        value={editedCustomerData.role|| ''}
+                                        name="role"
                                         onChange={handleInputChange}
                                         className="border rounded w-full p-2"
                                     />

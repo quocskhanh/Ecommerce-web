@@ -67,7 +67,7 @@ const ProductPage = () => {
     const fetchProductsAndCategories = async () => {
         try {
             // Fetch products with Authorization header
-            const productResponse = await fetch("http://localhost:5000/products", {
+            const productResponse = await fetch("https://testbe-1.onrender.com/products", {
                 method: "GET",
                 headers: {
                     Authorization: `Bearer ${localStorage.getItem("access_token")}`,
@@ -82,7 +82,7 @@ const ProductPage = () => {
             const productsData = await productResponse.json();
 
             // Fetch categories with Authorization header
-            const categoryResponse = await fetch("http://localhost:5000/categories", {
+            const categoryResponse = await fetch("https://testbe-1.onrender.com/categories", {
                 method: "GET",
                 headers: {
                     Authorization: `Bearer ${localStorage.getItem("access_token")}`,
@@ -178,7 +178,7 @@ const ProductPage = () => {
         if (!editingProduct) return;
 
         try {
-            const response = await fetch(`http://localhost:5000/products/${editingProduct.id}`, {
+            const response = await fetch(`https://testbe-1.onrender.com/${editingProduct.id}`, {
                 method: 'PUT',
                 headers: {
                     Authorization: `Bearer ${localStorage.getItem("access_token")}`,
@@ -256,7 +256,7 @@ const ProductPage = () => {
             // Xóa các sản phẩm đã chọn từ cơ sở dữ liệu
             await Promise.all(
                 selectedIds.map(id =>
-                    fetch(`http://localhost:5000/products/${id}`, { method: 'DELETE' })
+                    fetch(`https://testbe-1.onrender.com/products/${id}`, { method: 'DELETE' })
                 )
             );
 

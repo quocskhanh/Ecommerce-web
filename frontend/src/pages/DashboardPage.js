@@ -18,9 +18,15 @@ const DashboardPage = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const ordersResponse = await axios.get("http://localhost:5000/orders");
-                const productsResponse = await axios.get("http://localhost:5000/products");
-                const accountsResponse = await axios.get("http://localhost:5000/accounts");
+                const headers = {
+                    Authorization: `Bearer ${localStorage.getItem("access_token")}`, // Sử dụng token
+                    "Content-Type": "application/json",
+                };
+
+                const ordersResponse = await axios.get("https://testbe-1.onrender.com/orders", { headers });
+                const productsResponse = await axios.get("https://testbe-1.onrender.com/products", { headers });
+                const accountsResponse = await axios.get("https://testbe-1.onrender.com/accounts", { headers });
+
 
                 const orders = ordersResponse.data;
                 const accounts = accountsResponse.data;
@@ -43,9 +49,9 @@ const DashboardPage = () => {
 
                 // Tính doanh thu trong 7 ngày
                 const completedOrdersLast7Days = orders.filter((order) => {
-                    const completionDate = new Date(order.createdDate);
+                    const completionDate = new Date(order.created_at);
                     return (
-                        order.status === "Đã hoàn thành" &&
+                        order.status === "Đã thanh toán" &&
                         completionDate >= sevenDaysAgo &&
                         completionDate <= currentDate
                     );
@@ -66,8 +72,8 @@ const DashboardPage = () => {
                 const dailyRevenue = dates.map((date) => {
                     const dailyOrders = orders.filter(
                         (order) =>
-                            order.status === "Đã hoàn thành" &&
-                            new Date(order.createdDate).toISOString().split("T")[0] === date
+                            order.status === "Đã thanh toán" &&
+                            new Date(order.created_at).toISOString().split("T")[0] === date
                     );
                     return dailyOrders.reduce((sum, order) => sum + order.total_price, 0);
                 });
@@ -76,12 +82,12 @@ const DashboardPage = () => {
 
                 // Tính tổng doanh thu
                 const totalRevenue = orders
-                    .filter((order) => order.status === "Đã hoàn thành")
+                    .filter((order) => order.status === "Đã thanh toán")
                     .reduce((sum, order) => sum + order.total_price, 0);
                 setTotalRevenue(totalRevenue); // Thêm state mới
 
                 // Lấy 7 đơn hàng gần đây
-                const sortedOrders = [...orders].sort((a, b) => new Date(b.createdDate) - new Date(a.createdDate));
+                const sortedOrders = [...orders].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
                 setRecentOrders(sortedOrders.slice(0, 7));
 
 
@@ -98,7 +104,7 @@ const DashboardPage = () => {
     const ordersPerDay = revenuePerDay.dates.map((date) => {
         return orders.filter(
             (order) =>
-                new Date(order.createdDate).toISOString().split("T")[0] === date
+                new Date(order.created_at).toISOString().split("T")[0] === date
         ).length; // Đếm tổng số lượng đơn hàng theo ngày
     });
 
@@ -244,7 +250,7 @@ const DashboardPage = () => {
                                         <td className="px-4 py-2">
                                 <span
                                     className={`px-2 py-1 text-xs rounded ${
-                                        order.status === "Đã hoàn thành"
+                                        order.status === "Đã thanh toán"
                                             ? "bg-green-100 text-green-500"
                                             : "bg-yellow-100 text-yellow-500"
                                     }`}
@@ -253,7 +259,7 @@ const DashboardPage = () => {
                                 </span>
                                         </td>
                                         <td className="px-4 py-2">{order.total_price} đ</td>
-                                        <td className="px-4 py-2">{order.createdDate}</td>
+                                        <td className="px-4 py-2">{order.created_at}</td>
                                     </tr>
                                 ))}
                                 </tbody>

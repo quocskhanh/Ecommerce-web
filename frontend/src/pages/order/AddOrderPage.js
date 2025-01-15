@@ -24,27 +24,44 @@ const AddOrderPage = () => {
     useEffect(() => {
         const fetchStatuses = async () => {
             try {
-                const response = await fetch('http://localhost:5000/orders'); //
-
-
-                // Update with the correct endpoint for fetching orders
-                if (!response.ok) {
-                    throw new Error('Failed to fetch orders');
+                const token = localStorage.getItem("access_token");
+                console.log('Token:', token);
+                if (!token) {
+                    alert('Token không tồn tại. Vui lòng đăng nhập lại.');
+                    navigate('/login'); // Điều hướng đến trang đăng nhập
+                    return;
                 }
+
+                const response = await fetch('https://testbe-1.onrender.com/orders', {
+                    method: 'GET',
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                    },
+                });
+
+                if (!response.ok) {
+                    if (response.status === 401) {
+                        alert('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
+                        navigate('/login'); // Điều hướng đến trang đăng nhập
+                    }
+                    throw new Error(`Lỗi ${response.status}: Không thể lấy trạng thái đơn hàng`);
+                }
+
                 const data = await response.json();
 
                 // Extract unique statuses from the orders
                 const uniqueStatuses = [...new Set(data.orders.map(order => order.status))];
-
                 setStatuses(uniqueStatuses);
             } catch (err) {
-                console.error(err);
-                setError('Không thể tải trạng thái đơn hàng');
+                console.error('Error fetching statuses:', err.message);
+                setError(err.message || 'Unable to fetch statuses');
             }
         };
 
         fetchStatuses();
     }, []);
+
 
     // Handle input change
     const handleChange = (e) => {
@@ -66,23 +83,34 @@ const AddOrderPage = () => {
         setError(null);
 
         try {
-            const response = await fetch('http://localhost:5000/orders', {
+            const token = localStorage.getItem("access_token");
+            if (!token) {
+                alert('Token không tồn tại. Vui lòng đăng nhập lại.');
+                navigate('/login'); // Điều hướng đến trang đăng nhập
+                return;
+            }
+
+            const response = await fetch('https://testbe-1.onrender.com/orders', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`, // Thêm token xác thực
                 },
                 body: JSON.stringify({
-                    ...order, // Spread the order object to send all fields
-                    createdDate: new Date().toISOString(), // Adding the createdDate field
+                    ...order,
+                    createdDate: new Date().toISOString(),
                 }),
             });
 
             if (!response.ok) {
+                if (response.status === 401) {
+                    alert('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
+                    navigate('/login'); // Điều hướng đến trang đăng nhập
+                }
                 throw new Error(`Lỗi ${response.status}: Không thể thêm đơn hàng`);
             }
 
-            // Show success modal
-            setShowModal(true);
+            setShowModal(true); // Show success modal
         } catch (err) {
             console.error(err);
             setError(err.message || 'Đã xảy ra lỗi khi thêm đơn hàng');
@@ -170,15 +198,10 @@ const AddOrderPage = () => {
                                 disabled={loading} // Disable dropdown while loading
                             >
                                 <option value="">Chọn trạng thái</option>
-                                {statuses.length > 0 ? (
-                                    statuses.map((status) => (
-                                        <option key={status} value={status}>
-                                            {status}
-                                        </option>
-                                    ))
-                                ) : (
-                                    <option disabled>Không có trạng thái</option>
-                                )}
+                                <option value="Đã thanh toán">Đã thanh toán</option>
+                                <option value="Chưa thanh toán">Chưa thanh toán</option>
+                                <option value="Đã hủy">Đã hủy</option>
+
                             </select>
                         </div>
 

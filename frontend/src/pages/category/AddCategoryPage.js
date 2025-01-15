@@ -29,7 +29,7 @@ const AddCategoryPage = () => {
         }
 
         try {
-            const response = await fetch("http://localhost:5000/categories", {
+            const response = await fetch("https://testbe-1.onrender.com/categories", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

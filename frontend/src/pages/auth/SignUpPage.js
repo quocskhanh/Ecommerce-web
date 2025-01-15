@@ -62,7 +62,7 @@ const SignUpPage = () => {
 
     const handleSignUp = async (values) => {
         try {
-            const response = await axios.post("http://localhost:5000/signup", values);
+            const response = await axios.post("https://testbe-1.onrender.com/signup", values);
             console.log("Response:", response.data);
             navigate("/auth/sign-in", { state: { message: "Đăng ký thành công!" } });
             alert("Đăng ký thành công! Vui lòng đăng nhập.");

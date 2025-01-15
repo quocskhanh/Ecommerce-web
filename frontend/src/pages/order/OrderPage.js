@@ -28,7 +28,13 @@ const OrderPage = () => {
     useEffect(() => {
         const fetchOrders = async () => {
             try {
-                const response = await fetch("http://localhost:5000/orders");
+                const response = await fetch("https://testbe-1.onrender.com/orders", {
+                    method: "GET",
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+                        "Content-Type": "application/json",
+                    },
+                });
                 const data = await response.json();
                 setOrders(data);
 
@@ -68,8 +74,12 @@ const OrderPage = () => {
     const handleConfirmDelete = async () => {
         try {
             for (const id of selectedOrders) {
-                await fetch(`http://localhost:5000/orders/${id}`, {
+                await fetch(`https://testbe-1.onrender.com/orders/${id}`, {
                     method: "DELETE",
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+                        "Content-Type": "application/json",
+                    },
                 });
             }
             setOrders(orders.filter((order) => !selectedOrders.includes(order.id)));
@@ -110,7 +120,7 @@ const OrderPage = () => {
     const handleSaveOrder = async () => {
         try {
             // Update order data in the backend
-            await fetch(`http://localhost:5000/orders/${editingOrder}`, {
+            await fetch(`https://testbe-1.onrender.com/orders/${editingOrder}`, {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",

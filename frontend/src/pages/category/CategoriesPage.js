@@ -9,7 +9,7 @@ const CategoriesPage = () => {
 
     useEffect(() => {
         // Lấy danh sách các danh mục từ API khi component được render lần đầu
-        axios.get('http://localhost:5000/categories') // Cập nhật với URL API của bạn
+        axios.get('https://testbe-1.onrender.com/categories') // Cập nhật với URL API của bạn
             .then(response => setCategories(response.data))
             .catch(error => console.error("Error fetching categories:", error));
     }, []);
@@ -17,7 +17,7 @@ const CategoriesPage = () => {
     const handleDelete = (id) => {
         if (window.confirm("Bạn chắc chắn muốn xóa danh mục này?")) {
             // Gọi API để xóa danh mục
-            axios.delete(`http://localhost:5000/categories/${id}`) // Cập nhật với URL API của bạn
+            axios.delete(`https://testbe-1.onrender.com/categories/${id}`) // Cập nhật với URL API của bạn
                 .then(() => {
                     // Sau khi xóa thành công, loại bỏ danh mục khỏi state
                     setCategories(categories.filter(category => category.id !== id)); // So sánh theo kiểu số

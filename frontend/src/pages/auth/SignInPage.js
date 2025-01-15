@@ -11,12 +11,13 @@ import useToggleValue from "../../components/hooks/useToogleValue";
 import { Button } from "../../components/button";
 import IconEyeToggle from "../../components/icons/IconEyeToggle";
 import axios from "axios";
-import GoogleLogin from "react-google-login";
+// import GoogleLogin from "react-google-login";
 
 const schema = yup.object({
-    email: yup.string().email("Invalid email address").required("This field is required"),
-    password: yup.string().required("This field is required"),
+    username: yup.string().required("Username is required"),
+    password: yup.string().required("Password is required"),
 });
+
 
 const SignInPage = () => {
     const [loading, setLoading] = useState(false);
@@ -33,26 +34,51 @@ const SignInPage = () => {
     const handleSignIn = async (values) => {
         setLoading(true);
         setErrorMessage(""); // Reset lỗi trước khi gửi yêu cầu mới
+
         try {
-            const response = await axios.post("http://localhost:5000/login", values);
-            console.log(response.data);
-            navigate("/admin");
+            // Chuyển payload sang định dạng application/x-www-form-urlencoded
+            const payload = new URLSearchParams();
+            payload.append("username", values.username);
+            payload.append("password", values.password);
+
+            const response = await axios.post("https://testbe-1.onrender.com/login", payload, {
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded",
+                },
+            });
+
             if (response.status === 200) {
                 const userData = response.data;
+
+                // Kiểm tra access_token
+                if (!userData.access_token) {
+                    throw new Error("Access token không tồn tại trong phản hồi từ server.");
+                }
+                console.log(response)
+                // Lưu token vào localStorage
+                localStorage.setItem("access_token", userData.access_token);
                 localStorage.setItem("user", JSON.stringify(userData));
+
+                // Chuyển hướng đến trang admin
+                navigate("/admin");
             } else {
-                setErrorMessage("Thông tin đăng nhập không chính xác."); // Cập nhật lỗi
+                setErrorMessage("Thông tin đăng nhập không chính xác.");
             }
         } catch (error) {
             console.error("Error:", error);
             if (error.response) {
-                setErrorMessage(`Lỗi: ${error.response.data.message || "Đăng nhập thất bại"}`);
+                // Log chi tiết lỗi từ server
+                console.error("Chi tiết lỗi từ server:", error.response.data);
+                const serverError = error.response.data.detail || error.response.data.message;
             } else {
                 setErrorMessage("Không thể kết nối tới server. Vui lòng thử lại.");
             }
+        } finally {
+            setLoading(false);
         }
-        setLoading(false);
     };
+
+
 
 
 
@@ -87,7 +113,7 @@ const SignInPage = () => {
                     </Label>
                     <Input
                         control={control}
-                        name="email"
+                        name="username"
                         type="email"
                         className="text-base font-normal font-['Poppins'] leading-10 tracking-wider w-full border-b border-gray-400 focus:border-[#9d9d9d] focus:outline-none"
                         placeholder="Email"
