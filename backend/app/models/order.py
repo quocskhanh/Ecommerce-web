@@ -10,7 +10,7 @@ class Order(Base):
     account_id = Column(Integer, ForeignKey("account.id"), nullable=False)  # Liên kết với Account
     cart_id = Column(Integer, ForeignKey("cart.id"), nullable=False)  # Liên kết với Cart
     total_price = Column(Integer, nullable=False)  # Tổng giá trị đơn hàng
-    status = Column(String, nullable=False, default="Chưa thanh toán")  # Trạng thái đơn hàng (Pending, Paid, Shipped, Delivered, etc.)
+    status = Column(String, nullable=False, default="Chờ giao hàng")  # Trạng thái đơn hàng (Pending, Paid, Shipped, Delivered, etc.)
     created_at = Column(DateTime, server_default=func.now(), nullable=False)
 
     # Relationships

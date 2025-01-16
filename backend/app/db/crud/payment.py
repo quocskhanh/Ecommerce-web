@@ -3,6 +3,7 @@ from app.models.payment import Payment
 from app.schemas.payment import PaymentCreate, PaymentUpdate
 from datetime import datetime   
 from app.models.order import Order
+from app.models.account import Account
 from app.db.crud.order import get_order_by_id
 def create_payment(db: Session, payment_data: PaymentCreate):
     """
@@ -15,7 +16,7 @@ def create_payment(db: Session, payment_data: PaymentCreate):
     # Kiểm tra xem đã có thanh toán nào cho đơn hàng này chưa
     existing_payment = db.query(Payment).filter(Payment.order_id == payment_data.order_id).first()
     if existing_payment:
-        return existing_payment
+        raise ValueError("Đơn hàng đã có thanh toán.")
     new_payment = Payment(
         order_id=payment_data.order_id,
         method=payment_data.method,
@@ -24,7 +25,7 @@ def create_payment(db: Session, payment_data: PaymentCreate):
     )
     if payment_data.status == "Đã thanh toán":
         new_payment.paid_at = datetime.utcnow()
-        order.status = "Đã thanh toán"
+        order.account.total_spent += order.total_price
     db.add(new_payment)
     db.commit()
     db.refresh(new_payment)
@@ -60,8 +61,7 @@ def update_payment(db: Session, payment_id: int, payment_update: PaymentUpdate):
     if payment_update.status == "Đã thanh toán" and not payment.paid_at:
         payment.paid_at = datetime.utcnow()
         order = payment.order
-        order.status = "Đã thanh toán"
-   
+        order.account.total_spent += order.total_price
 
     db.commit()
     db.refresh(payment)

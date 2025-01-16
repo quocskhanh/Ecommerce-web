@@ -12,10 +12,11 @@ const Header = () => {
                     </div>
                     <div className="inner-list">
                         <ul>
-                            <li><Link to="/">Home</Link></li>
+                            {/* <li>Home</li> */}
+                            {/* <li><Link to="/">Home</Link></li> */}
                             <li><Link to="/Shop">Shop</Link></li>
                             <li><Link to="/Product/0">Product</Link></li>
-                            <li><a href="#">Page</a></li>
+                            
                         </ul>
                     </div>
                     <div className="inner-logo">

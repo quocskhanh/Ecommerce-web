@@ -9,7 +9,7 @@ import { useParams } from 'react-router-dom';
 import { CartProvider } from "./../components/ShopPage/ListProducts/CartContext";
 import FloatingCart from "../components/ProductPage/FloatingCart"
 
-function ProductPage() {
+function ProductPageUser() {
 
     const { id: productId } = useParams(); 
 
@@ -32,6 +32,6 @@ function ProductPage() {
     )
 }
 
-export default ProductPage
+export default ProductPageUser
 
 
