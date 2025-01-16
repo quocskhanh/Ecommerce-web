@@ -16,6 +16,7 @@ class AccountBase(BaseModel):
     gender: Optional[str] = None
     password: Optional[str] = None  # Mật khẩu
     role: Optional[bool] = False
+    total_spent: Optional[int] = 0
 
 class AccountCreate(AccountBase):
     """
