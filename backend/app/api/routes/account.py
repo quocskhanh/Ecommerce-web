@@ -10,11 +10,10 @@ from app.db.crud.account import (
     change_account_role,
 )
 from app.models.account import Account
-
+from app.db.blacklist import blacklist_tokens
 from app.db.database import SessionLocal
-from app.api.authentication import get_current_user, get_current_admin_user
-
-
+from app.api.authentication import get_current_user, get_current_admin_user,hash_password
+from app. core.security import create_reset_token, decode_reset_token
 router = APIRouter(prefix="/accounts", tags=["accounts"])  # Đặt tags nhất quán (chữ cái đầu viết hoa)
 
 # Dependency để lấy session
@@ -138,3 +137,25 @@ def change_user_role(account_id: int, new_role: bool, db: Session = Depends(get_
         return {"message": f"User role updated to {'Admin' if new_role else 'User'}"}
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+    
+@router.post("/password-reset-request")
+def request_password_reset(email: str, db: Session = Depends(get_db)):
+    user = db.query(Account).filter(Account.email == email).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="Email không tồn tại.")
+
+    reset_token = create_reset_token(user.id)
+
+    # Gửi email (giả lập)
+    
+    
+    return {"reset_token": reset_token}
+
+@router.post("/reset-password")
+def reset_password(token: str, new_password: str, db: Session = Depends(get_db)):
+    user_id = decode_reset_token(token)
+    user = db.query(Account).get(user_id)
+    user.password = hash_password(new_password)
+    db.commit()
+    
+    return {"message": "Mật khẩu đã được đặt lại thành công."}

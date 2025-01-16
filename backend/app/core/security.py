@@ -51,3 +51,21 @@ def decode_access_token(token: str) -> dict:
         return payload
     except jwt.JWTError as e:
         raise ValueError(f"Token không hợp lệ: {e}")
+   
+
+def create_reset_token(user_id: int):
+    payload = {
+        "user_id": user_id,
+        "exp": datetime.utcnow() + timedelta(hours=1),
+    }
+    return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
+
+    
+def decode_reset_token(token: str):
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=ALGORITHM)
+        return payload["user_id"]
+    except jwt.ExpiredSignatureError:
+        raise ValueError(status_code=400, detail="Token đã hết hạn.")
+    except jwt.InvalidTokenError:
+        raise ValueError(status_code=400, detail="Token không hợp lệ.")

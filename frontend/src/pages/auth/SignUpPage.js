@@ -69,7 +69,7 @@ const SignUpPage = () => {
                 
                 
                 alert(serverMessage);
-                navigate("/auth/sign-in", { state: { message: serverMessage } });
+                navigate("/login", { state: { message: serverMessage } });
             } else {
                 alert("Không thể đăng ký. Vui lòng thử lại.");
             }

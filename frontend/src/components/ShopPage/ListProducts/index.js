@@ -82,7 +82,6 @@ const ListProduct = () => {
     <div className="list_product_container">
       {/* Phần bộ lọc */}
       <div className="list_product_left_content">
-        <h2>Filter</h2>
         <FilterByCategory
           categories={categories} 
           selectedCategoryId={selectedCategoryId}

@@ -4,9 +4,9 @@ services:
     container_name: ecommerce_postgres
     restart: always
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: phamkien12345
-      POSTGRES_DB: ecommerce
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     ports:
       - "5432:5432"
     volumes:
@@ -20,9 +20,10 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - DB_URL=postgresql://postgres:phamkien12345@db:5432/ecommerce
-      - SECRET_KEY=phamkien12345
-      - ALGORITHM=HS256
+      DB_URL: ${DB_URL}
+      SECRET_KEY: ${SECRET_KEY}
+      DEBUG: ${DEBUG}
+      ALGORITHM: ${ALGORITHM}
     depends_on:
       - db
     networks:
