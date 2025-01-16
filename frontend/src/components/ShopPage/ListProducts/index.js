@@ -15,7 +15,11 @@ const ListProduct = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await axios.get("http://localhost:8000/products");
+        const response = await axios.get("https://testbe-1.onrender.com/products");
+
+
+
+
         setProducts(response.data); // Lưu toàn bộ sản phẩm
         setFilteredProducts(response.data); // Lưu sản phẩm đã lọc
       } catch (error) {
@@ -68,8 +72,8 @@ const ListProduct = () => {
   };
 
   const categories = [
-    { id: 1, name: 'Thời trang nữ' },
-    { id: 2, name: 'Thời trang nam' },
+    { id: 1, name: 'Áo' },
+    { id: 2, name: 'Quần' },
     { id: 3, name: 'Giày dép' },
     { id: 4, name: 'Phụ kiện' }
   ];

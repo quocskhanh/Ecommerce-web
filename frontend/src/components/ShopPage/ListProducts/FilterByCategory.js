@@ -8,8 +8,8 @@ const FilterByCategory = ({
   onPriceRangeChange
 }) => {
   const categories = [
-    { id: 1, name: 'Thời trang nữ' },
-    { id: 2, name: 'Thời trang nam' },
+    { id: 1, name: 'Áo' },
+    { id: 2, name: 'Quần' },
     { id: 3, name: 'Giày dép' },
     { id: 4, name: 'Phụ kiện' }
   ];

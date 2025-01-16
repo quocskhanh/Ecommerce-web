@@ -27,8 +27,8 @@ function ProductList({ products, sortOrder, onSortChange, selectedCategoryId, se
         priceRange && priceRange.min !== undefined && priceRange.max !== undefined
           ? product.price >= priceRange.min && product.price <= priceRange.max
           : true;
-
-      return matchesCategory && matchesPrice;
+          const isInStock = product.status === "Còn hàng";
+      return matchesCategory && matchesPrice && isInStock;
     });
   };
 

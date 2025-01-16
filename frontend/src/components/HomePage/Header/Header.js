@@ -16,11 +16,10 @@ const Header = () => {
                         <ul>
                             <li><a href="#">Home</a></li>
                             <li><a href="#"><Link to="/shop">Shop</Link></a></li>
-                            <li><a href="#">New Arrivals</a></li>
-                            <li><a href="#">Packages</a></li>
+                            
                             <li><Link to="/login">Sign In</Link></li>
                             {/* Link to signup page */}
-                            <li><Link to="/signup"><button className="home-signup-button">Sign Up</button></Link></li>
+                            <li><Link to="/auth/sign-up"><button className="home-signup-button">Sign Up</button></Link></li>
                         </ul>
                     </div>
                 </div>
