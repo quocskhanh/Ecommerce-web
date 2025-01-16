@@ -20,9 +20,6 @@ const LayoutAuthentication = (props) => {
             <div className="flex-1 flex items-center justify-center p-6 md:p-10 overflow-y-hidden">
                 <div className="w-full max-w-[556px] bg-white rounded-xl px-6 py-8 lg:px-16 lg:py-14 mx-auto dark:text-white">
                     {/* Logo */}
-                    <Link to="/admin" className="absolute top-5 left-5">
-
-                    </Link>
 
                     {/* Heading */}
                     <h1 className="leading-[66.60px] text-[#484848] text-[36px] md:text-[66.60px] text-center font-normal font-['Volkhov'] mb-5">

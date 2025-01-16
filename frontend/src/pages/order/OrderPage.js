@@ -24,40 +24,38 @@ const OrderPage = () => {
 
     const navigate = useNavigate();
 
+
     // Fetch orders from db.json
+    const fetchOrders = async () => {
+        try {
+            const response = await fetch("https://testbe-1.onrender.com/orders", {
+                method: "GET",
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+                    "Content-Type": "application/json",
+                },
+            });
+            const data = await response.json();
+            console.log("Orders fetched from API:", data); // Log dữ liệu orders
+            setOrders(data);
+
+            // Extract unique statuses
+            const uniqueStatuses = [...new Set(data.map((order) => order.status))];
+            setStatuses(uniqueStatuses);
+        } catch (error) {
+            console.error("Error fetching orders:", error);
+        }
+    };
+
     useEffect(() => {
-        const fetchOrders = async () => {
-            try {
-                const response = await fetch("https://testbe-1.onrender.com/orders", {
-                    method: "GET",
-                    headers: {
-                        Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-                        "Content-Type": "application/json",
-                    },
-                });
-                const data = await response.json();
-                setOrders(data);
-
-                // Extract unique statuses
-                const uniqueStatuses = [
-                    ...new Set(data.map((order) => order.status))
-                ];
-                setStatuses(uniqueStatuses);
-            } catch (error) {
-                console.error("Error fetching orders:", error);
-            }
+        const fetchData = async () => {
+            await fetchOrders(); // Lấy danh sách đơn hàng
         };
+        fetchData();
 
-        fetchOrders();
+
     }, []);
 
-    useEffect(() => {
-        if (filterStatus === "") {
-            setFilteredOrders(orders); // Hiển thị tất cả nếu không có lọc
-        } else {
-            setFilteredOrders(orders.filter((order) => order.status === filterStatus));
-        }
-    }, [filterStatus, orders]);
 
     // Handle delete
 
@@ -91,6 +89,75 @@ const OrderPage = () => {
             console.error("Error deleting orders:", error);
         }
     };
+
+
+    const fetchShippingStatus = async () => {
+        try {
+            // Đồng bộ trạng thái đơn hàng với trạng thái vận chuyển
+            const updatedOrders = await Promise.all(
+                orders.map(async (order) => {
+                    const response = await fetch(`https://testbe-1.onrender.com/shippings/${order.id}`, {
+                        method: "GET",
+                        headers: {
+                            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+                            "Content-Type": "application/json",
+                        },
+                    });
+
+                    if (response.ok) {
+                        const shipping = await response.json();
+                        let updatedStatus = order.status;
+
+                        // Đồng bộ trạng thái vận chuyển -> trạng thái đơn hàng
+                        if (shipping.status === "Chờ lấy hàng") {
+                            updatedStatus = "Chờ giao hàng";
+                        } else if (shipping.status === "Đang giao hàng") {
+                            updatedStatus = "Đang giao hàng";
+                        } else if (shipping.status === "Đã giao hàng") {
+                            updatedStatus = "Đã giao hàng";
+                        }
+
+                        // Cập nhật lại trạng thái đơn hàng trong bảng orders
+                        if (updatedStatus !== order.status) {
+                            await fetch(`https://testbe-1.onrender.com/orders/${order.id}`, {
+                                method: "PUT",
+                                headers: {
+                                    "Content-Type": "application/json",
+                                },
+                                body: JSON.stringify({ status: updatedStatus }),
+                            });
+                        }
+
+                        // Trả về đơn hàng đã được cập nhật
+                        return { ...order, status: updatedStatus };
+                    }
+
+                    // Trường hợp không có thông tin vận chuyển
+                    return { ...order, status: order.status || "Chưa cập nhật" };
+                })
+            );
+
+            setOrders(updatedOrders);
+        } catch (error) {
+            console.error("Error fetching shipping data:", error);
+        }
+    };
+
+    useEffect(() => {
+        const fetchData = async () => {
+            await fetchOrders(); // Lấy danh sách đơn hàng
+            await fetchShippingStatus(); // Đồng bộ trạng thái vận chuyển
+        };
+        fetchData();
+    }, []);
+
+
+    useEffect(() => {
+        const fetchData = async () => {
+            await fetchOrders(); // Lấy danh sách đơn hàng
+        };
+        fetchData();
+    }, []);
 
 
     // Handle edit (populate editedCustomerData with the selected order data)
@@ -189,48 +256,53 @@ const OrderPage = () => {
         return Array.from({ length: end - start + 1 }, (_, i) => start + i);
     };
 
+
     return (
         <AdminLayout>
-            <div className="p-6">
-                <div className="flex justify-between items-center mb-6 flex-wrap">
-                    <h1 className="text-2xl font-bold text-gray-800 w-full sm:w-auto">Đơn hàng</h1>
+            <div className="p-4 max-w-screen-xl mx-auto">
+                <div className="flex flex-wrap justify-between items-center mb-6">
+                    <h1 className="text-2xl font-bold text-gray-800 w-full sm:w-auto mb-8 mt-6">Đơn hàng</h1>
                     <div className="flex gap-4 w-full sm:w-auto justify-between sm:justify-end">
+
                         <button
-                            className="px-4 py-2 bg-white rounded border border-[#d6daec] hover:bg-gray-200"
+                            className="px-4 py-2 bg-whiterounded border border-[#d6daec] hover:bg-gray-200"
                         >
                             Xuất
                         </button>
-                        <button
-                            className="px-4 py-2 bg-[#1e5eff] rounded text-white hover:bg-blue-400"
-                            onClick={() => navigate("/admin/order/add-order")}
-                        >
-                            + Thêm đơn hàng
-                        </button>
+
                     </div>
                 </div>
 
-                {/* Edit Modal */}
-                {/* Edit Modal */}
                 {showEditModal && (
                     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
                         <div className="bg-white rounded-lg p-6 w-96 sm:w-full sm:max-w-xs shadow-lg">
                             <h2 className="text-xl font-semibold mb-4">Chỉnh sửa đơn hàng</h2>
+
+                            {/* Dropdown trạng thái */}
                             <div className="mb-4">
                                 <label className="block mb-2">Trạng thái đơn hàng</label>
-                                <input
-                                    type="text"
-                                    value={editedCustomerData.status || ''}
-                                    name="status" // Ensure this name matches the data structure
+                                <select
+                                    name="status"
+                                    value={editedCustomerData.status}
                                     onChange={handleInputChange}
                                     className="border rounded w-full p-2"
-                                />
+                                >
+                                    <option value="">Chọn trạng thái</option>
+                                    {statuses.map((status) => (
+                                        <option key={status} value={status}>
+                                            {status}
+                                        </option>
+                                    ))}
+                                </select>
                             </div>
+
+                            {/* Tổng tiền */}
                             <div className="mb-4">
-                                <label className="block mb-2">Số tiền</label>
+                                <label className="block mb-2">Tổng tiền</label>
                                 <input
                                     type="text"
+                                    name="total_price"
                                     value={editedCustomerData.total_price || ''}
-                                    name="total_price" // Ensure this name matches the data structure
                                     onChange={handleInputChange}
                                     className="border rounded w-full p-2"
                                 />
@@ -239,7 +311,7 @@ const OrderPage = () => {
                             <div className="flex justify-end gap-4">
                                 <button
                                     className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
-                                    onClick={() => setShowEditModal(false)} // Close modal without saving
+                                    onClick={() => setShowEditModal(false)}
                                 >
                                     Hủy
                                 </button>
@@ -313,6 +385,7 @@ const OrderPage = () => {
                                 </option>))}
                         </select>
 
+
                         <div className="relative ml-4 mb-4 sm:mb-0">
                             <input
                                 type="text"
@@ -335,7 +408,7 @@ const OrderPage = () => {
 
                         <div className="flex gap-4 ml-auto w-full sm:w-auto justify-between sm:justify-end">
                             <button
-                                className="px-5 py-3 bg-white-500 text-gray-600 rounded border border-blue-400 hover:bg-blue-500 cursor-pointer"
+                                className="px-4 py-2 bg-white-500 text-gray-600 rounded border border-blue-400 hover:bg-blue-500 cursor-pointer"
                                 onClick={handleEditOrder}
                             >
                                 <span>
@@ -344,7 +417,7 @@ const OrderPage = () => {
                             </button>
 
                             <button
-                                className="px-5 py-3 bg-white-500 text-blue-400 border border-blue-400 rounded hover:bg-red-500 cursor-pointer"
+                                className="px-4 py-2 bg-white-500 text-blue-400 border border-blue-400 rounded hover:bg-red-500 cursor-pointer"
                                 onClick={handleDeleteTrigger}
                             >
                                 <span>

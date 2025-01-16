@@ -45,7 +45,7 @@ const ProductPage = () => {
         };
 
         try {
-            const response = await fetch("http://localhost:5000/products", {
+            const response = await fetch("https://testbe-1.onrender.com/products", {
                 method: "POST",
                 headers: {
                     Authorization: `Bearer ${localStorage.getItem("access_token")}`,
@@ -175,59 +175,48 @@ const ProductPage = () => {
     };
 
     const handleSaveEdit = async () => {
-        if (!editingProduct) return;
+        if (!editingProduct) {
+            alert("Không có sản phẩm nào đang được chỉnh sửa.");
+            return;
+        }
 
         try {
-            const response = await fetch(`https://testbe-1.onrender.com/${editingProduct.id}`, {
-                method: 'PUT',
+            const response = await fetch(`https://testbe-1.onrender.com/products/${editingProduct.id}`, {
+                method: "PUT",
                 headers: {
                     Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-                    'Content-Type': 'application/json' },
+                    "Content-Type": "application/json",
+                },
                 body: JSON.stringify(editingProduct),
             });
 
-            if (!response.ok) throw new Error('Failed to update product');
+            if (response.ok) {
+                const updatedProduct = await response.json();
 
-            const updatedProduct = await response.json();
+                // Cập nhật danh sách sản phẩm sau khi chỉnh sửa
+                const updatedProducts = products.map((product) =>
+                    product.id === updatedProduct.id ? updatedProduct : product
+                );
+                setProducts(updatedProducts);
+                setFilteredProducts(updatedProducts);
 
-            // Cập nhật danh sách sản phẩm sau khi chỉnh sửa
-            const updatedProducts = products.map(product =>
-                product.id === updatedProduct.id ? updatedProduct : product
-            );
-            setProducts(updatedProducts);
-            setFilteredProducts(updatedProducts);
+                // Đóng modal chỉnh sửa và reset trạng thái
+                setShowEditModal(false);
+                setEditingProduct(null);
 
-            // Đóng modal và reset trạng thái
-            setShowEditModal(false);
-            setEditingProduct(null);
+                // Hiển thị thông báo thành công
+                alert("Sản phẩm đã được chỉnh sửa thành công.");
+            } else {
+                const errorData = await response.json();
+                console.error("Lỗi từ API:", errorData);
+                alert(`Cập nhật sản phẩm thất bại: ${errorData.message || response.statusText}`);
+            }
         } catch (error) {
-            console.error("Error updating product:", error);
-            alert("Cập nhật sản phẩm thất bại, vui lòng thử lại.");
+            console.error("Lỗi khi cập nhật sản phẩm:", error);
+            alert("Đã xảy ra lỗi, vui lòng thử lại.");
         }
     };
 
-    const handleExport = () => {
-        const csvContent = `data:text/csv;charset=utf-8,${[["ID", "Product Name", "Category", "Description", "Status", "Colors", "Sizes", "Price"],
-            ...filteredProducts.map((product) => [
-                product.id,
-                product.name,
-                product.category_name,  // Cập nhật lại trường category_name
-                product.description,
-                product.status,
-                product.colors.join(", "),
-                product.sizes.join(", "),
-                product.price,
-            ])]
-            .map((e) => e.join(","))
-            .join("\n")}`;
-
-        const link = document.createElement("a");
-        link.setAttribute("href", encodeURI(csvContent));
-        link.setAttribute("download", "products.csv");
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-    };
 
     const handleSelectAll = (e) => {
         if (e.target.checked) {
@@ -243,32 +232,57 @@ const ProductPage = () => {
             return;
         }
 
-        // Chuyển selected[0] thành kiểu số nguyên nếu cần
-        const selectedIds = selected.map(id => Number(id)); // Đảm bảo selected chứa các số nguyên hợp lệ
-
-        // Kiểm tra nếu tất cả selectedIds là số nguyên hợp lệ
-        if (selectedIds.some(id => isNaN(id))) {
-            alert("Có lỗi xảy ra với ID sản phẩm, vui lòng thử lại.");
+        const selectedIds = selected.map((id) => Number(id));
+        if (selectedIds.some((id) => isNaN(id))) {
+            alert("Có lỗi xảy ra với ID sản phẩm. Vui lòng thử lại.");
             return;
         }
 
         try {
-            // Xóa các sản phẩm đã chọn từ cơ sở dữ liệu
-            await Promise.all(
-                selectedIds.map(id =>
-                    fetch(`https://testbe-1.onrender.com/products/${id}`, { method: 'DELETE' })
-                )
+            // Sử dụng Promise.allSettled để xử lý từng yêu cầu riêng lẻ
+            const results = await Promise.allSettled(
+                selectedIds.map(async (id) => {
+                    const response = await fetch(`https://testbe-1.onrender.com/products/${id}`, {
+                        method: "DELETE",
+                        headers: {
+                            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+                            "Content-Type": "application/json",
+                        },
+                    });
+                    if (!response.ok) {
+                        throw new Error(`Không thể xóa sản phẩm với ID: ${id}`);
+                    }
+                    return id; // Trả về ID sản phẩm đã xóa thành công
+                })
             );
 
-            // Cập nhật lại danh sách sản phẩm sau khi xóa
-            const remainingProducts = products.filter(product => !selectedIds.includes(product.id));
+            // Phân tích kết quả
+            const deletedIds = results
+                .filter((result) => result.status === "fulfilled")
+                .map((result) => result.value);
+            const failedIds = results
+                .filter((result) => result.status === "rejected")
+                .map((result) => result.reason.message);
+
+            // Cập nhật danh sách sản phẩm sau khi xóa thành công
+            const remainingProducts = products.filter(
+                (product) => !deletedIds.includes(product.id)
+            );
             setProducts(remainingProducts);
             setFilteredProducts(remainingProducts);
-            setSelected([]); // Xóa danh sách sản phẩm đã chọn
-            setShowDeleteModal(false); // Đóng modal xóa
+            setSelected([]);
+
+            // Hiển thị thông báo
+            if (failedIds.length > 0) {
+                alert(`Một số sản phẩm không thể xóa:\n${failedIds.join("\n")}`);
+            } else {
+                alert("Tất cả sản phẩm đã được xóa thành công.");
+            }
+
+            setShowDeleteModal(false);
         } catch (error) {
             console.error("Lỗi khi xóa sản phẩm:", error);
-            alert("Xóa sản phẩm thất bại, vui lòng thử lại.");
+            alert(`Đã xảy ra lỗi khi xóa sản phẩm: ${error.message}`);
         }
     };
 
@@ -279,9 +293,9 @@ const ProductPage = () => {
         <AdminLayout>
             <div className="p-6 ">
                 <div className="flex justify-between items-center mb-6 flex-wrap">
-                    <h1 className="text-2xl font-bold text-gray-800 w-full sm:w-auto">Sản phẩm</h1>
+                    <h1 className="text-2xl font-bold text-gray-800 w-full sm:w-auto mb-8 mt-6">Quản lý sản phẩm</h1>
                     <div className="flex gap-4 w-full sm:w-auto justify-between sm:justify-end mt-4 sm:mt-0">
-                        <button onClick={handleExport} className="px-4 py-2 bg-white rounded border border-[#d6daec] hover:bg-gray-200">
+                        <button className="px-4 py-2 bg-white rounded border border-[#d6daec] hover:bg-gray-200">
                             Xuất
                         </button>
                         <button className="px-4 py-2 bg-[#1e5eff] rounded text-white hover:bg-blue-400" onClick={() => navigate("/admin/product/add-product")}>
@@ -327,7 +341,7 @@ const ProductPage = () => {
 
                         <div className="flex flex-col sm:flex-row gap-4 ml-auto">
                             <button
-                                className="px-5 py-3 bg-white-500 text-gray-600 rounded border border-blue-400 hover:bg-blue-500 cursor-pointer w-full sm:w-auto"
+                                className="px-4 py-2 bg-white-500 text-gray-600 rounded border border-blue-400 hover:bg-blue-500 cursor-pointer w-full sm:w-auto"
                                 onClick={handleEditProduct}
                             >
                                 <span>
@@ -336,7 +350,7 @@ const ProductPage = () => {
                             </button>
 
                             <button
-                                className="px-5 py-3 bg-white-500 text-blue-400 border border-blue-400 rounded hover:bg-red-500 cursor-pointer w-full sm:w-auto"
+                                className="px-4 py-2 bg-white-500 text-blue-400 border border-blue-400 rounded hover:bg-red-500 cursor-pointer w-full sm:w-auto"
                                 onClick={() => {
                                     if (selected.length === 0) {
                                         // Nếu không có tài khoản nào được chọn, hiển thị cảnh báo hoặc thông báo
@@ -381,6 +395,8 @@ const ProductPage = () => {
 
 
 
+
+                            <tbody>
                             {currentProducts.length > 0 ? (
                                 currentProducts.map((item) => (
                                     <tr key={item.id} className="border-b hover:bg-gray-100 border border-gray-300">
@@ -396,7 +412,7 @@ const ProductPage = () => {
                                             <img src={item.image} alt={item.name} className="w-20 h-20 object-cover" />
                                         </td>
                                         <td className="p-4 border border-gray-300">{item.name}</td>
-                                        <td className="p-4 border border-gray-300">{item.price}</td>
+                                        <td className="p-4 border border-gray-300">{item.price.toLocaleString()} đ</td>
                                         <td className="p-4 border border-gray-300">{item.description}</td>
                                         <td className="p-4 border border-gray-300">
                                             {item.status }
@@ -404,12 +420,12 @@ const ProductPage = () => {
                                         <td className="p-4">
                                             {item.colors && item.colors.length > 0
                                                 ? item.colors.join(", ")
-                                                : "No colors available"}
+                                                : "Không có màu phù hợp"}
                                         </td>
                                         <td className="p-4 border border-gray-300">
                                             {item.sizes && item.sizes.length > 0
                                                 ? item.sizes.join(", ")
-                                                : "No sizes available"}
+                                                : "Không có kích cỡ phù hợp"}
                                         </td>
                                     </tr>
                                 ))
@@ -420,6 +436,7 @@ const ProductPage = () => {
                                     </td>
                                 </tr>
                             )}
+                            </tbody>
 
 
                         </table>
@@ -473,41 +490,122 @@ const ProductPage = () => {
 
                                 <div className="mb-4">
                                     <label className="block mb-2">Tồn kho</label>
-                                    <input
-                                        type="text"
+                                    <select
                                         value={editingProduct.status}
                                         onChange={(e) =>
                                             setEditingProduct({ ...editingProduct, status: e.target.value })
                                         }
                                         className="border rounded w-full p-2"
-                                    />
+                                    >
+                                        <option value="Còn hàng">Còn hàng</option>
+                                        <option value="Hết hàng">Hết hàng</option>
+                                    </select>
                                 </div>
 
                                 <div className="mb-4">
                                     <label className="block mb-2">Màu sắc</label>
-                                    <input
-                                        type="text"
-                                        value={editingProduct.colors}
-                                        onChange={(e) =>
-                                            setEditingProduct({ ...editingProduct, colors: e.target.value })
-                                        }
-                                        className="border rounded w-full p-2"
-                                    />
+                                    {/* Input để nhập màu hoặc chọn từ dropdown */}
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <input
+                                            type="text"
+                                            placeholder="Nhập màu hoặc chọn"
+                                            onKeyDown={(e) => {
+                                                if (e.key === "Enter" && e.target.value.trim() !== "") {
+                                                    const newColor = e.target.value.trim();
+                                                    if (!editingProduct.colors.includes(newColor)) {
+                                                        setEditingProduct((prevProduct) => ({
+                                                            ...prevProduct,
+                                                            colors: [...prevProduct.colors, newColor],
+                                                        }));
+                                                    }
+                                                    e.target.value = ""; // Xóa input sau khi thêm
+                                                }
+                                            }}
+                                            className="border rounded w-full p-2"
+                                        />
+                                        <select
+                                            onChange={(e) => {
+                                                const selectedColor = e.target.value;
+                                                if (selectedColor && !editingProduct.colors.includes(selectedColor)) {
+                                                    setEditingProduct((prevProduct) => ({
+                                                        ...prevProduct,
+                                                        colors: [...prevProduct.colors, selectedColor],
+                                                    }));
+                                                }
+                                            }}
+                                            className="border rounded p-2"
+                                        >
+                                            <option value="">Chọn màu</option>
+                                            <option value="Đỏ">Đỏ</option>
+                                            <option value="Xanh">Xanh</option>
+                                            <option value="Vàng">Vàng</option>
+                                            <option value="Trắng">Trắng</option>
+                                            <option value="Đen">Đen</option>
+                                        </select>
+                                    </div>
+                                    {/* Hiển thị danh sách màu đã chọn */}
+                                    <div className="flex gap-2 flex-wrap">
+                                        {editingProduct.colors?.map((color, index) => (
+                                            <span
+                                                key={index}
+                                                className="bg-gray-200 px-3 py-1 rounded text-sm cursor-pointer hover:bg-red-300"
+                                                onClick={() =>
+                                                    setEditingProduct((prevProduct) => ({
+                                                        ...prevProduct,
+                                                        colors: prevProduct.colors.filter((_, i) => i !== index),
+                                                    }))
+                                                }
+                                            >
+                {color} &times;
+            </span>
+                                        ))}
+                                    </div>
                                 </div>
+
+
+
+
 
 
                                 <div className="mb-4">
                                     <label className="block mb-2">Kích cỡ</label>
-                                    <input
-                                        type="text"
-                                        value={editingProduct.sizes}
-                                        onChange={(e) =>
-                                            setEditingProduct({ ...editingProduct, sizes: e.target.value })
-                                        }
-                                        className="border rounded w-full p-2"
-                                    />
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <select
+                                            onChange={(e) => {
+                                                const selectedSize = e.target.value;
+                                                if (selectedSize && !editingProduct.sizes.includes(selectedSize)) {
+                                                    setEditingProduct({
+                                                        ...editingProduct,
+                                                        sizes: [...editingProduct.sizes, selectedSize],
+                                                    });
+                                                }
+                                            }}
+                                            className="border rounded w-full p-2"
+                                        >
+                                            <option value="">Chọn kích cỡ</option>
+                                            <option value="M">M</option>
+                                            <option value="L">L</option>
+                                            <option value="XL">XL</option>
+                                            <option value="XXL">XXL</option>
+                                        </select>
+                                    </div>
+                                    <div className="flex gap-2 flex-wrap">
+                                        {editingProduct.sizes.map((size, index) => (
+                                            <span
+                                                key={index}
+                                                className="bg-gray-200 px-3 py-1 rounded text-sm cursor-pointer hover:bg-red-300"
+                                                onClick={() =>
+                                                    setEditingProduct({
+                                                        ...editingProduct,
+                                                        sizes: editingProduct.sizes.filter((_, i) => i !== index),
+                                                    })
+                                                }
+                                            >
+                {size} &times;
+            </span>
+                                        ))}
+                                    </div>
                                 </div>
-
 
 
 

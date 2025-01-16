@@ -8,12 +8,20 @@ const LogoutPage = () => {
 
     const handleLogout = async () => {
         try {
+            const token = localStorage.getItem("token");
+
+            if (!token) {
+                alert("Đăng xuất thành công!");
+                navigate("/auth/sign-in");
+                return;
+            }
+
             const response = await axios.post(
                 "https://testbe-1.onrender.com/logout",
-                {},
+                {}, // Body rỗng
                 {
                     headers: {
-                        Authorization: `Bearer ${localStorage.getItem("token")}`,
+                        Authorization: `Bearer ${token}`,
                         "Content-Type": "application/json",
                     },
                 }
@@ -24,25 +32,29 @@ const LogoutPage = () => {
                 alert("Bạn đã đăng xuất thành công!");
                 navigate("/auth/sign-in");
             } else {
-                alert("Có lỗi xảy ra. Vui lòng thử lại!");
+                alert("Có lỗi xảy ra trong quá trình đăng xuất. Vui lòng thử lại!");
             }
         } catch (error) {
-            console.error("Lỗi đăng xuất:", error);
+            console.error("Chi tiết lỗi đăng xuất:", error);
+
             if (error.response) {
-                // Nếu có lỗi từ server
-                alert(`Lỗi server: ${error.response.statusText}`);
+                // Lỗi phản hồi từ server
+                console.error("Phản hồi server:", error.response);
+                alert(`Lỗi server: ${error.response.status} - ${error.response.data.message || "Không xác định"}`);
             } else if (error.request) {
-                // Nếu không có phản hồi từ server
-                alert("Không thể kết nối với server. Vui lòng thử lại!");
+                // Không nhận được phản hồi từ server
+                console.error("Yêu cầu không phản hồi:", error.request);
+                alert("Không thể kết nối với server. Vui lòng kiểm tra mạng hoặc thử lại sau!");
             } else {
                 // Lỗi khi thiết lập yêu cầu
+                console.error("Lỗi khi thiết lập yêu cầu:", error.message);
                 alert("Lỗi yêu cầu: " + error.message);
             }
         }
     };
 
     const handleCancel = () => {
-        navigate(-1);
+        navigate(-1); // Quay lại trang trước
     };
 
     return (

@@ -54,8 +54,12 @@ const SignInPage = () => {
                 if (!userData.access_token) {
                     throw new Error("Access token không tồn tại trong phản hồi từ server.");
                 }
-                console.log(response)
-                // Lưu token vào localStorage
+
+
+
+
+                console.log(response);
+                // Lưu token và thông tin user vào localStorage
                 localStorage.setItem("access_token", userData.access_token);
                 localStorage.setItem("user", JSON.stringify(userData));
 
@@ -66,12 +70,17 @@ const SignInPage = () => {
             }
         } catch (error) {
             console.error("Error:", error);
+
             if (error.response) {
-                // Log chi tiết lỗi từ server
                 console.error("Chi tiết lỗi từ server:", error.response.data);
                 const serverError = error.response.data.detail || error.response.data.message;
+                setErrorMessage(serverError || "Đã xảy ra lỗi trong quá trình đăng nhập. Vui lòng thử lại.");
+            } else if (error.message === "Access token không tồn tại trong phản hồi từ server.") {
+                setErrorMessage("Không nhận được token từ server. Vui lòng liên hệ quản trị viên.");
+            } else if (error.message === "Bạn không có quyền truy cập vào trang này.") {
+                setErrorMessage("Bạn không có quyền truy cập. Vui lòng đăng nhập với tài khoản admin.");
             } else {
-                setErrorMessage("Không thể kết nối tới server. Vui lòng thử lại.");
+                setErrorMessage("Không thể kết nối tới server. Vui lòng kiểm tra kết nối mạng và thử lại.");
             }
         } finally {
             setLoading(false);
@@ -87,17 +96,11 @@ const SignInPage = () => {
     return (
         <LayoutAuthentication heading="FASCO">
             <div className="flex justify-center gap-4">
-
             </div>
-
-
             <div className="flex flex-col items-center mt-20 mb-10">
                 <div className="flex items-center gap-4">
                 </div>
             </div>
-
-
-
 
             <form onSubmit={handleSubmit(handleSignIn)}>
                 {errorMessage && (

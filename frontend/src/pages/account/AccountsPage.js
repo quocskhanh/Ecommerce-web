@@ -3,166 +3,220 @@ import AdminLayout from "../../layout/AdminLayout";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
+
+
 const AccountsPage = () => {
-    const [accounts, setAccounts] = useState([]); // State lưu trữ danh sách tài khoản
-    const [currentPage, setCurrentPage] = useState(1); // Trang hiện tại
-    const [totalPages, setTotalPages] = useState(1); // Tổng số trang
-    const itemsPerPage = 5; // Số lượng tài khoản trên mỗi trang
-    const navigate = useNavigate();
-    const [filterStatus, setFilterStatus] = useState("");
-
-    // Fetch tài khoản từ API
-    useEffect(() => {
-        // Lấy danh sách các danh mục từ API khi component được render lần đầu
-        axios.get('https://testbe-1.onrender.com/categories') // Cập nhật với URL API của bạn
-            .then(response => setAccounts(response.data))
-            .catch(error => console.error("Error fetching categories:", error));
-    }, []);
-
+    const [accounts, setAccounts] = useState([]);
+    const [filteredAccounts, setFilteredAccounts] = useState([]);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedAccounts, setSelectedAccounts] = useState([]);
     const [editingAccount, setEditingAccount] = useState(null);
     const [editedCustomerData, setEditedCustomerData] = useState({
         first_name: '',
         last_name: '',
-        email: "",
-        phone_number: "",
-        address: "",
-        date_of_birth: "",
-        gender: "",
-        password: ""
+        email: '',
+        phone_number: '',
+        address: '',
+        date_of_birth: '',
+        gender: '',
+        password: '',
+        role: false,
     });
-    const [showEditModal, setShowEditModal] = useState(false); // Track edit modal visibility
-    const [showDeleteModal, setShowDeleteModal] = useState(null); // Track the order being deleted
-    const [showSuccessModal, setShowSuccessModal] = useState(false); // Track success modal visibility
+    const [showEditModal, setShowEditModal] = useState(false);
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [showSuccessModal, setShowSuccessModal] = useState(false);
+    const itemsPerPage = 5;
+    const navigate = useNavigate();
 
-    // Xử lý xóa tài khoản
+    useEffect(() => {
+        const fetchAccounts = async () => {
+            try {
+                const response = await axios.get("https://testbe-1.onrender.com/accounts", {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+                        "Content-Type": "application/json",
+                    },
+                });
+                setAccounts(response.data);
+                setFilteredAccounts(response.data);
+                setTotalPages(Math.ceil(response.data.length / itemsPerPage));
+            } catch (error) {
+                console.error("Error fetching accounts:", error.response?.status, error.response?.data);
+                alert("Failed to fetch accounts. Please check your authentication or try again later.");
+            }
+        };
+
+        fetchAccounts();
+    }, []);
+
+    const handleSearch = (e) => {
+        const value = e.target.value.toLowerCase();
+        setSearchTerm(value);
+        const filtered = accounts.filter((account) =>
+            account.phone_number.toLowerCase().includes(value) ||
+            account.email.toLowerCase().includes(value) ||
+            `${account.first_name} ${account.last_name}`.toLowerCase().includes(value)
+        );
+        setFilteredAccounts(filtered);
+        setTotalPages(Math.ceil(filtered.length / itemsPerPage));
+    };
 
     const handleEditAccount = () => {
         if (selectedAccounts.length === 1) {
-            const selectedOrder = accounts.find((order) => order.id === selectedAccounts[0]);
-            setEditingAccount(selectedOrder.id);
-            setEditedCustomerData({ ...selectedOrder }); // Đúng dữ liệu cần chỉnh sửa
+            const selectedAccount = accounts.find((acc) => acc.id === selectedAccounts[0]);
+            setEditingAccount(selectedAccount.id);
+            setEditedCustomerData({ ...selectedAccount });
             setShowEditModal(true);
         } else if (selectedAccounts.length === 0) {
             alert("Vui lòng chọn một tài khoản để chỉnh sửa.");
         } else {
-            alert("Chỉ có thể chỉnh sửa một tài khoản tại một thời điểm.");
-        }
-    };
-    const handleDeleteTrigger = () => {
-        if (selectedAccounts.length === 0) {
-            alert("Vui lòng chọn ít nhất một tài khoản để xóa.");
-        } else {
-            setShowDeleteModal(true); // Show the delete confirmation modal
+            alert("Chỉ có thể chỉnh sửa một tài khoản mỗi lần.");
         }
     };
 
-// Confirm and delete selected orders
+    const handleSaveAccount = async () => {
+        // Kiểm tra dữ liệu bắt buộc
+        if (!editedCustomerData.first_name || !editedCustomerData.last_name || !editedCustomerData.email) {
+            alert("Vui lòng điền đầy đủ thông tin Họ, Tên, và Email.");
+            return;
+        }
+
+        // Chuẩn bị payload cho thông tin khác ngoài `role`
+        const { role, ...payload } = {
+            first_name: editedCustomerData.first_name || "",
+            last_name: editedCustomerData.last_name || "",
+            email: editedCustomerData.email || "",
+            phone_number: editedCustomerData.phone_number || "",
+            address: editedCustomerData.address || "",
+            date_of_birth: editedCustomerData.date_of_birth || null,
+            gender: editedCustomerData.gender || "",
+            password: editedCustomerData.password || "",
+            total_spent: editedCustomerData.total_spent || 0,
+        };
+
+        try {
+            // Gửi yêu cầu cập nhật thông tin tài khoản (không bao gồm vai trò)
+            const response = await axios.put(
+                `https://testbe-1.onrender.com/accounts/${editingAccount}`,
+                payload,
+                {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+                        "Content-Type": "application/json",
+                    },
+                }
+            );
+            console.log("Cập nhật thông tin tài khoản thành công:", response.data);
+
+            // Nếu vai trò (`role`) thay đổi, gọi API riêng để cập nhật vai trò
+            if (editedCustomerData.role !== null) {
+                try {
+                    const roleResponse = await axios.put(
+                        `https://testbe-1.onrender.com/accounts/${editingAccount}/role`,
+                        null, // Không có body, chỉ cần truyền query parameter
+                        {
+                            params: {
+                                new_role: editedCustomerData.role === true, // Chuyển thành boolean
+                            },
+                            headers: {
+                                Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+                                "Content-Type": "application/json",
+                            },
+                        }
+                    );
+                    console.log("Cập nhật vai trò thành công:", roleResponse.data);
+                } catch (roleError) {
+                    console.error("Lỗi khi cập nhật vai trò:", roleError.response?.data || roleError.message);
+                    alert("Cập nhật thông tin tài khoản thành công nhưng cập nhật vai trò thất bại.");
+                }
+            }
+
+            // Cập nhật danh sách tài khoản trong state
+            setAccounts((prevAccounts) =>
+                prevAccounts.map((acc) =>
+                    acc.id === editingAccount ? { ...acc, ...payload, role: editedCustomerData.role } : acc
+                )
+            );
+            setFilteredAccounts((prevFiltered) =>
+                prevFiltered.map((acc) =>
+                    acc.id === editingAccount ? { ...acc, ...payload, role: editedCustomerData.role } : acc
+                )
+            );
+            setShowEditModal(false);
+            alert("Cập nhật tài khoản thành công!");
+        } catch (error) {
+            if (error.response) {
+                console.error("Chi tiết lỗi từ backend:", error.response.data);
+                alert(`Lỗi server: ${error.response.status} - ${JSON.stringify(error.response.data)}`);
+            } else {
+                console.error("Lỗi không kết nối server:", error.message);
+                alert("Không thể kết nối với server. Vui lòng thử lại.");
+            }
+        }
+    };
+
+    const handleDeleteTrigger = () => {
+        if (selectedAccounts.length === 0) {
+            alert("Please select at least one account to delete.");
+        } else {
+            setShowDeleteModal(true);
+        }
+    };
+
     const handleConfirmDelete = async () => {
         try {
             for (const id of selectedAccounts) {
-                await fetch(`https://testbe-1.onrender.com/accounts/${id}`, {
-                    method: "DELETE",
+                await axios.delete(`https://testbe-1.onrender.com/accounts/${id}`, {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+                        "Content-Type": "application/json"
+                        ,
+                    },
                 });
             }
-            setAccounts(accounts.filter((order) => !selectedAccounts.includes(order.id)));
-            setShowDeleteModal(false); // Close delete confirmation modal
-            setSelectedAccounts([]); // Clear selection
-            setShowSuccessModal(true); // Show success modal
-            setTimeout(() => setShowSuccessModal(false), 3000); // Automatically hide after 3 seconds
+            setAccounts(accounts.filter((acc) => !selectedAccounts.includes(acc.id)));
+            setShowDeleteModal(false);
+            setSelectedAccounts([]);
+            setShowSuccessModal(true);
+            setTimeout(() => setShowSuccessModal(false), 3000);
         } catch (error) {
-            console.error("Error deleting orders:", error);
+            console.error("Error deleting accounts:", error);
         }
     };
 
-
-    // Handle edit (populate editedCustomerData with the selected order data)
-
-
-
-    // Handle input change for editing
-
-
-
-// Handle input change for editing
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setEditedCustomerData((prevData) => ({
             ...prevData,
-            [name]: value,
+            [name]:
+                name === "role"
+                    ? value === "true" // Chuyển giá trị role thành boolean
+                    : value,
         }));
     };
 
-    const handleSaveAccount = async () => {
-        try {
-            // Update order data in the backend
-            await fetch(`https://testbe-1.onrender.com/accounts/${editingAccount}`, {
-                method: "PUT",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify(editedCustomerData),
-            });
-
-            // Update orders list in the frontend
-            setAccounts((prevOrders) =>
-                prevOrders.map((order) =>
-                    order.id === editingAccount ? { ...order, ...editedCustomerData } : order
-                )
-            );
-
-            setEditingAccount(null);
-            setShowEditModal(false); // Close edit modal after saving changes
-            alert("Đơn hàng đã được cập nhật!");
-        } catch (error) {
-            console.error("Error saving order:", error);
-        }
-    };
-    // Handle checkbox selection
     const toggleSelectAccounts = (id) => {
         setSelectedAccounts((prevSelected) =>
             prevSelected.includes(id)
-                ? prevSelected.filter((orderId) => orderId !== id)
+                ? prevSelected.filter((accId) => accId !== id)
                 : [...prevSelected, id]
         );
     };
-
-    // Filter and paginate orders
-// Giả sử `accounts` là một mảng các tài khoản
-    const [filteredAccounts, setFilteredAccounts] = useState([]);  // Lưu tài khoản đã lọc
-
-    const handleSearch = (e) => {
-        const value = e.target.value.toLowerCase(); // Không sử dụng trim() để giữ lại khoảng trắng
-        setSearchTerm(value);
-
-        const searchedProducts = value
-            ? accounts.filter((account) =>
-                account.phone_number?.includes(value)
-            )
-            : accounts;
-
-        setFilteredAccounts(searchedProducts);
-    };
-
-
-
 
     const changePage = (page) => {
         if (page > 0 && page <= totalPages) {
             setCurrentPage(page);
         }
     };
-    // Chuyển trang
 
-
-    // Tính toán tài khoản cần hiển thị
     const startIndex = (currentPage - 1) * itemsPerPage;
-    const currentAccounts = accounts.slice(startIndex, startIndex + itemsPerPage);
+    const currentAccounts = filteredAccounts.slice(startIndex, startIndex + itemsPerPage);
 
     const handleExport = () => {
         const csvContent = `data:text/csv;charset=utf-8,${[
-            ["ID", "Họ", "Tên", "Email", "Số điện thoại", "Địa chỉ", "Ngày sinh","Gioi tinh","Mật khẩu"],
+            ["ID", "First Name", "Last Name", "Email", "Phone Number", "Address", "Date of Birth", "Gender", "Password", "Role"],
             ...filteredAccounts.map((account) => [
                 account.id,
                 account.first_name,
@@ -173,9 +227,10 @@ const AccountsPage = () => {
                 account.date_of_birth,
                 account.gender,
                 account.password,
+                account.role,
             ]),
         ]
-            .map((e) => e.join(","))
+            .map((row) => row.join(","))
             .join("\n")}`;
 
         const link = document.createElement("a");
@@ -186,12 +241,12 @@ const AccountsPage = () => {
         document.body.removeChild(link);
     };
 
+
     return (
-        <div>
             <AdminLayout>
-                <div className="p-6">
-                    <div className="flex justify-between items-center mb-6 flex-wrap">
-                        <h1 className="text-2xl font-bold text-gray-800 w-full sm:w-auto">Tài khoản</h1>
+                <div className="p-6 ml-30 max-w-6xl">
+                    <div className="flex flex-col sm:flex-row justify-between items-center mb-6">
+                        <h1 className="text-2xl font-bold text-gray-800 w-full sm:w-auto mb-8 mt-6">Danh sách tài khoản</h1>
                         <div className="flex gap-4 w-full sm:w-auto justify-between sm:justify-end">
                             <button
                                 className="px-4 py-2 bg-white rounded border border-[#d6daec] hover:bg-gray-200"
@@ -205,10 +260,10 @@ const AccountsPage = () => {
                     </div>
 
 
-                    <div className="bg-white rounded-lg shadow-lg">
+                    <div className="bg-white rounded-lg shadow overflow-hidden">
                         <div className="flex flex-col sm:flex-row justify-between items-center p-4 border-b">
 
-                            <div className="relative ml-4 mb-4 sm:mb-0">
+                            <div className="relative w-full sm:w-auto">
                                 <input
                                     type="text"
                                     placeholder="Tìm kiếm tài khoản..."
@@ -238,7 +293,7 @@ const AccountsPage = () => {
 
                             <div className="flex gap-4 ml-auto w-full sm:w-auto justify-between sm:justify-end">
                                 <button
-                                    className="px-5 py-3 bg-white-500 text-gray-600 rounded border border-blue-400 hover:bg-blue-500 cursor-pointer"
+                                    className="px-4 py-2 bg-white-500 text-gray-600 rounded border border-blue-400 hover:bg-blue-500 cursor-pointer"
                                     onClick={handleEditAccount}
                                 >
                                 <span>
@@ -247,7 +302,7 @@ const AccountsPage = () => {
                                 </button>
 
                                 <button
-                                    className="px-5 py-3 bg-white-500 text-blue-400 border border-blue-400 rounded hover:bg-red-500 cursor-pointer"
+                                    className="px-4 py-2 bg-white-500 text-blue-400 border border-blue-400 rounded hover:bg-red-500 cursor-pointer"
                                     onClick={handleDeleteTrigger}
                                 >
                                 <span>
@@ -261,7 +316,7 @@ const AccountsPage = () => {
 
                     {/* Table */}
                     <div className="overflow-x-auto rounded-lg shadow-lg">
-                        <table className="w-full text-center min-w-[600px] ">
+                        <table className="w-full text-center ">
                             <thead className="bg-gray-300">
                             <tr>
                                 <th className="p-4 text-center border border-gray-400">
@@ -311,7 +366,10 @@ const AccountsPage = () => {
                                         <td className="py-3 border border-gray-400 text-black">{account.date_of_birth || "N/A"}</td>
                                         <td className="py-3 border border-gray-400 text-black">{account.gender || "N/A"}</td>
                                         <td className="py-3 px-4 border border-gray-400 text-black truncate">{account.password}</td>
-                                        <td className="py-3 px-4 border border-gray-400 text-black truncate">{account.role}</td>
+                                        <td className="py-3 px-4 border border-gray-400 text-black truncate">
+                                            {account.role ? "Admin" : "User"}
+                                        </td>
+
                                     </tr>
                                 ))
                             ) : (
@@ -326,47 +384,26 @@ const AccountsPage = () => {
                     </div>
 
                     {/* Edit Modal */}
+                    {/* Edit Modal */}
                     {showEditModal && (
                         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
                             <div className="bg-white rounded-lg p-6 w-96 sm:w-full sm:max-w-xs shadow-lg">
-                                <h2 className="text-xl font-semibold mb-4">Chỉnh sửa thông tin</h2>
-
-                                {/* Họ  */}
-                                <div className="mb-4">
-                                    <label className="block mb-1">Họ</label>
-                                    <input
-                                        type="text"
-                                        value={editedCustomerData.first_name || ''}
-                                        name="first_name"
-                                        onChange={handleInputChange}
-                                        className="border rounded w-full p-2"
-                                    />
-                                </div>
-
-                                {/* Tên */}
-                                <div className="mb-4">
-                                    <label className="block mb-1">Tên</label>
-                                    <input
-                                        type="text"
-                                        value={editedCustomerData.last_name || ''}
-                                        name="last_name"
-                                        onChange={handleInputChange}
-                                        className="border rounded w-full p-2"
-                                    />
-                                </div>
+                                <h2 className="text-xl font-semibold mb-4">Chỉnh sửa thông tin tài khoản</h2>
 
                                 {/* Email */}
                                 <div className="mb-4">
-                                    <label className="block mb-1">Email</label>
+                                    <label className="block mb-1">Email <span className="text-red-500">*</span></label>
                                     <input
-                                        type="text"
-                                        value={editedCustomerData.email || '' }
+                                        type="email"
+                                        value={editedCustomerData.email || ''}
                                         name="email"
                                         onChange={handleInputChange}
                                         className="border rounded w-full p-2"
+                                        required
                                     />
                                 </div>
-                                {/* SDT */}
+
+                                {/* Số điện thoại */}
                                 <div className="mb-4">
                                     <label className="block mb-1">Số điện thoại</label>
                                     <input
@@ -377,7 +414,8 @@ const AccountsPage = () => {
                                         className="border rounded w-full p-2"
                                     />
                                 </div>
-                                {/* Adress */}
+
+                                {/* Địa chỉ */}
                                 <div className="mb-4">
                                     <label className="block mb-1">Địa chỉ</label>
                                     <input
@@ -389,20 +427,7 @@ const AccountsPage = () => {
                                     />
                                 </div>
 
-                                {/* Adress */}
-                                <div className="mb-4">
-                                    <label className="block mb-1">Ngày sinh</label>
-                                    <input
-                                        type="text"
-                                        value={editedCustomerData.date_of_birth || ''}
-                                        name="date_of_birth"
-                                        onChange={handleInputChange}
-                                        className="border rounded w-full p-2"
-                                    />
-                                </div>
-
-
-                                {/* Adress */}
+                                {/* Mật khẩu */}
                                 <div className="mb-4">
                                     <label className="block mb-1">Mật khẩu</label>
                                     <input
@@ -413,23 +438,25 @@ const AccountsPage = () => {
                                         className="border rounded w-full p-2"
                                     />
                                 </div>
+
+                                {/* Quyền */}
                                 <div className="mb-4">
                                     <label className="block mb-1">Quyền</label>
-                                    <input
-                                        type="text"
-                                        value={editedCustomerData.role|| ''}
+                                    <select
                                         name="role"
+                                        value={editedCustomerData.role ? "true" : "false"}
                                         onChange={handleInputChange}
                                         className="border rounded w-full p-2"
-                                    />
+                                    >
+                                        <option value="false">User</option>
+                                        <option value="true">Admin</option>
+                                    </select>
                                 </div>
-
-
 
                                 <div className="flex justify-end gap-4">
                                     <button
                                         className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
-                                        onClick={() => setShowEditModal(false)} // Close modal without saving
+                                        onClick={() => setShowEditModal(false)}
                                     >
                                         Hủy
                                     </button>
@@ -443,6 +470,8 @@ const AccountsPage = () => {
                             </div>
                         </div>
                     )}
+
+
 
                     {/* Delete Modal */}
                     {showDeleteModal && (
@@ -529,7 +558,7 @@ const AccountsPage = () => {
 
                 </div>
             </AdminLayout>
-        </div>
+
     );
 };
 

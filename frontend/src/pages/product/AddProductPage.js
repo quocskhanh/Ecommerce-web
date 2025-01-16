@@ -18,7 +18,15 @@ const AddProductPage = () => {
 
     const handleSave = async () => {
         // Kiểm tra các trường đầu vào
-        if (!productName || !productDescription || !productPrice || !status || sizes.length === 0 || colorsList.length === 0 || categories.length === 0) {
+        if (
+            !productName ||
+            !productDescription ||
+            !productPrice ||
+            !status ||
+            sizes.length === 0 ||
+            colorsList.length === 0 ||
+            categories.length === 0
+        ) {
             alert("Vui lòng điền đầy đủ thông tin và chọn ít nhất một kích cỡ, màu sắc và danh mục!");
             return;
         }
@@ -27,11 +35,12 @@ const AddProductPage = () => {
         const productData = {
             name: productName,
             description: productDescription,
-            price: parseFloat(productPrice), // Chuyển price thành số thực
-            category_id: parseInt(categories), // Chuyển category_id thành số nguyên
-            status: status, // Trạng thái vẫn là chuỗi
-            colors: colorsList, // Danh sách màu sắc vẫn là chuỗi
-            sizes: sizes, // Danh sách kích cỡ vẫn là chuỗi
+            price: parseFloat(productPrice), // Giá sản phẩm dạng số thực
+            category_id: parseInt(categories), // Danh mục dạng số nguyên
+            status: status, // Trạng thái là chuỗi
+            colors: colorsList, // Mảng màu sắc
+            sizes: sizes, // Mảng kích cỡ
+            image: images[0] || "", // Chỉ lấy URL đầu tiên trong mảng `images`
         };
 
         try {
@@ -113,9 +122,7 @@ const AddProductPage = () => {
 
     const handleImageURLInput = (e) => {
         const url = e.target.value;
-        if (url && !images.includes(url)) {
-            setImages([...images, url]);
-        }
+        setImages([url]); // Lưu duy nhất một URL ảnh
     };
 
     return (
@@ -172,21 +179,20 @@ const AddProductPage = () => {
                             <div>
                                 <label className="block font-semibold mb-2">Ảnh (URL)</label>
                                 <input
-                                    type="text"
+                                    type="url"
                                     onChange={handleImageURLInput}
                                     className="border px-4 py-2 w-full rounded"
                                     placeholder="Nhập URL ảnh sản phẩm"
                                 />
-                                <div className="flex gap-2 mt-2">
-                                    {images.map((img, index) => (
+                                {images.length > 0 && (
+                                    <div className="mt-2">
                                         <img
-                                            key={index}
-                                            src={img}
+                                            src={images[0]} // Hiển thị ảnh đầu tiên
                                             alt="Preview"
                                             className="w-16 h-16 object-cover rounded border"
                                         />
-                                    ))}
-                                </div>
+                                    </div>
+                                )}
                             </div>
 
                             {/* Price */}
@@ -217,20 +223,55 @@ const AddProductPage = () => {
 
                             {/* Size and Color */}
                             <div className="flex gap-3">
+                                {/* Màu sắc */}
                                 <div className="flex-1">
                                     <label className="block font-semibold mb-2">Màu sắc</label>
-                                    <input
-                                        type="text"
-                                        value={colorsList.join(", ")} // Hiển thị mảng màu sắc dưới dạng chuỗi
-                                        onChange={(e) => setColors(e.target.value.split(", ").map(color => color.trim()))} // Cập nhật màu sắc
-                                        className="border px-4 py-2 w-full rounded"
-                                    />
+                                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                                        {["Đỏ", "Xanh", "Vàng", "Trắng", "Đen", "Hồng", "Xám", "Nâu"].map((color) => (
+                                            <label
+                                                key={color}
+                                                className="flex items-center space-x-2 bg-gray-50 p-3 rounded-lg border-2 border-gray-300 hover:border-blue-500 hover:bg-blue-50 transition duration-300"
+                                            >
+                                                <input
+                                                    type="checkbox"
+                                                    value={color}
+                                                    checked={colorsList.includes(color)} // Kiểm tra nếu màu đã được chọn
+                                                    onChange={(e) => {
+                                                        // Thêm hoặc xóa màu từ mảng `colorsList` khi thay đổi
+                                                        setColors((prev) =>
+                                                            e.target.checked
+                                                                ? [...prev, color] // Thêm màu nếu checkbox được chọn
+                                                                : prev.filter((item) => item !== color) // Xóa màu nếu checkbox không được chọn
+                                                        );
+                                                    }}
+                                                    className="form-checkbox text-blue-500"
+                                                />
+                                                <span className="text-gray-700">{color}</span>
+                                            </label>
+                                        ))}
+                                    </div>
                                 </div>
 
+                                {/* Kích cỡ */}
                                 <div className="flex-1">
                                     <label className="block font-semibold mb-2">Kích cỡ</label>
                                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                                        {["XXL", "XL", "L", "M"].map((size) => (
+                                        {[
+                                            "XXL",
+                                            "XL",
+                                            "L",
+                                            "M",
+                                            "31",
+                                            "30",
+                                            "29",
+                                            "38mm - 44mm",
+                                            "26mm - 36mm",
+                                            "42",
+                                            "41",
+                                            "36",
+                                            "35",
+                                            "11x9cm",
+                                        ].map((size) => (
                                             <label
                                                 key={size}
                                                 className="flex items-center space-x-2 bg-gray-50 p-3 rounded-lg border-2 border-gray-300 hover:border-blue-500 hover:bg-blue-50 transition duration-300"
@@ -254,7 +295,6 @@ const AddProductPage = () => {
                                         ))}
                                     </div>
                                 </div>
-
                             </div>
 
                         </div>
@@ -320,8 +360,8 @@ const AddProductPage = () => {
                                         </svg>
                                     </div>
                                 </div>
-                                <h2 className="text-xl font-semibold">Import Successful</h2>
-                                <p className="text-gray-600 mt-2">Added new products to your store.</p>
+                                <h2 className="text-xl font-semibold">Thêm sản phẩm thành công</h2>
+                                    <p className="text-gray-600 mt-2">Đã thêm sản phẩm mới vào cửa hàng của bạn.</p>
                                 <button
                                     onClick={() => {
                                         const modalElement = document.querySelector(".bg-white");
@@ -334,7 +374,7 @@ const AddProductPage = () => {
                                     }}
                                     className="mt-4 px-6 py-2 bg-blue-500 text-white rounded shadow-md hover:bg-blue-600 transition-transform duration-200 hover:scale-105"
                                 >
-                                    Continue
+                                    Tiếp tục
                                 </button>
                             </div>
                         </div>
