@@ -24,6 +24,9 @@ import SignInPage2 from './pages/auth/SignInPage';
 import SignUpPage from './pages/auth/SignUpPage';
 
 import Login from "./pages/auth/Login";
+import AccountPageUser from "./pages/AccountPageUser";
+
+
 
 // Lazy load components
 const ProductPage = lazy(() => import("./pages/product/ProductPage"));
@@ -71,7 +74,7 @@ function App() {
             <Route path="/product/:id" element={<ProductPageUser />} /> 
             <Route path="/checkout" element={<CheckOutPage />} />
             <Route path="/login" element={<Login />} />
-
+            <Route path="/account" element={<AccountPageUser />} />
           </Routes>
         </Suspense>
       </CartProvider>
