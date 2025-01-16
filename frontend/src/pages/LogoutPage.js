@@ -1,6 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios"; // Thêm axios để gọi API
+import axios from "axios";
 import AdminLayout from "../layout/AdminLayout";
 
 const LogoutPage = () => {
@@ -8,33 +8,41 @@ const LogoutPage = () => {
 
     const handleLogout = async () => {
         try {
-            // Gọi API đăng xuất tới localhost:5000
             const response = await axios.post(
-                "http://localhost:8000/logout'", // Đường dẫn tới API giả lập
-                {}, // Dữ liệu nếu cần, để trống ở đây
+                "https://testbe-1.onrender.com/logout",
+                {},
                 {
                     headers: {
-                        Authorization: `Bearer ${localStorage.getItem("token")}`, // Đính kèm token nếu cần
+                        Authorization: `Bearer ${localStorage.getItem("token")}`,
+                        "Content-Type": "application/json",
                     },
                 }
             );
 
-            // Kiểm tra phản hồi
             if (response.status === 200) {
-                localStorage.removeItem("token"); // Xóa token khỏi localStorage
+                localStorage.removeItem("token");
                 alert("Bạn đã đăng xuất thành công!");
-                navigate("/auth/sign-in"); // Chuyển hướng về trang đăng nhập
+                navigate("/auth/sign-in");
             } else {
                 alert("Có lỗi xảy ra. Vui lòng thử lại!");
             }
         } catch (error) {
             console.error("Lỗi đăng xuất:", error);
-            alert("Không thể đăng xuất. Vui lòng thử lại sau!");
+            if (error.response) {
+                // Nếu có lỗi từ server
+                alert(`Lỗi server: ${error.response.statusText}`);
+            } else if (error.request) {
+                // Nếu không có phản hồi từ server
+                alert("Không thể kết nối với server. Vui lòng thử lại!");
+            } else {
+                // Lỗi khi thiết lập yêu cầu
+                alert("Lỗi yêu cầu: " + error.message);
+            }
         }
     };
 
     const handleCancel = () => {
-        navigate(-1); // Quay lại trang trước đó
+        navigate(-1);
     };
 
     return (

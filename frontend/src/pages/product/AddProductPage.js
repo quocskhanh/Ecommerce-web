@@ -35,7 +35,7 @@ const AddProductPage = () => {
         };
 
         try {
-            const response = await fetch("http://localhost:5000/products", {
+            const response = await fetch("https://testbe-1.onrender.com/products", {
                 method: "POST",
                 headers: {
                     Authorization: `Bearer ${localStorage.getItem("access_token")}`,
@@ -61,7 +61,7 @@ const AddProductPage = () => {
     useEffect(() => {
         const fetchCategories = async () => {
             try {
-                const response = await fetch("http://localhost:5000/categories", {
+                const response = await fetch("https://testbe-1.onrender.com/categories", {
                     method: "GET",
                     headers: {
                         Authorization: `Bearer ${localStorage.getItem("access_token")}`, // Sử dụng token
@@ -89,7 +89,7 @@ const AddProductPage = () => {
     useEffect(() => {
         const fetchStatuses = async () => {
             try {
-                const response = await fetch("http://localhost:5000/products", {
+                const response = await fetch("https://testbe-1.onrender.com/products", {
                     method: "GET",
                     headers: {
                         Authorization: `Bearer ${localStorage.getItem("access_token")}`, // Sử dụng token
@@ -208,9 +208,8 @@ const AddProductPage = () => {
                                         className="border px-4 py-2 w-full rounded"
                                     >
                                         <option value="">Chọn trạng thái</option> {/* Default option */}
-                                        <option value="Chưa thanh toán">Chưa thanh toán</option>
-                                        <option value="Đã thanh toán">Đã thanh toán</option>
-                                        <option value="Đã hủy">Đã hủy</option>
+                                        <option value="Còn hàng">Còn hàng</option>
+                                        <option value="Hết hàng">Hết hàng</option>
                                     </select>
                                 </div>
 

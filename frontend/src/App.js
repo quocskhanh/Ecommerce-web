@@ -13,6 +13,18 @@ import AddOrderPage from "./pages/order/AddOrderPage";
 import EditCategoryPage from "./pages/category/EditCategoryPage";
 import AccountPage from "./pages/auth/AccountPage";
 
+
+// import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import ShopPage from "./pages/ShopPage";
+import HomePage from "./pages/HomePage";
+import CheckOutPage from './pages/CheckOutPage';
+import ProductPageUser from './pages/ProductPage';
+import { CartProvider } from "./components/ShopPage/ListProducts/CartContext";
+import SignInPage2 from './pages/auth/SignInPage';
+import SignUpPage from './pages/auth/SignUpPage';
+
+import Login from "./pages/auth/Login";
+
 // Lazy load components
 const ProductPage = lazy(() => import("./pages/product/ProductPage"));
 const DashboardPage = lazy(() => import("./pages/DashboardPage"));
@@ -20,8 +32,10 @@ const OrderPage = lazy(() =>import( "./pages/order/OrderPage"))
 
 function App() {
   return (
+    <CartProvider>
         <Suspense>
           <Routes>
+            <Route path="/shop" element={<ShopPage />} /> 
             {/* Các route dành cho quản trị viên */}
             <Route path="/admin/*" element={<DashboardPage />} />
             <Route path="/auth/*" element={<AccountPage />} />
@@ -52,8 +66,15 @@ function App() {
             {/*<Route path="/user/profile" element={<UserProfilePage />} />*/}
 
 
+            <Route path="/" element={<HomePage />} /> 
+            {/* <Route path="/shop" element={<ShopPage />} />  */}
+            <Route path="/product/:id" element={<ProductPageUser />} /> 
+            <Route path="/checkout" element={<CheckOutPage />} />
+            <Route path="/login" element={<Login />} />
+
           </Routes>
         </Suspense>
+      </CartProvider>
   );
 }
 

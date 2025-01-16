@@ -1,111 +1,106 @@
 import React, { useState, useEffect } from 'react';
 import ProductList from './ProductLists';
 import FilterByCategory from './FilterByCategory';
+import axios from "axios";
 
 const ListProduct = () => {
-    const [products, setProducts] = useState([]);
-    const [filteredProducts, setFilteredProducts] = useState([]);
-    const [selectedCategory, setSelectedCategory] = useState(null);
-    const [selectedPriceRange, setSelectedPriceRange] = useState(null);
-    const [selectedSize, setSelectedSize] = useState(null);
-    const [sortOrder, setSortOrder] = useState('price-asc');
+  const [products, setProducts] = useState([]);
+  const [filteredProducts, setFilteredProducts] = useState([]);
+  const [selectedCategoryId, setSelectedCategoryId] = useState(null); // Lọc theo category_id
+  const [selectedPriceRange, setSelectedPriceRange] = useState(null);
+  const [sortOrder, setSortOrder] = useState('price-asc');
+  
 
-    useEffect(() => {
-        const fetchProducts = async () => {
-            try {
-                const response = await fetch("http://localhost:8000/products");
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                const data = await response.json();
-                setProducts(data);
-                setFilteredProducts(data);
-            } catch (error) {
-                console.error("Error fetching products:", error);
-            }
-        };
+  // Lấy danh sách sản phẩm từ API
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const response = await axios.get("https://testbe-1.onrender.com/products");
 
-        fetchProducts();
-    }, []);
 
-    useEffect(() => {
-        let updatedProducts = products;
 
-        if (selectedCategory) {
-            updatedProducts = updatedProducts.filter((product) => product.category === selectedCategory);
-        }
 
-        if (selectedPriceRange) {
-            updatedProducts = updatedProducts.filter(
-                (product) => product.price >= selectedPriceRange.min && product.price <= selectedPriceRange.max
-            );
-        }
-
-        if (selectedSize) {
-            if (selectedCategory === 'Thời trang nam' || selectedCategory === 'Thời trang nữ') {
-                updatedProducts = updatedProducts.filter((product) => product.sizes && product.sizes.includes(selectedSize));
-            } else if (selectedCategory === 'Giày dép') {
-                if (selectedSize === '<30') {
-                    updatedProducts = updatedProducts.filter((product) => product.size && parseInt(product.size) < 30);
-                } else if (selectedSize === '30-40') {
-                    updatedProducts = updatedProducts.filter((product) => product.size && parseInt(product.size) >= 30 && parseInt(product.size) < 40);
-                } else if (selectedSize === '>40') {
-                    updatedProducts = updatedProducts.filter((product) => product.size && parseInt(product.size) >= 40);
-                }
-            }
-        }
-
-        setFilteredProducts(updatedProducts);
-    }, [selectedCategory, selectedPriceRange, selectedSize, products]);
-
-    const handleFilterChange = (category) => {
-        setSelectedCategory(category);
-        setSelectedSize(null); // Reset size filter when category changes
+        setProducts(response.data); // Lưu toàn bộ sản phẩm
+        setFilteredProducts(response.data); // Lưu sản phẩm đã lọc
+      } catch (error) {
+        console.error("Error fetching products:", error);
+      }
     };
 
-    const handlePriceRangeChange = (range) => {
-        setSelectedPriceRange(range);
-    };
+    fetchProducts();
+  }, []);
 
-    const handleSizeChange = (size) => {
-        setSelectedSize(size);
-    };
+  // Lọc sản phẩm theo danh mục, giá và sắp xếp
+  useEffect(() => {
+    let updatedProducts = products;
 
-    const handleSortChange = (sortOrder) => {
-        setSortOrder(sortOrder);
-    };
+    // Lọc theo danh mục
+    if (selectedCategoryId) {
+      updatedProducts = updatedProducts.filter((product) => product.category_id === selectedCategoryId);
+    }
 
-    const categories = [...new Set(products.map((product) => product.category))];
-    const sizes = selectedCategory === 'Thời trang nam' || selectedCategory === 'Thời trang nữ'
-        ? ['S', 'M', 'L', 'XL']
-        : selectedCategory === 'Giày dép'
-            ? ['<30', '30-40', '>40']
-            : [];
+    // Lọc theo khoảng giá
+    if (selectedPriceRange) {
+      updatedProducts = updatedProducts.filter(
+        (product) => product.price >= selectedPriceRange.min && product.price <= selectedPriceRange.max
+      );
+    }
 
-    return (
-        <div className="list_product_container">
-            <div className="list_product_left_content">
-                <h2>Filter</h2>
-                <FilterByCategory
-                    categories={categories}
-                    selectedCategory={selectedCategory}
-                    onFilterChange={handleFilterChange}
-                    selectedPriceRange={selectedPriceRange}
-                    onPriceRangeChange={handlePriceRangeChange}
-                    sizes={sizes}
-                    selectedSize={selectedSize}
-                    onSizeChange={handleSizeChange}
-                />
-            </div>
-            <div className="list_product_right_content">
-                <ProductList
-                    products={filteredProducts}
-                    sortOrder={sortOrder}
-                    onSortChange={handleSortChange}
-                />
-            </div>
-        </div>
-    );
+    // Sắp xếp sản phẩm
+    if (sortOrder === 'price-asc') {
+      updatedProducts = updatedProducts.sort((a, b) => a.price - b.price);
+    } else if (sortOrder === 'price-desc') {
+      updatedProducts = updatedProducts.sort((a, b) => b.price - a.price);
+    }
+
+    setFilteredProducts(updatedProducts);
+  }, [selectedCategoryId, selectedPriceRange, sortOrder, products]);
+
+  // Xử lý thay đổi bộ lọc danh mục
+  const handleFilterChange = (categoryId) => {
+    setSelectedCategoryId(categoryId);
+  };
+
+  // Xử lý thay đổi khoảng giá
+  const handlePriceRangeChange = (range) => {
+    setSelectedPriceRange(range);
+  };
+
+  // Xử lý thay đổi sắp xếp
+  const handleSortChange = (sortOrder) => {
+    setSortOrder(sortOrder);
+  };
+
+  const categories = [
+    { id: 1, name: 'Áo' },
+    { id: 2, name: 'Quần' },
+    { id: 3, name: 'Giày dép' },
+    { id: 4, name: 'Phụ kiện' }
+  ];
+
+  return (
+    <div className="list_product_container">
+      {/* Phần bộ lọc */}
+      <div className="list_product_left_content">
+        <h2>Filter</h2>
+        <FilterByCategory
+          categories={categories} 
+          selectedCategoryId={selectedCategoryId}
+          onFilterChange={handleFilterChange}
+          selectedPriceRange={selectedPriceRange}
+          onPriceRangeChange={handlePriceRangeChange}
+        />
+      </div>
+
+      <div className="list_product_right_content">
+        <ProductList
+          products={filteredProducts}
+          sortOrder={sortOrder}
+          onSortChange={handleSortChange}
+        />
+      </div>
+    </div>
+  );
 };
 
 export default ListProduct;

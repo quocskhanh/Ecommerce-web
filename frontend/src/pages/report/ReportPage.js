@@ -21,9 +21,15 @@ const ReportPage = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const ordersResponse = await axios.get("http://localhost:5000/orders");
-                const productsResponse = await axios.get("http://localhost:5000/products");
-                const accountsResponse = await axios.get("http://localhost:5000/accounts");
+                const headers = {
+                    Authorization: `Bearer ${localStorage.getItem("access_token")}`, // Sử dụng token
+                    "Content-Type": "application/json",
+                };
+
+                const ordersResponse = await axios.get("https://testbe-1.onrender.com/orders", { headers });
+                const productsResponse = await axios.get("https://testbe-1.onrender.com/products", { headers });
+                const accountsResponse = await axios.get("https://testbe-1.onrender.com/accounts", { headers });
+
 
                 const orders = ordersResponse.data;
                 const products = productsResponse.data;
@@ -38,13 +44,13 @@ const ReportPage = () => {
 
                 // Tổng số đơn hàng trong tháng
                 const monthlyOrders = orders.filter((order) => {
-                    const orderDate = new Date(order.createdDate);
+                    const orderDate = new Date(order.created_at);
                     return orderDate >= startOfMonth && orderDate <= currentDate;
                 });
                 setTotalOrders(monthlyOrders.length);
 
                 // Tính doanh thu trong tháng
-                const completedOrdersThisMonth = monthlyOrders.filter((order) => order.status === "Đã hoàn thành");
+                const completedOrdersThisMonth = monthlyOrders.filter((order) => order.status === "Đã thanh toán");
                 const monthlyRevenue = completedOrdersThisMonth.reduce((sum, order) => sum + order.total_price, 0);
                 setTotalRevenue(monthlyRevenue);
 
@@ -58,8 +64,8 @@ const ReportPage = () => {
 
                     const dailyOrders = monthlyOrders.filter(
                         (order) =>
-                            new Date(order.createdDate).toISOString().split("T")[0] === date.toISOString().split("T")[0] &&
-                            order.status === "Đã hoàn thành"
+                            new Date(order.created_at).toISOString().split("T")[0] === date.toISOString().split("T")[0] &&
+                            order.status === "Đã thanh toán"
                     );
                     dailyRevenue.push(dailyOrders.reduce((sum, order) => sum + order.total_price, 0));
                 }
@@ -98,7 +104,7 @@ const ReportPage = () => {
                 const customerSpending = {};
 
                 orders.forEach((order) => {
-                    if (order.status === "Đã hoàn thành") {
+                    if (order.status === "Đã thanh toán") {
                         if (customerSpending[order.account_id]) {
                             customerSpending[order.account_id] += order.total_price;
                         } else {
@@ -138,7 +144,7 @@ const ReportPage = () => {
     const ordersPerDay = revenuePerDay.dates.map((date) => {
         return orders.filter(
             (order) =>
-                new Date(order.createdDate).toISOString().split("T")[0] === date
+                new Date(order.created_at).toISOString().split("T")[0] === date
         ).length;
     });
 
@@ -223,7 +229,7 @@ const ReportPage = () => {
                         <li key={order.id} className="border-b py-2">
                             <div className="text-gray-600">Mã đơn hàng: {order.id}</div>
                             <div className="text-gray-500">
-                                Ngày: {new Date(order.createdDate).toLocaleDateString()}
+                                Ngày: {new Date(order.created_at).toLocaleDateString()}
                             </div>
                         </li>
                     ))}
