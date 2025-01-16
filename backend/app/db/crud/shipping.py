@@ -28,10 +28,13 @@ def update_shipping(db: Session, shipping_id: int, shipping_update: ShippingUpda
     update_data = shipping_update.dict(exclude_unset=True)
     if shipping_update.status == "Đang vận chuyển":
         shipping.shipped_at = datetime.utcnow()
+        shipping.order.status = "Đang giao hàng"
     if shipping_update.status == "Đã vận chuyển":
         shipping.delivered_at = datetime.utcnow()
+        shipping.order.status = "Đã giao hàng"
     for key, value in update_data.items():
         setattr(shipping, key, value)
+    
     db.commit()
     db.refresh(shipping)
     return shipping

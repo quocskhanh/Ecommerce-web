@@ -25,7 +25,6 @@ def create_payment(db: Session, payment_data: PaymentCreate):
     )
     if payment_data.status == "Đã thanh toán":
         new_payment.paid_at = datetime.utcnow()
-        order.status = "Đã thanh toán"
         order.account.total_spent += order.total_price
     db.add(new_payment)
     db.commit()
@@ -62,7 +61,6 @@ def update_payment(db: Session, payment_id: int, payment_update: PaymentUpdate):
     if payment_update.status == "Đã thanh toán" and not payment.paid_at:
         payment.paid_at = datetime.utcnow()
         order = payment.order
-        order.status = "Đã thanh toán"
         order.account.total_spent += order.total_price
 
     db.commit()
