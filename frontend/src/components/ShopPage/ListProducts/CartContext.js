@@ -4,6 +4,9 @@ import axios from "axios";
 const CartContext = createContext();
 
 const CartProvider = ({ children }) => {
+
+  const apiURL = process.env.REACT_APP_API_URL;
+
   const [cart, setCart] = useState([]);
   const [cartId, setCartId] = useState(null); // Lưu trữ `cart_id`
 
@@ -21,18 +24,18 @@ const CartProvider = ({ children }) => {
 
         // Kiểm tra giỏ hàng hiện tại
         try {
-          const cartResponse = await axios.get("https://testbe-1.onrender.com/carts/me", { headers });
+          const cartResponse = await axios.get(`${apiURL}/carts/me`, { headers });
           setCartId(cartResponse.data.id); // Lưu ID giỏ hàng
           console.log("Existing cart:", cartResponse.data);
 
           // Lấy các mục trong giỏ hàng
-          const itemsResponse = await axios.get("https://testbe-1.onrender.com/cart_items/me", { headers });
+          const itemsResponse = await axios.get(`${apiURL}/cart_items/me`, { headers });
           setCart(itemsResponse.data);
         } catch (error) {
           if (error.response?.status === 404) {
             // Nếu giỏ hàng chưa tồn tại, tạo mới
             const createCartResponse = await axios.post(
-              "https://testbe-1.onrender.com/carts/me",
+              `${apiURL}/carts/me`,
               {},
               { headers }
             );
@@ -63,7 +66,7 @@ const CartProvider = ({ children }) => {
   
       // Gửi yêu cầu thêm sản phẩm vào giỏ hàng
       const response = await axios.post(
-        `https://testbe-1.onrender.com/cart_items/me?product_id=${product.id}`,
+        `${apiURL}/cart_items/me?product_id=${product.id}`,
         {
           cart_id: cartId, // Sử dụng `cart_id`
           product_id: product.id,
@@ -87,7 +90,7 @@ const CartProvider = ({ children }) => {
       const token = localStorage.getItem("access_token");
       const headers = { Authorization: `Bearer ${token}` };
 
-      await axios.put(`https://testbe-1.onrender.com/cart_items/me/${itemId}`, { is_chosen: isChosen }, { headers });
+      await axios.put(`${apiURL}/cart_items/me/${itemId}`, { is_chosen: isChosen }, { headers });
 
       // Cập nhật trạng thái
       setCart((prevCart) =>
@@ -106,7 +109,7 @@ const CartProvider = ({ children }) => {
       const token = localStorage.getItem("access_token");
       const headers = { Authorization: `Bearer ${token}` };
 
-      await axios.delete(`https://testbe-1.onrender.com/cart_items/me?item_id=${itemId}`, { headers });
+      await axios.delete(`${apiURL}/cart_items/me?item_id=${itemId}`, { headers });
 
       // Cập nhật giỏ hàng
       setCart((prevCart) => prevCart.filter((item) => item.id !== itemId));
@@ -122,7 +125,7 @@ const CartProvider = ({ children }) => {
       const headers = { Authorization: `Bearer ${token}` };
 
       const response = await axios.put(
-        `https://testbe-1.onrender.com/cart_items/me/${itemId}`,
+        `${apiURL}/cart_items/me/${itemId}`,
         { quantity },
         { headers }
       );
