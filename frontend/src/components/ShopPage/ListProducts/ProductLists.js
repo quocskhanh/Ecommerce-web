@@ -73,7 +73,7 @@ function ProductList({ products, sortOrder, onSortChange, selectedCategoryId, se
   };
 
   if (!products.length) {
-    return <div>Loading...</div>;
+    return <div>Không có sản phẩm </div>;
   }
 
   return (
