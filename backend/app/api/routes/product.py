@@ -12,6 +12,7 @@ from app.db.crud.product import (
 from app.api.authentication import get_current_user, get_current_admin_user
 from app.db.database import SessionLocal
 from app.models.account import Account
+from typing import Optional
 
 router = APIRouter(prefix="/products", tags=["products"])
 
@@ -30,7 +31,7 @@ def list_products(
     category_id: int = Query(None, description="Lọc sản phẩm theo loại"),
     min_price: int = Query(0, description="Lọc sản phẩm theo giá tối thiểu"),
     max_price: int = Query(None, description="Lọc sản phẩm theo giá tối đa"),
-    current_user: Account = Depends(get_current_user)
+    
 ):
     """
     Lấy danh sách sản phẩm với các tùy chọn lọc: loại, khoảng giá.
@@ -42,8 +43,6 @@ def list_products(
         min_price=min_price,
         max_price=max_price,
     )
-    if not current_user.role:  # Nếu user không phải admin
-        products = [product for product in products if product.status == "Còn hàng"]
     return products
 
 # API: Lấy thông tin sản phẩm theo ID

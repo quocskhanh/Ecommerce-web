@@ -17,6 +17,7 @@ class Account(Base):
     password = Column(String(255), nullable=False)  
     role = Column(Boolean, nullable=False, default=False)  #False = user
     created_at = Column(DateTime, server_default=func.now(), nullable=False)
+    total_spent = Column(Integer, default=0)  # Thêm trường mới
     
     cart = relationship("Cart", back_populates= "account")
     orders = relationship("Order", back_populates="account")
