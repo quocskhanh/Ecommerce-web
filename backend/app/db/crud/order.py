@@ -3,6 +3,7 @@ from app.models.order import Order
 from app.schemas.order import OrderCreate, OrderUpdate
 from app.db.crud.cart import get_cart_by_account
 from app.models.cart_item import CartItem
+from app.models.order_item import OrderItem
 
 def get_orders(db: Session):
     return db.query(Order).all()
@@ -25,7 +26,14 @@ def create_order(db: Session, account_id: int):
     db.add(new_order)
     db.commit()
     db.refresh(new_order)
-
+    for item in chosen_items:
+        order_item = OrderItem(
+            order_id=new_order.id,
+            product_id=item.product_id,
+            quantity=item.quantity,
+            price_per_item=item.price_per_item
+        )
+        db.add(order_item)
     # Reset trạng thái is_chosen về False sau khi tạo đơn hàng
     for item in chosen_items:
         item.is_chosen = False

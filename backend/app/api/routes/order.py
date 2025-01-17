@@ -5,11 +5,13 @@ from app.schemas.order import OrderCreate, OrderUpdate, OrderResponse
 from app.db.crud.order import (
     create_order, get_order_by_id, update_order, delete_order, get_orders_by_account,get_orders
 )
+from app.schemas.order_item import OrderItemResponse
 from app.api.authentication import get_current_user,get_current_admin_user
 from app.db.database import SessionLocal
 from app.models.account import Account
 from app.models.order import Order
 from sqlalchemy.sql import func
+from app.models.order_item import OrderItem
 router = APIRouter(prefix="/orders", tags=["orders"])
 def get_db():
     db = SessionLocal()
@@ -121,3 +123,17 @@ def delete_existing_order(
     delete_order(db, order_id)
     return {"message": "Order deleted successfully"}
 
+@router.get("/{order_id}/items", response_model=List[OrderItemResponse])
+def get_order_items(order_id: int, db: Session = Depends(get_db)):
+    # Kiểm tra Order có tồn tại hay không
+    order = db.query(Order).filter(Order.id == order_id).first()
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+
+    # Lấy danh sách OrderItem liên quan
+    items = db.query(OrderItem).filter(OrderItem.order_id == order_id).all()
+
+    if not items:
+        raise HTTPException(status_code=404, detail="No items found for this order")
+
+    return items
