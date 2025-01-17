@@ -9,6 +9,9 @@ const FilterByCategory = ({
   selectedPriceRange,
   onPriceRangeChange
 }) => {
+
+  const apiURL = process.env.REACT_APP_API_URL;
+
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -17,7 +20,7 @@ const FilterByCategory = ({
     const fetchCategories = async () => {
       try {
         setLoading(true);
-        const response = await axios.get('https://testbe-1.onrender.com/categories'); // Thay URL bằng API thực tế
+        const response = await axios.get(`${apiURL}/categorie`); // Thay URL bằng API thực tế
         setCategories(response.data);
       } catch (err) {
         setError('Không thể tải danh sách danh mục. Vui lòng thử lại sau.');
