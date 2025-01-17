@@ -4,6 +4,10 @@ import FilterByCategory from './FilterByCategory';
 import axios from "axios";
 
 const ListProduct = () => {
+
+  const apiURL = process.env.REACT_APP_API_URL;
+
+
   const [products, setProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [selectedCategoryId, setSelectedCategoryId] = useState(null); 
@@ -15,7 +19,7 @@ const ListProduct = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await axios.get("https://testbe-1.onrender.com/products");
+        const response = await axios.get(`${apiURL}/products`);
 
 
 
