@@ -4,6 +4,9 @@ import { CartContext } from "./CartContext";
 import axios from "axios";
 
 const ProductDetail = ({ productId }) => {
+
+  const apiURL = process.env.REACT_APP_API_URL;
+
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
@@ -14,7 +17,7 @@ const ProductDetail = ({ productId }) => {
     const fetchProduct = async () => {
       try {
         setLoading(true);
-        const response = await axios.get(`https://testbe-1.onrender.com/products/${productId}`);
+        const response = await axios.get(`${apiURL}/products/${productId}`);
         setProduct(response.data);
       } catch (err) {
         setError("Không thể tải thông tin sản phẩm. Vui lòng thử lại sau.");
@@ -50,13 +53,10 @@ const ProductDetail = ({ productId }) => {
       </div>
       <div className="detail-product-content">
         <h2>{product.name}</h2>
+        <p>Mô tả: {product.description}</p>
+        <p>Màu: {product.colors}</p>
+        <p>Size: {product.sizes}</p>
         <p>Giá: {product.price.toLocaleString()} VND</p>
-        <input
-          type="number"
-          value={quantity}
-          min="1"
-          onChange={handleQuantityChange}
-        />
         <button onClick={handleAddToCart}>Thêm vào giỏ hàng</button>
       </div>
     </div>
