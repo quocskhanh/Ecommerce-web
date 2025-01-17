@@ -7,6 +7,8 @@ const CategoriesPage = () => {
     const [categories, setCategories] = useState([]);
     const navigate = useNavigate();
 
+    const apiURL = process.env.REACT_APP_API_URL;
+
     // Fetch categories on component mount
     useEffect(() => {
         const fetchCategories = async () => {
@@ -17,7 +19,7 @@ const CategoriesPage = () => {
                     return;
                 }
 
-                const response = await axios.get("https://testbe-1.onrender.com/categories", {
+                const response = await axios.get(`${apiURL}/categories`, {
                     headers: {
                         Authorization: `Bearer ${token}`,
                         "Content-Type": "application/json",
@@ -44,7 +46,7 @@ const CategoriesPage = () => {
             const token = localStorage.getItem("access_token");
 
             // Lấy danh sách sản phẩm trong danh mục
-            const productResponse = await axios.get(`https://testbe-1.onrender.com/products?category_id=${categoryId}`, {
+            const productResponse = await axios.get(`${apiURL}/products?category_id=${categoryId}`, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                     "Content-Type": "application/json",
@@ -55,7 +57,7 @@ const CategoriesPage = () => {
 
             // Xóa từng sản phẩm liên quan
             for (const product of products) {
-                await axios.delete(`https://testbe-1.onrender.com/products/${product.id}`, {
+                await axios.delete(`${apiURL}/products/${product.id}`, {
                     headers: {
                         Authorization: `Bearer ${token}`,
                         "Content-Type": "application/json",
@@ -64,7 +66,7 @@ const CategoriesPage = () => {
             }
 
             // Xóa danh mục
-            await axios.delete(`https://testbe-1.onrender.com/categories/delete?category_id=${categoryId}`, {
+            await axios.delete(`${apiURL}/categories/delete?category_id=${categoryId}`, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                     "Content-Type": "application/json",
@@ -98,7 +100,7 @@ const CategoriesPage = () => {
             }
 
             await axios.put(
-                `https://testbe-1.onrender.com/categories/change?category_id=${categoryId}`,
+                `${apiURL}/categories/change?category_id=${categoryId}`,
                 { name: newName }, // Truyền thông tin mới cần chỉnh sửa
                 {
                     headers: {
@@ -125,7 +127,7 @@ const CategoriesPage = () => {
         <AdminLayout>
             <div className="p-6 overflow-y-auto h-full">
                 <div className="flex justify-between items-center mb-6">
-                    <h1 className="text-2xl font-bold text-gray-800 mb-8 mt-6">Danh mục sản phẩm</h1>
+                    <h1 className="text-2xl font-bold text-gray-800 mb-8 mt-10">Danh mục sản phẩm</h1>
                     <button
                         className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
                         onClick={() => navigate("/admin/categories/add-category")}

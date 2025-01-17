@@ -31,10 +31,12 @@ const AccountsPage = () => {
     const itemsPerPage = 5;
     const navigate = useNavigate();
 
+    const apiURL = process.env.REACT_APP_API_URL;
+
     useEffect(() => {
         const fetchAccounts = async () => {
             try {
-                const response = await axios.get(`${ecommerceAPI.baseURL}accounts`, {
+                const response = await axios.get(`${apiURL}/accounts`, {
                     headers: {
                         Authorization: `Bearer ${localStorage.getItem("access_token")}`,
                         "Content-Type": "application/json",
@@ -100,7 +102,7 @@ const AccountsPage = () => {
         try {
             // Gửi yêu cầu cập nhật thông tin tài khoản (không bao gồm vai trò)
             const response = await axios.put(
-                `${ecommerceAPI.baseURL}accounts/${editingAccount}`,
+                `${apiURL}/accounts/${editingAccount}`,
                 payload,
                 {
                     headers: {
@@ -115,7 +117,7 @@ const AccountsPage = () => {
             if (editedCustomerData.role !== null) {
                 try {
                     const roleResponse = await axios.put(
-                        `${ecommerceAPI.baseURL}accounts/${editingAccount}/role`,
+                        `${apiURL}/accounts/${editingAccount}/role`,
                         null, // Không có body, chỉ cần truyền query parameter
                         {
                             params: {
@@ -169,7 +171,7 @@ const AccountsPage = () => {
     const handleConfirmDelete = async () => {
         try {
             for (const id of selectedAccounts) {
-                await axios.delete(`${ecommerceAPI.baseURL}accounts/${id}`, {
+                await axios.delete(`${apiURL}/accounts/${id}`, {
                     headers: {
                         Authorization: `Bearer ${localStorage.getItem("access_token")}`,
                         "Content-Type": "application/json"
@@ -247,10 +249,10 @@ const AccountsPage = () => {
             <AdminLayout>
                 <div className="p-6 ml-30 max-w-6xl">
                     <div className="flex flex-col sm:flex-row justify-between items-center mb-6">
-                        <h1 className="text-2xl font-bold text-gray-800 w-full sm:w-auto mb-8 mt-6">Danh sách tài khoản</h1>
+                        <h1 className="text-2xl font-bold text-gray-800 w-full sm:w-auto mb-8 mt-10">Danh sách tài khoản</h1>
                         <div className="flex gap-4 w-full sm:w-auto justify-between sm:justify-end">
                             <button
-                                className="px-4 py-2 bg-white rounded border border-[#d6daec] hover:bg-gray-200"
+                                className="px-4 py-2 bg-white text-black rounded-lg border border-[#d6daec] hover:bg-gray-200"
                                 onClick={handleExport}
                             >
                                 Xuất
@@ -264,7 +266,7 @@ const AccountsPage = () => {
                     <div className="bg-white rounded-lg shadow overflow-hidden">
                         <div className="flex flex-col sm:flex-row justify-between items-center p-4 border-b">
 
-                            <div className="relative w-full sm:w-auto">
+                            <div className="relative w-full sm:w-auto mt-5 ">
                                 <input
                                     type="text"
                                     placeholder="Tìm kiếm tài khoản..."
@@ -294,7 +296,7 @@ const AccountsPage = () => {
 
                             <div className="flex gap-4 ml-auto w-full sm:w-auto justify-between sm:justify-end">
                                 <button
-                                    className="px-4 py-2 bg-white-500 text-gray-600 rounded border border-blue-400 hover:bg-blue-500 cursor-pointer"
+                                    className="px-4 py-2 bg-white-500 text-gray-600 bg-white rounded border border-blue-400 hover:bg-blue-500 cursor-pointer"
                                     onClick={handleEditAccount}
                                 >
                                 <span>
@@ -303,7 +305,7 @@ const AccountsPage = () => {
                                 </button>
 
                                 <button
-                                    className="px-4 py-2 bg-white-500 text-blue-400 border border-blue-400 rounded hover:bg-red-500 cursor-pointer"
+                                    className="px-4 py-2 bg-white-500 text-blue-400 bg-white border border-blue-400 rounded hover:bg-red-500 cursor-pointer"
                                     onClick={handleDeleteTrigger}
                                 >
                                 <span>

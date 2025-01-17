@@ -16,6 +16,8 @@ const SignUpPage = () => {
     const { value: showPassword, handleToggleValue: handleTogglePassword } = useToggleValue();
     const [loading, setLoading] = useState(false);
 
+    const apiURL = process.env.REACT_APP_API_URL;
+
     const handleSignUp = async (values) => {
         setLoading(true);
 
@@ -34,7 +36,7 @@ const SignUpPage = () => {
 
             console.log("Payload gửi lên server:", payload); // Kiểm tra dữ liệu gửi lên
 
-            const response = await axios.post(`${ecommerceAPI.baseURL}signup`, payload, {
+            const response = await axios.post(`${apiURL}/signup`, payload, {
                 headers: {
                     "Content-Type": "application/json",
                 },

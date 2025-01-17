@@ -27,8 +27,9 @@ const DashboardSidebar = () => {
     const [isOpen, setIsOpen] = useState(false);
 
     const navLinkClass =
-        "flex items-center px-4 py-3 rounded-lg duration-300 text-gray-300 text-sm font-medium hover:bg-gray-200 hover:text-gray-900  transition";
-    const activeClass = "bg-white text-gray-900 shadow-lg";
+        "flex items-center px-4 py-3 rounded-lg duration-300 text-gray-300 text-sm font-medium hover:bg-gray-200 hover:text-gray-900 transition no-underline";
+    const activeClass = "bg-white text-gray-900 shadow-lg no-underline";
+
     return (
         <>
             {/* Sidebar Toggle Button for Mobile */}

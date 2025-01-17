@@ -29,10 +29,12 @@ const ResetPasswordPage = () => {
     const navigate = useNavigate();
 
 
+    const apiURL = process.env.REACT_APP_API_URL;
+
     const handleResetPassword = async (values) => {
         try {
             const response = await fetch(
-                `${ecommerceAPI.baseURL}accounts/password-reset-request?email=${encodeURIComponent(values.email)}`, // Truyền qua query
+                `${apiURL}/accounts/password-reset-request?email=${encodeURIComponent(values.email)}`, // Truyền qua query
                 {
                     method: "POST", // Phương thức POST
                     headers: {
@@ -56,7 +58,7 @@ const ResetPasswordPage = () => {
             const data = await response.json();
 
 
-            console.log("Request sent to:", `${ecommerceAPI.baseURL}accounts/password-reset-request?email=${encodeURIComponent(values.email)}`);
+            console.log("Request sent to:", `${apiURL}/accounts/password-reset-request?email=${encodeURIComponent(values.email)}`);
             console.log("Response received:", data);
             if (data.reset_token) {
                 alert("Mã xác nhận đã được gửi thành công!");
