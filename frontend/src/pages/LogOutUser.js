@@ -2,29 +2,18 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import AdminLayout from "../components/layout/AdminLayout";
-import {ecommerceAPI} from "../config/config";
 
-const LogoutPage = () => {
+const LogOutUser = () => {
     const navigate = useNavigate();
-
-    const apiURL = process.env.REACT_APP_API_URL;
 
     const handleLogout = async () => {
         try {
-            const token = localStorage.getItem("token");
-
-            if (!token) {
-                alert("Đăng xuất thành công!");
-                navigate("/auth/sign-in");
-                return;
-            }
-
             const response = await axios.post(
-                `${apiURL}/logout`,
-                {}, // Body rỗng
+                "https://testbe-1.onrender.com/logout",
+                {},
                 {
                     headers: {
-                        Authorization: `Bearer ${token}`,
+                        Authorization: `Bearer ${localStorage.getItem("token")}`,
                         "Content-Type": "application/json",
                     },
                 }
@@ -33,35 +22,31 @@ const LogoutPage = () => {
             if (response.status === 200) {
                 localStorage.removeItem("token");
                 alert("Bạn đã đăng xuất thành công!");
-                navigate("/auth/sign-in");
+                navigate("/login");
             } else {
-                alert("Có lỗi xảy ra trong quá trình đăng xuất. Vui lòng thử lại!");
+                alert("Có lỗi xảy ra. Vui lòng thử lại!");
             }
         } catch (error) {
-            console.error("Chi tiết lỗi đăng xuất:", error);
-
+            console.error("Lỗi đăng xuất:", error);
             if (error.response) {
-                // Lỗi phản hồi từ server
-                console.error("Phản hồi server:", error.response);
-                alert(`Lỗi server: ${error.response.status} - ${error.response.data.message || "Không xác định"}`);
+                // Nếu có lỗi từ server
+                alert(`Lỗi server: ${error.response.statusText}`);
             } else if (error.request) {
-                // Không nhận được phản hồi từ server
-                console.error("Yêu cầu không phản hồi:", error.request);
-                alert("Không thể kết nối với server. Vui lòng kiểm tra mạng hoặc thử lại sau!");
+                // Nếu không có phản hồi từ server
+                alert("Không thể kết nối với server. Vui lòng thử lại!");
             } else {
                 // Lỗi khi thiết lập yêu cầu
-                console.error("Lỗi khi thiết lập yêu cầu:", error.message);
                 alert("Lỗi yêu cầu: " + error.message);
             }
         }
     };
 
     const handleCancel = () => {
-        navigate(-1); // Quay lại trang trước
+        navigate(-1);
     };
 
     return (
-        <AdminLayout>
+        <AdminLayout >
             <div className="min-h-screen flex items-center justify-center bg-gray-100">
                 <div className="bg-white shadow-lg rounded-lg p-8 text-center w-full max-w-md">
                     <h1 className="text-2xl font-bold mb-4 text-gray-800">Xác nhận Đăng Xuất</h1>
@@ -87,4 +72,4 @@ const LogoutPage = () => {
     );
 };
 
-export default LogoutPage;
+export default LogOutUser;

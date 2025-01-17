@@ -9,6 +9,7 @@ import CheckOutPage from "./pages/CheckOutPage";
 import ProductPageUser from "./pages/ProductPage";
 import Login from "./pages/auth/Login";
 import AccountPageUser from "./pages/AccountPageUser";
+import LogOutUser from "./pages/LogOutUser";
 import ShippingPage from "./pages/shipping/ShippingPage";
 
 // Lazy load components
@@ -43,6 +44,7 @@ function App() {
                     <Route path="/checkout" element={<CheckOutPage />} />
                     <Route path="/login" element={<Login />} />
                     <Route path="/account" element={<AccountPageUser />} />
+                    <Route path="/log-out" element={<LogOutUser />} />
 
                     {/* Route dành cho quản trị viên */}
                     <Route path="/admin/*" element={<DashboardPage />} />

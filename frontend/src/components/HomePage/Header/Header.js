@@ -24,7 +24,7 @@ const Header = () => {
           <div className="inner-list">
             <ul>
               <li>
-                <Link to="/">Trang chủ</Link>
+                <Link to="/">Home</Link>
               </li>
               <li>
                 <Link to="/shop">Shop</Link>
@@ -32,7 +32,7 @@ const Header = () => {
               {isLoggedIn ? (
                 <>
                   <li>
-                    <Link to="/product/21">Sản phẩm</Link>
+                    <Link to="/product/21">Product</Link>
                   </li>
                   <li>
                     <Link to="/account">
@@ -52,11 +52,11 @@ const Header = () => {
               ) : (
                 <>
                   <li>
-                    <Link to="/login">Đăng nhập</Link>
+                    <Link to="/login">Sign In</Link>
                   </li>
                   <li>
                     <Link to="/auth/sign-up">
-                      <button className="home-signup-button">Đăng ký</button>
+                      <button className="home-signup-button">Sign Up</button>
                     </Link>
                   </li>
                 </>

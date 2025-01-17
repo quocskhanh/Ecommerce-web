@@ -24,6 +24,8 @@ const ConfirmCodePage = () => {
     const [isResending, setIsResending] = useState(false); // Trạng thái gửi lại mã
     const lastEmail = localStorage.getItem("reset_email") || ""; // Lấy email từ localStorage
 
+    const apiURL = process.env.REACT_APP_API_URL;
+
     const handleConfirmCode = async (values) => {
         try {
             console.log("Mã xác nhận đã nhập:", values.code);
@@ -48,7 +50,7 @@ const ConfirmCodePage = () => {
         setIsResending(true); // Bắt đầu trạng thái gửi lại
         try {
             const response = await fetch(
-                `${ecommerceAPI.baseURL}accounts/password-reset-request?email=${encodeURIComponent(
+                `${apiURL}/accounts/password-reset-request?email=${encodeURIComponent(
                     lastEmail
                 )}`,
                 {

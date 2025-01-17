@@ -8,10 +8,9 @@
 }
 
 .filter_by_category h3 {
-    margin-top: 15px;
+    margin-bottom: 15px;
     font-size: 1.2em;
     color: #333;
-    text-decoration: none;
 }
 
 .category_list, .price_list, .size_list {

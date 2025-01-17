@@ -50,10 +50,13 @@ const ProductDetail = ({ productId }) => {
       </div>
       <div className="detail-product-content">
         <h2>{product.name}</h2>
-        <p>Mô tả: {product.description}</p>
-        <p>Màu: {product.colors}</p>
-        <p>Size: {product.sizes}</p>
         <p>Giá: {product.price.toLocaleString()} VND</p>
+        <input
+          type="number"
+          value={quantity}
+          min="1"
+          onChange={handleQuantityChange}
+        />
         <button onClick={handleAddToCart}>Thêm vào giỏ hàng</button>
       </div>
     </div>

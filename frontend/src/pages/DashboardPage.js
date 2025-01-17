@@ -16,6 +16,8 @@
         const [revenuePerDay, setRevenuePerDay] = useState({ dates: [], revenues: [] });
         const [topConsumers, setTopConsumers] = useState([]);
 
+        const apiURL = process.env.REACT_APP_API_URL;
+
         useEffect(() => {
             const fetchData = async () => {
                 try {
@@ -26,10 +28,10 @@
 
                     // Fetch dữ liệu từ API
                     const [ordersResponse, productsResponse, accountsResponse, revenueResponse] = await Promise.all([
-                        axios.get(`${ecommerceAPI.baseURL}orders`, { headers }),
-                        axios.get(`${ecommerceAPI.baseURL}products`, { headers }),
-                        axios.get(`${ecommerceAPI.baseURL}accounts`, { headers }),
-                        axios.get(`${ecommerceAPI.baseURL}orders/revenue`, { headers }),
+                        axios.get(`${apiURL}/orders`, { headers }),
+                        axios.get(`${apiURL}/products`, { headers }),
+                        axios.get(`${apiURL}/accounts`, { headers }),
+                        axios.get(`${apiURL}/orders/revenue`, { headers }),
                     ]);
 
                     const orders = ordersResponse.data;
@@ -171,7 +173,7 @@
         return (
             <AdminLayout>
                 <div className="p-6 bg-gray-50 min-h-screen">
-                    <h1 className="text-2xl font-bold text-gray-800 mb-8 mt-6">Bảng Điều Khiển</h1>
+                    <h1 className="text-2xl font-bold text-gray-800 mb-8 mt-10">Bảng Điều Khiển</h1>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
                         <div className="bg-white p-6 rounded-lg shadow-lg">
