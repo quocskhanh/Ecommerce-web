@@ -1,5 +1,5 @@
 import React from "react";
-import LayoutAuthentication from "../../layout/LayoutAuthentication";
+import LayoutAuthentication from "../../components/layout/LayoutAuthentication";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";

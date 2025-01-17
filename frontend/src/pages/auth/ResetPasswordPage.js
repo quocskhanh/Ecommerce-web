@@ -1,5 +1,5 @@
 import React from "react";
-import LayoutAuthentication from "../../layout/LayoutAuthentication";
+import LayoutAuthentication from "../../components/layout/LayoutAuthentication";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
@@ -7,13 +7,14 @@ import FormGroup from "../../components/common/FormGroup";
 import { Label } from "../../components/label";
 import { Input } from "../../components/input";
 import { Button } from "../../components/button";
-import {Link, useNavigate} from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import {ecommerceAPI} from "../../config/config";
 
 const schema = yup.object({
     email: yup
         .string()
-        .email("Invalid email address")
-        .required("This field is required"),
+        .email("Địa chỉ email không hợp lệ")
+        .required("Vui lòng nhập email"),
 });
 
 const ResetPasswordPage = () => {
@@ -26,17 +27,53 @@ const ResetPasswordPage = () => {
         mode: "onSubmit",
     });
     const navigate = useNavigate();
-    const handleResetPassword = (values) => {
-        console.log("Reset password email sent to:", values.email);
-        navigate('/auth/confirm');
+
+
+    const handleResetPassword = async (values) => {
+        try {
+            const response = await fetch(
+                `${ecommerceAPI.baseURL}accounts/password-reset-request?email=${encodeURIComponent(values.email)}`, // Truyền qua query
+                {
+                    method: "POST", // Phương thức POST
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+                        "Content-Type": "application/json", // Headers mặc định
+                    },
+                }
+
+            );
+
+
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                console.error("Error từ API:", errorData);
+                throw new Error(
+                    `Lỗi: ${errorData.detail?.[0]?.msg || "Không thể gửi mã xác nhận"}`
+                );
+            }
+
+            const data = await response.json();
+
+
+            console.log("Request sent to:", `${ecommerceAPI.baseURL}accounts/password-reset-request?email=${encodeURIComponent(values.email)}`);
+            console.log("Response received:", data);
+            if (data.reset_token) {
+                alert("Mã xác nhận đã được gửi thành công!");
+                navigate("/auth/confirm", { state: { reset_token: data.reset_token } });
+            } else {
+                alert("Không nhận được mã xác nhận. Vui lòng thử lại.");
+            }
+        } catch (error) {
+            console.error("Lỗi khi gửi yêu cầu:", error.message);
+            alert(error.message);
+        }
     };
 
     return (
         <LayoutAuthentication heading="FASCO">
             {/* Đưa FASCO sát lên trên */}
-            <div className="absolute top-0 left-0 right-0 flex justify-center mt-4">
-
-            </div>
+            <div className="absolute top-0 left-0 right-0 flex justify-center mt-4"></div>
 
             {/* Nội dung chính */}
             <div className="flex flex-col items-center mt-20">
@@ -59,8 +96,10 @@ const ResetPasswordPage = () => {
                             error={errors.email?.message}
                         />
                     </FormGroup>
-                    <Button className="bg-black rounded-[10px] shadow-[0px_20px_35px_0px_rgba(0,0,0,0.15)] w-full mt-4" type="submit">
-
+                    <Button
+                        className="bg-black rounded-[10px] shadow-[0px_20px_35px_0px_rgba(0,0,0,0.15)] w-full mt-4"
+                        type="submit"
+                    >
                         <span className="Send Confirmation Code">Gửi mã xác nhận</span>
                     </Button>
                 </form>

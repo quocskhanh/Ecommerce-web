@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
-import AdminLayout from "../../layout/AdminLayout";
+import AdminLayout from "../../components/layout/AdminLayout";
 import { Link, useNavigate } from "react-router-dom";
+import {ecommerceAPI} from "../../config/config";
 
 const ProductPage = () => {
     const [products, setProducts] = useState([]);
@@ -18,48 +19,133 @@ const ProductPage = () => {
     const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
     const startIndex = (currentPage - 1) * itemsPerPage;
     const currentProducts = filteredProducts.slice(startIndex, startIndex + itemsPerPage);
+    const [categories, setCategories] = useState([]);
+
+    const [productName, setProductName] = useState("");
+    const [productDescription, setProductDescription] = useState("");
+    const [productPrice, setProductPrice] = useState("");
+    const [productID, setProductID] = useState("");
+    const [status, setStatus] = useState([]);
+    const [sizes, setSizes] = useState([]); // Updated sizes state name
+    const [colorsList, setColors] = useState([]); // Updated color state name
+
+
+    const handleSave = async () => {
+        // Kiểm tra các trường đầu vào
+
+        // Chuyển đổi giá trị trước khi gửi
+        const productData = {
+            name: productName,
+            id: parseInt(productID),
+            description: productDescription,
+            price: parseFloat(productPrice), // Chuyển price thành số thực
+            category_id: parseInt(categories), // Chuyển category_id thành số nguyên
+            status: status, // Trạng thái vẫn là chuỗi
+            colors: colorsList, // Danh sách màu sắc vẫn là chuỗi
+            sizes: sizes, // Danh sách kích cỡ vẫn là chuỗi
+        };
+
+        try {
+            const response = await fetch(`${ecommerceAPI.baseURL}products`, {
+                method: "POST",
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(productData),
+            });
+
+            if (response.ok) {
+                alert("Thanh cong")
+            } else {
+                console.error("Failed to add product");
+            }
+        } catch (error) {
+            console.error("Error:", error);
+        }
+    };
+
+    const fetchProductsAndCategories = async () => {
+        try {
+            // Fetch products with Authorization header
+            const productResponse = await fetch(`${ecommerceAPI.baseURL}products`, {
+                method: "GET",
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+                    "Content-Type": "application/json",
+                },
+            });
+
+            if (!productResponse.ok) {
+                throw new Error(`Failed to fetch products: ${productResponse.statusText}`);
+            }
+
+            const productsData = await productResponse.json();
+
+            // Fetch categories with Authorization header
+            const categoryResponse = await fetch(`${ecommerceAPI.baseURL}categories`, {
+                method: "GET",
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+                    "Content-Type": "application/json",
+                },
+            });
+
+            if (!categoryResponse.ok) {
+                throw new Error(`Failed to fetch categories: ${categoryResponse.statusText}`);
+            }
+
+            const categoriesData = await categoryResponse.json();
+
+            // Enrich products with category data
+            const enrichedProducts = productsData.map((product) => {
+                const category = categoriesData.find((cat) => cat.id === product.category_id);
+                return {
+                    ...product,
+                    category_name: category ? category.name : "Uncategorized",
+                };
+            });
+
+            // Lưu dữ liệu vào state và localStorage
+            setProducts(enrichedProducts);
+            setFilteredProducts(enrichedProducts);
+            setCategories(categoriesData);
+
+            // Lưu dữ liệu vào localStorage
+            localStorage.setItem("products", JSON.stringify(enrichedProducts));
+            localStorage.setItem("categories", JSON.stringify(categoriesData));
+        } catch (error) {
+            console.error("Error fetching data:", error);
+        }
+    };
 
     useEffect(() => {
-        const fetchProducts = async () => {
-            try {
-                const response = await fetch("http://localhost:5000/products");
-                const data = await response.json();
-                setProducts(data);
-                setFilteredProducts(data);
-            } catch (error) {
-                console.error("Error fetching products:", error);
-            }
-        };
-        fetchProducts();
+        fetchProductsAndCategories();
     }, []);
 
     const handleFilterChange = (e) => {
-        const value = e.target.value;
-        setFilter(value);
+        const selectedCategory = e.target.value;
+        setFilter(selectedCategory);
+        const filtered = selectedCategory
+            ? products.filter(product => product.category_id === parseInt(selectedCategory))
+            : products;
+        setFilteredProducts(filtered);
     };
 
     useEffect(() => {
         let updatedProducts = [...products];
-        if (filter) {
-            updatedProducts = updatedProducts.filter((product) =>
-                product.category.toLowerCase().includes(filter.toLowerCase())
+
+        if (searchTerm) {
+            updatedProducts = updatedProducts.filter(product =>
+                product.name?.toLowerCase().includes(searchTerm.toLowerCase())
             );
         }
+
         setFilteredProducts(updatedProducts);
-    }, [filter, products]);
+    }, [searchTerm, products]);
 
     const handleSearch = (e) => {
-        const value = e.target.value;
-        setSearchTerm(value);
-        let searchedProducts = [...products];
-        if (value) {
-            searchedProducts = searchedProducts.filter(
-                (product) =>
-                    product.product.toLowerCase().includes(value.toLowerCase()) ||
-                    product.category.toLowerCase().includes(value.toLowerCase())
-            );
-        }
-        setFilteredProducts(searchedProducts);
+        setSearchTerm(e.target.value.toLowerCase());
     };
 
     const changePage = (page) => {
@@ -78,7 +164,8 @@ const ProductPage = () => {
 
     const handleEditProduct = () => {
         if (selected.length === 1) {
-            const productToEdit = products.find(product => product.id === selected[0]);
+            const selectedId = Number(selected[0]); // Chuyển selected[0] thành số nguyên nếu cần
+            const productToEdit = products.find(product => product.id === selectedId);
             setEditingProduct(productToEdit);
             setShowEditModal(true);
         } else if (selected.length === 0) {
@@ -89,32 +176,54 @@ const ProductPage = () => {
     };
 
     const handleSaveEdit = async () => {
-        if (!editingProduct) return;
+        if (!editingProduct) {
+            alert("Không có sản phẩm nào đang được chỉnh sửa.");
+            return;
+        }
 
         try {
-            const response = await fetch(`http://localhost:5000/products/${editingProduct.id}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
+            const response = await fetch(`${ecommerceAPI.baseURL}products/${editingProduct.id}`, {
+                method: "PUT",
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+                    "Content-Type": "application/json",
+                },
                 body: JSON.stringify(editingProduct),
             });
 
-            if (!response.ok) throw new Error('Failed to update product');
+            if (response.ok) {
+                const updatedProduct = await response.json();
 
-            const updatedProduct = await response.json();
+                // Cập nhật danh sách sản phẩm sau khi chỉnh sửa
+                const updatedProducts = products.map((product) =>
+                    product.id === updatedProduct.id ? updatedProduct : product
+                );
+                setProducts(updatedProducts);
+                setFilteredProducts(updatedProducts);
 
-            // Cập nhật danh sách sản phẩm sau khi chỉnh sửa
-            const updatedProducts = products.map(product =>
-                product.id === updatedProduct.id ? updatedProduct : product
-            );
-            setProducts(updatedProducts);
-            setFilteredProducts(updatedProducts);
+                // Đóng modal chỉnh sửa và reset trạng thái
+                setShowEditModal(false);
+                setEditingProduct(null);
 
-            // Đóng modal và reset trạng thái
-            setShowEditModal(false);
-            setEditingProduct(null);
+                // Hiển thị thông báo thành công
+                alert("Sản phẩm đã được chỉnh sửa thành công.");
+            } else {
+                const errorData = await response.json();
+                console.error("Lỗi từ API:", errorData);
+                alert(`Cập nhật sản phẩm thất bại: ${errorData.message || response.statusText}`);
+            }
         } catch (error) {
-            console.error("Error updating product:", error);
-            alert("Cập nhật sản phẩm thất bại, vui lòng thử lại.");
+            console.error("Lỗi khi cập nhật sản phẩm:", error);
+            alert("Đã xảy ra lỗi, vui lòng thử lại.");
+        }
+    };
+
+
+    const handleSelectAll = (e) => {
+        if (e.target.checked) {
+            setSelected(filteredProducts.map((item) => item.id));
+        } else {
+            setSelected([]);
         }
     };
 
@@ -124,74 +233,70 @@ const ProductPage = () => {
             return;
         }
 
+        const selectedIds = selected.map((id) => Number(id));
+        if (selectedIds.some((id) => isNaN(id))) {
+            alert("Có lỗi xảy ra với ID sản phẩm. Vui lòng thử lại.");
+            return;
+        }
+
         try {
-            await Promise.all(
-                selected.map(id =>
-                    fetch(`http://localhost:5000/products/${id}`, { method: 'DELETE' })
-                )
+            // Sử dụng Promise.allSettled để xử lý từng yêu cầu riêng lẻ
+            const results = await Promise.allSettled(
+                selectedIds.map(async (id) => {
+                    const response = await fetch(`${ecommerceAPI.baseURL}products/${id}`, {
+                        method: "DELETE",
+                        headers: {
+                            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+                            "Content-Type": "application/json",
+                        },
+                    });
+                    if (!response.ok) {
+                        throw new Error(`Không thể xóa sản phẩm với ID: ${id}`);
+                    }
+                    return id; // Trả về ID sản phẩm đã xóa thành công
+                })
             );
 
-            const remainingProducts = products.filter(product => !selected.includes(product.id));
+            // Phân tích kết quả
+            const deletedIds = results
+                .filter((result) => result.status === "fulfilled")
+                .map((result) => result.value);
+            const failedIds = results
+                .filter((result) => result.status === "rejected")
+                .map((result) => result.reason.message);
+
+            // Cập nhật danh sách sản phẩm sau khi xóa thành công
+            const remainingProducts = products.filter(
+                (product) => !deletedIds.includes(product.id)
+            );
             setProducts(remainingProducts);
             setFilteredProducts(remainingProducts);
             setSelected([]);
+
+            // Hiển thị thông báo
+            if (failedIds.length > 0) {
+                alert(`Một số sản phẩm không thể xóa:\n${failedIds.join("\n")}`);
+            } else {
+                alert("Tất cả sản phẩm đã được xóa thành công.");
+            }
+
             setShowDeleteModal(false);
-
-            // Hiển thị thông báo sau khi xóa thành công
-            setShowSuccessModal(true);
-
-            // Tự động ẩn thông báo sau 3 giây
-            setTimeout(() => {
-                setShowSuccessModal(false);
-            }, 3000);
         } catch (error) {
             console.error("Lỗi khi xóa sản phẩm:", error);
-            alert("Xóa sản phẩm thất bại, vui lòng thử lại.");
+            alert(`Đã xảy ra lỗi khi xóa sản phẩm: ${error.message}`);
         }
     };
-    const handleExport = () => {
-        const csvContent = `data:text/csv;charset=utf-8,${[
-            ["ID", "Product", "Category", "Inventory", "Color", "Price", "Rating"],
-            ...filteredProducts.map((product) => [
-                product.id,
-                product.name,
-                product.price,
-                product.description,
-                product.category,
-                product.status,
-                product.colors,
-                product.sizes,
-            ]),
-        ]
-            .map((e) => e.join(","))
-            .join("\n")}`;
 
-        const link = document.createElement("a");
-        link.setAttribute("href", encodeURI(csvContent));
-        link.setAttribute("download", "products.csv");
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-    };
 
-    const handleSelectAll = (e) => {
-        if (e.target.checked) {
-            // Nếu được check, chọn tất cả sản phẩm trong danh sách hiện tại
-            setSelected(filteredProducts.map((item) => item.id));
-        } else {
-            // Nếu bỏ check, bỏ chọn tất cả
-            setSelected([]);
-        }
-    };
 
 
     return (
         <AdminLayout>
-            <div className="p-4 sm:p-6 md:p-8">
+            <div className="p-6 ">
                 <div className="flex justify-between items-center mb-6 flex-wrap">
-                    <h1 className="text-2xl font-bold text-gray-800 w-full sm:w-auto">Sản phẩm</h1>
+                    <h1 className="text-2xl font-bold text-gray-800 w-full sm:w-auto mb-8 mt-6">Quản lý sản phẩm</h1>
                     <div className="flex gap-4 w-full sm:w-auto justify-between sm:justify-end mt-4 sm:mt-0">
-                        <button onClick={handleExport} className="px-4 py-2 bg-white rounded border border-[#d6daec] hover:bg-gray-200">
+                        <button className="px-4 py-2 bg-white rounded border border-[#d6daec] hover:bg-gray-200">
                             Xuất
                         </button>
                         <button className="px-4 py-2 bg-[#1e5eff] rounded text-white hover:bg-blue-400" onClick={() => navigate("/admin/product/add-product")}>
@@ -204,29 +309,22 @@ const ProductPage = () => {
                     <div className="flex flex-col sm:flex-row justify-between items-center p-4 border-b">
                         <div className="flex gap-4 w-full sm:w-auto">
                             <select
-                                className="border rounded-lg px-4 py-2 w-full sm:w-auto"
+                                className="border border-gray-600 rounded-lg px-4 py-2 w-full sm:w-auto"
                                 value={filter}
                                 onChange={handleFilterChange}
                             >
-                                <option value="">Danh mục sản phẩm</option>
-                                <option value="Thời trang nam">Thời trang nam</option>
-                                <option value="Thời trang nữ">Thời trang nữ</option>
-                                <option value="Giày dép">Giày dép</option>
-                                <option value="Phụ kiện">Phụ kiện</option>
-                                <option value="Đồ công nghệ">Đồ công nghệ</option>
+                                <option value="">Tất cả danh mục</option>
+                                {categories.map(category => (
+                                    <option key={category.id} value={category.id}>{category.name}</option>
+                                ))}
                             </select>
-
-
-
-
-
                             <div className="relative">
                                 <input
                                     type="text"
                                     value={searchTerm}
                                     onChange={handleSearch}
-                                    placeholder="Tìm kiếm..."
-                                    className="border rounded-lg px-4 py-2 pl-10"
+                                    placeholder="Tìm kiếm sản phẩm..."
+                                    className=" rounded-lg px-4 py-2 pl-10 border border-gray-600"
                                 />
                                 <svg
                                     xmlns="http://www.w3.org/2000/svg"
@@ -244,24 +342,29 @@ const ProductPage = () => {
 
                         <div className="flex flex-col sm:flex-row gap-4 ml-auto">
                             <button
-                                className="px-5 py-3 bg-white-500 text-gray-600 rounded border border-blue-400 hover:bg-gray-300 cursor-pointer w-full sm:w-auto"
-                                onClick={() => handleEditProduct()}
-                                disabled={selected.length === 0}
+                                className="px-4 py-2 bg-white-500 text-gray-600 rounded border border-blue-400 hover:bg-blue-500 cursor-pointer w-full sm:w-auto"
+                                onClick={handleEditProduct}
                             >
                                 <span>
-                                    <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#5f6368"><path d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h357l-80 80H200v560h560v-278l80-80v358q0 33-23.5 56.5T760-120H200Zm280-360ZM360-360v-170l367-367q12-12 27-18t30-6q16 0 30.5 6t26.5 18l56 57q11 12 17 26.5t6 29.5q0 15-5.5 29.5T897-728L530-360H360Zm481-424-56-56 56 56ZM440-440h56l232-232-28-28-29-28-231 231v57Zm260-260-29-28 29 28 28 28-28-28Z"/></svg>
+                                    <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill=""><path d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h357l-80 80H200v560h560v-278l80-80v358q0 33-23.5 56.5T760-120H200Zm280-360ZM360-360v-170l367-367q12-12 27-18t30-6q16 0 30.5 6t26.5 18l56 57q11 12 17 26.5t6 29.5q0 15-5.5 29.5T897-728L530-360H360Zm481-424-56-56 56 56ZM440-440h56l232-232-28-28-29-28-231 231v57Zm260-260-29-28 29 28 28 28-28-28Z"/></svg>
                                 </span>
                             </button>
-                            <button
-                                className="px-5 py-3 bg-white-500 text-blue-400 border border-blue-400 rounded hover:bg-gray-300 cursor-pointer w-full sm:w-auto"
-                                onClick={() => setShowDeleteModal(true)
 
-                            }
-                                disabled={selected.length === 0}
+                            <button
+                                className="px-4 py-2 bg-white-500 text-blue-400 border border-blue-400 rounded hover:bg-red-500 cursor-pointer w-full sm:w-auto"
+                                onClick={() => {
+                                    if (selected.length === 0) {
+                                        // Nếu không có tài khoản nào được chọn, hiển thị cảnh báo hoặc thông báo
+                                        alert("Vui lòng chọn sản phẩm để xóa!");
+                                    } else {
+                                        // Nếu có tài khoản được chọn, hiển thị modal xóa
+                                        setShowDeleteModal(true);
+                                    }
+                                }}
                             >
 
                                 <span>
-                                    <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#5f6368"><path d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z"/></svg>
+                                    <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill=""><path d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z"/></svg>
                                 </span>
                             </button>
                         </div>
@@ -269,32 +372,35 @@ const ProductPage = () => {
 
 
                     <div className="overflow-x-auto">
-                        <table className="w-full text-left min-w-[600px]">
+                        <table className="w-full text-center min-w-[600px]">
                             <thead className="bg-gray-300">
                             <tr>
-                                <th className="p-4">
+                                <th className="p-4 border border-gray-400 text-center">
                                     <input
                                         type="checkbox"
                                         onChange={handleSelectAll}
                                         checked={selected.length === filteredProducts.length && filteredProducts.length > 0}
                                     />
                                 </th>
-                                <th className="border border-gray-300 p-2">ID</th>
-                                <th className="border border-gray-300 p-2">Tên sản phẩm</th>
-                                <th className="border border-gray-300 p-2">Giá</th>
-                                <th className="border border-gray-300 p-2">Mô tả</th>
-                                <th className="border border-gray-300 p-2">Danh mục</th>
-                                <th className="border border-gray-300 p-2">Trạng thái</th>
-                                <th className="border border-gray-300 p-2">Màu sắc</th>
-                                <th className="border border-gray-300 p-2">Kích cỡ</th>
+                                <th className="p-2 border border-gray-400">ID</th>
+                                <th className="p-2 border border-gray-400">Ảnh</th>
+
+                                <th className="border border-gray-400 p-2">Tên sản phẩm</th>
+                                <th className="border border-gray-400 p-2">Giá</th>
+                                <th className="border border-gray-400 p-2">Mô tả</th>
+                                <th className="border border-gray-400 p-2">Trạng thái</th>
+                                <th className="border border-gray-400 p-2">Màu sắc</th>
+                                <th className="border border-gray-400 p-2">Kích cỡ</th>
                             </tr>
                             </thead>
 
 
 
+
+                            <tbody>
                             {currentProducts.length > 0 ? (
                                 currentProducts.map((item) => (
-                                    <tr key={item.id} className="border-b hover:bg-gray-50">
+                                    <tr key={item.id} className="border-b hover:bg-gray-100 border border-gray-300">
                                         <td className="p-4">
                                             <input
                                                 type="checkbox"
@@ -302,42 +408,37 @@ const ProductPage = () => {
                                                 onChange={() => toggleSelect(item.id)}
                                             />
                                         </td>
-                                        <td className="p-4">
-                                            <div className="flex items-center gap-2">
-                                                {/* Use a default image or add a dynamic image */}
-                                                <img
-                                                    src="https://product.hstatic.net/1000369857/product/ao_thun_co_tron_ats08_mau_nau_1_026b0a00b02f45bfafa91b13c0109f2c.jpg" // Default image for product
-                                                    alt={item.id}
-                                                    className="w-10 h-10 rounded-full"
-                                                />
-
-                                            </div>
+                                        <td className="p-4 border border-gray-300">{item.id}</td>
+                                        <td className="p-4 border border-gray-300">
+                                            <img src={item.image} alt={item.name} className="w-20 h-20 object-cover" />
                                         </td>
-                                        <td className="p-4">{item.name}</td>
-                                        <td className="p-4">{item.price}</td>
-                                        <td className="p-4">{item.description}</td>
-                                        <td className="p-4">{item.category}</td>
+                                        <td className="p-4 border border-gray-300">{item.name}</td>
+                                        <td className="p-4 border border-gray-300">{item.price.toLocaleString()} đ</td>
+                                        <td className="p-4 border border-gray-300">{item.description}</td>
+                                        <td className="p-4 border border-gray-300">
+                                            {item.status }
+                                        </td>
                                         <td className="p-4">
-                                            {item.status === "available" ? "Còn hàng" : "Hết hàng"}
-                                        </td>                                        <td className="p-4">
                                             {item.colors && item.colors.length > 0
                                                 ? item.colors.join(", ")
-                                                : "No colors available"}
+                                                : "Không có màu phù hợp"}
                                         </td>
-                                        <td className="p-4">
+                                        <td className="p-4 border border-gray-300">
                                             {item.sizes && item.sizes.length > 0
                                                 ? item.sizes.join(", ")
-                                                : "No sizes available"}
+                                                : "Không có kích cỡ phù hợp"}
                                         </td>
                                     </tr>
                                 ))
                             ) : (
                                 <tr>
-                                    <td colSpan="7" className="p-4 text-center">
-                                        No products found
+                                    <td colSpan="10" className="p-4 text-center">
+                                        Không có sản phẩm nào được tìm thấy.
                                     </td>
                                 </tr>
                             )}
+                            </tbody>
+
 
                         </table>
                     </div>
@@ -352,39 +453,17 @@ const ProductPage = () => {
                                     <label className="block mb-2">Tên sản phẩm</label>
                                     <input
                                         type="text"
-                                        value={editingProduct.product}
+                                        value={editingProduct.name}
                                         onChange={(e) =>
-                                            setEditingProduct({ ...editingProduct, product: e.target.value })
+                                            setEditingProduct({ ...editingProduct, name: e.target.value })
                                         }
-                                        className="border rounded w-full p-2 mb-4"
-                                    />
-                                </div>
-                                <div className="mb-4">
-                                    <label className="block mb-2">Số lượng</label>
-                                    <input
-                                        type="number"
-                                        value={editingProduct.inventory}
-                                        onChange={(e) =>
-                                            setEditingProduct({ ...editingProduct, inventory: e.target.value })
-                                        }
-                                        className="border rounded w-full p-2"
-                                    />
-                                </div>
-                                <div className="mb-4">
-                                    <label className="block mb-2">Màu sắc</label>
-                                    <input
-                                        type="text"
-                                        value={editingProduct.color}
-                                        onChange={(e) =>
-                                            setEditingProduct({ ...editingProduct, color: e.target.value })
-                                        }
-                                        className="border rounded w-full p-2"
+                                        className="border rounded w-full p-2 "
                                     />
                                 </div>
                                 <div className="mb-4">
                                     <label className="block mb-2">Giá</label>
                                     <input
-                                        type="text"
+                                        type="number"
                                         value={editingProduct.price}
                                         onChange={(e) =>
                                             setEditingProduct({ ...editingProduct, price: e.target.value })
@@ -392,17 +471,144 @@ const ProductPage = () => {
                                         className="border rounded w-full p-2"
                                     />
                                 </div>
+
+
                                 <div className="mb-4">
-                                    <label className="block mb-2">Đánh giá</label>
+                                    <label className="block mb-2">Mô tả</label>
                                     <input
                                         type="text"
-                                        value={editingProduct.rating}
+                                        value={editingProduct.description}
                                         onChange={(e) =>
-                                            setEditingProduct({ ...editingProduct, rating: e.target.value })
+                                            setEditingProduct({ ...editingProduct, description: e.target.value })
                                         }
                                         className="border rounded w-full p-2"
                                     />
                                 </div>
+
+
+
+
+
+                                <div className="mb-4">
+                                    <label className="block mb-2">Tồn kho</label>
+                                    <select
+                                        value={editingProduct.status}
+                                        onChange={(e) =>
+                                            setEditingProduct({ ...editingProduct, status: e.target.value })
+                                        }
+                                        className="border rounded w-full p-2"
+                                    >
+                                        <option value="Còn hàng">Còn hàng</option>
+                                        <option value="Hết hàng">Hết hàng</option>
+                                    </select>
+                                </div>
+
+                                <div className="mb-4">
+                                    <label className="block mb-2">Màu sắc</label>
+                                    {/* Input để nhập màu hoặc chọn từ dropdown */}
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <input
+                                            type="text"
+                                            placeholder="Nhập màu hoặc chọn"
+                                            onKeyDown={(e) => {
+                                                if (e.key === "Enter" && e.target.value.trim() !== "") {
+                                                    const newColor = e.target.value.trim();
+                                                    if (!editingProduct.colors.includes(newColor)) {
+                                                        setEditingProduct((prevProduct) => ({
+                                                            ...prevProduct,
+                                                            colors: [...prevProduct.colors, newColor],
+                                                        }));
+                                                    }
+                                                    e.target.value = ""; // Xóa input sau khi thêm
+                                                }
+                                            }}
+                                            className="border rounded w-full p-2"
+                                        />
+                                        <select
+                                            onChange={(e) => {
+                                                const selectedColor = e.target.value;
+                                                if (selectedColor && !editingProduct.colors.includes(selectedColor)) {
+                                                    setEditingProduct((prevProduct) => ({
+                                                        ...prevProduct,
+                                                        colors: [...prevProduct.colors, selectedColor],
+                                                    }));
+                                                }
+                                            }}
+                                            className="border rounded p-2"
+                                        >
+                                            <option value="">Chọn màu</option>
+                                            <option value="Đỏ">Đỏ</option>
+                                            <option value="Xanh">Xanh</option>
+                                            <option value="Vàng">Vàng</option>
+                                            <option value="Trắng">Trắng</option>
+                                            <option value="Đen">Đen</option>
+                                        </select>
+                                    </div>
+                                    {/* Hiển thị danh sách màu đã chọn */}
+                                    <div className="flex gap-2 flex-wrap">
+                                        {editingProduct.colors?.map((color, index) => (
+                                            <span
+                                                key={index}
+                                                className="bg-gray-200 px-3 py-1 rounded text-sm cursor-pointer hover:bg-red-300"
+                                                onClick={() =>
+                                                    setEditingProduct((prevProduct) => ({
+                                                        ...prevProduct,
+                                                        colors: prevProduct.colors.filter((_, i) => i !== index),
+                                                    }))
+                                                }
+                                            >
+                {color} &times;
+            </span>
+                                        ))}
+                                    </div>
+                                </div>
+
+
+
+
+
+
+                                <div className="mb-4">
+                                    <label className="block mb-2">Kích cỡ</label>
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <select
+                                            onChange={(e) => {
+                                                const selectedSize = e.target.value;
+                                                if (selectedSize && !editingProduct.sizes.includes(selectedSize)) {
+                                                    setEditingProduct({
+                                                        ...editingProduct,
+                                                        sizes: [...editingProduct.sizes, selectedSize],
+                                                    });
+                                                }
+                                            }}
+                                            className="border rounded w-full p-2"
+                                        >
+                                            <option value="">Chọn kích cỡ</option>
+                                            <option value="M">M</option>
+                                            <option value="L">L</option>
+                                            <option value="XL">XL</option>
+                                            <option value="XXL">XXL</option>
+                                        </select>
+                                    </div>
+                                    <div className="flex gap-2 flex-wrap">
+                                        {editingProduct.sizes.map((size, index) => (
+                                            <span
+                                                key={index}
+                                                className="bg-gray-200 px-3 py-1 rounded text-sm cursor-pointer hover:bg-red-300"
+                                                onClick={() =>
+                                                    setEditingProduct({
+                                                        ...editingProduct,
+                                                        sizes: editingProduct.sizes.filter((_, i) => i !== index),
+                                                    })
+                                                }
+                                            >
+                {size} &times;
+            </span>
+                                        ))}
+                                    </div>
+                                </div>
+
+
 
                                 <div className="flex justify-between gap-4 mt-6">
                                     <button
@@ -424,7 +630,11 @@ const ProductPage = () => {
 
 
                     {/* Pagination */}
-                    <div className="p-4 flex justify-end items-center">
+                    <div className="p-4 flex justify-between items-center">
+                        <p>
+                            Hiển thị {Math.min((currentPage - 1) * itemsPerPage + 1, products.length)}-
+                            {Math.min(currentPage * itemsPerPage, products.length)} trong {products.length}
+                        </p>
                         <div className="flex gap-2">
                             <button
                                 onClick={() => changePage(currentPage - 1)}
@@ -463,7 +673,7 @@ const ProductPage = () => {
                         <div className="bg-white rounded-lg p-6 w-full max-w-md shadow-lg">
                             <h2 className="text-xl font-semibold mb-4">Xác nhận xóa</h2>
                             <p className="mb-4">
-                                Bạn có chắc chắn muốn xóa khách hàng đã chọn không?
+                                Bạn có chắc chắn muốn xóa sản phẩm đã chọn không?
                             </p>
                             <div className="flex justify-between gap-2 mt-6">
                                 <button
@@ -484,12 +694,13 @@ const ProductPage = () => {
                 )}
 
 
+
                 {/* Success message */}
                 {showSuccessModal && (
                     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
                         <div className="bg-white p-6 rounded-lg w-full max-w-md shadow-lg">
                             <h3 className="text-xl font-semibold mb-4">Thông báo</h3>
-                            <p>Khách hàng đã được xóa thành công!</p>
+                            <p>Sản phẩm đã được xóa thành công!</p>
                             <div className="flex justify-end gap-4 mt-4">
                                 <button
                                     onClick={() => setShowSuccessModal(false)}

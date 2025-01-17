@@ -1,19 +1,61 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import AdminLayout from "../layout/AdminLayout";
+import React from "react";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import AdminLayout from "../components/layout/AdminLayout";
+import {ecommerceAPI} from "../config/config";
 
 const LogoutPage = () => {
     const navigate = useNavigate();
 
-    const handleLogout = () => {
-        // Logic đăng xuất (ví dụ: xóa token từ localStorage)
-        localStorage.removeItem('token');
-        alert('Bạn đã đăng xuất thành công!');
-        navigate('/auth/sign-in'); // Chuyển hướng về trang đăng nhập
+    const handleLogout = async () => {
+        try {
+            const token = localStorage.getItem("token");
+
+            if (!token) {
+                alert("Đăng xuất thành công!");
+                navigate("/auth/sign-in");
+                return;
+            }
+
+            const response = await axios.post(
+                `${ecommerceAPI.baseURL}logout`,
+                {}, // Body rỗng
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        "Content-Type": "application/json",
+                    },
+                }
+            );
+
+            if (response.status === 200) {
+                localStorage.removeItem("token");
+                alert("Bạn đã đăng xuất thành công!");
+                navigate("/auth/sign-in");
+            } else {
+                alert("Có lỗi xảy ra trong quá trình đăng xuất. Vui lòng thử lại!");
+            }
+        } catch (error) {
+            console.error("Chi tiết lỗi đăng xuất:", error);
+
+            if (error.response) {
+                // Lỗi phản hồi từ server
+                console.error("Phản hồi server:", error.response);
+                alert(`Lỗi server: ${error.response.status} - ${error.response.data.message || "Không xác định"}`);
+            } else if (error.request) {
+                // Không nhận được phản hồi từ server
+                console.error("Yêu cầu không phản hồi:", error.request);
+                alert("Không thể kết nối với server. Vui lòng kiểm tra mạng hoặc thử lại sau!");
+            } else {
+                // Lỗi khi thiết lập yêu cầu
+                console.error("Lỗi khi thiết lập yêu cầu:", error.message);
+                alert("Lỗi yêu cầu: " + error.message);
+            }
+        }
     };
 
     const handleCancel = () => {
-        navigate(-1); // Quay lại trang trước đó
+        navigate(-1); // Quay lại trang trước
     };
 
     return (

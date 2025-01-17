@@ -1,220 +1,286 @@
-import React, { useState } from "react";
-import AdminLayout from "../layout/AdminLayout";
-import { Line } from "react-chartjs-2";
-import { Bar } from "react-chartjs-2";
-import "chart.js/auto";
+    import React, { useState, useEffect } from "react";
+    import AdminLayout from "../components/layout/AdminLayout";
+    import { Bar, Line } from "react-chartjs-2";
+    import "chart.js/auto";
+    import axios from "axios";
+    import {ecommerceAPI} from "../config/config";
 
-const DashboardPage = () => {
-    const [selectedFilter, setSelectedFilter] = useState("day");
+    const DashboardPage = () => {
+        const [orders, setOrders] = useState([]);
+        const [products, setProducts] = useState([]);
+        const [newUsersCount, setNewUsersCount] = useState(0);
+        const [totalOrders, setTotalOrders] = useState(0);
+        const [recentOrders, setRecentOrders] = useState([]);
+        const [revenueLast7Days, setRevenueLast7Days] = useState(0);
+        const [totalRevenue, setTotalRevenue] = useState(0);
+        const [revenuePerDay, setRevenuePerDay] = useState({ dates: [], revenues: [] });
+        const [topConsumers, setTopConsumers] = useState([]);
+
+        useEffect(() => {
+            const fetchData = async () => {
+                try {
+                    const headers = {
+                        Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+                        "Content-Type": "application/json",
+                    };
+
+                    // Fetch dữ liệu từ API
+                    const [ordersResponse, productsResponse, accountsResponse, revenueResponse] = await Promise.all([
+                        axios.get(`${ecommerceAPI.baseURL}orders`, { headers }),
+                        axios.get(`${ecommerceAPI.baseURL}products`, { headers }),
+                        axios.get(`${ecommerceAPI.baseURL}accounts`, { headers }),
+                        axios.get(`${ecommerceAPI.baseURL}orders/revenue`, { headers }),
+                    ]);
+
+                    const orders = ordersResponse.data;
+                    const products = productsResponse.data;
+                    const accounts = accountsResponse.data;
+                    const totalRevenueData = revenueResponse.data.total_revenue;
+
+                    // Tính tổng số đơn hàng
+                    setOrders(orders);
+                    setProducts(products);
+                    setTotalOrders(orders.length);
+
+                    // Lọc số lượng người dùng
+                    setNewUsersCount(accounts.length)
+
+                    const currentDate = new Date();
+                    const sevenDaysAgo = new Date(currentDate);
+                    sevenDaysAgo.setDate(currentDate.getDate()- 7);
+
+                    // Tổng doanh thu (định dạng theo VN)
+                    const formattedTotalRevenue = totalRevenueData.toLocaleString("vi-VN");
+                    setTotalRevenue(formattedTotalRevenue);
+
+                    // Doanh thu theo ngày trong 7 ngày gần nhất
+                    const dailyRevenue = [];
+                    const dates = [];
+                    for (let i = 2; i >= 0; i--) {
+                        const date = new Date();
+                        date.setDate(currentDate.getDate() - i);
+
+                        // Chuyển đổi sang múi giờ Việt Nam
+                        const vietnamDate = new Date(date.getTime() + 7 * 60 * 60 * 1000);
+                        const dateString = vietnamDate.toISOString().split("T")[0]; // Chỉ lấy ngày (yyyy-mm-dd)
+
+                        dates.push(dateString);
+
+                        // Tính doanh thu theo ngày (sử dụng múi giờ Việt Nam để so sánh)
+                        const revenueForDay = orders
+                            .filter(order => {
+                                const orderDate = new Date(order.created_at);
+                                const vietnamOrderDate = new Date(orderDate.getTime() + 7 * 60 * 60 * 1000);
+                                return vietnamOrderDate.toISOString().split("T")[0] === dateString && order.status === "Đã giao hàng";
+                            })
+                            .reduce((sum, order) => sum + order.total_price, 0);
+
+                        dailyRevenue.push(revenueForDay);
+                    }
+                    setRevenueLast7Days(dailyRevenue.reduce((a, b) => a + b, 0));
+                    setRevenuePerDay({ dates, revenues: dailyRevenue });
+
+                    // Đơn hàng gần đây
+                    const sortedOrders = [...orders].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+// Chuyển đổi sang múi giờ Việt Nam và định dạng hiển thị
+                    const recentOrdersWithFormattedDate = sortedOrders.slice(0, 7).map(order => ({
+                        ...order,
+                        formattedDate: new Date(order.created_at).toLocaleString("vi-VN", {
+                            timeZone: "Asia/Ho_Chi_Minh", // Chuyển sang múi giờ UTC+7
+                            day: "2-digit",
+                            month: "2-digit",
+                            year: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                            second: "2-digit",
+                        }),
+                    }));
 
 
-    // Dữ liệu mẫu cho biểu đồ
-    const lineData = {
-        labels: selectedFilter === "day" ? ["4am", "5am", "6am", "7am", "8am", "9am", "10am", "11am", "12pm", "1pm", "2pm", "3pm"] :
-            selectedFilter === "week" ? ["Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7", "Chủ Nhật"] :
-                selectedFilter === "month" ? ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"] : [],
-        datasets: [
-            {
-                label: "Ngày 22",
-                data: selectedFilter === "day" ? [10, 20, 30, 40, 34, 50, 42, 35, 48, 30, 25, 35] :
-                    selectedFilter === "week" ? [200, 350, 300, 400, 250, 450, 500] :
-                        selectedFilter === "month" ? [1000, 1200, 1500, 1800, 1700, 1600, 2000, 2200, 2500, 2400, 2300, 2500] : [],
-                borderColor: "#3B82F6",
-                backgroundColor: "rgba(59, 130, 246, 0.5)",
-                tension: 0.4,
-            },
-            {
-                label: "Ngày 21",
-                data: selectedFilter === "day" ? [5, 15, 25, 35, 30, 45, 40, 30, 42, 28, 20, 25] :
-                    selectedFilter === "week" ? [100, 200, 150, 250, 200, 300, 350] :
-                        selectedFilter === "month" ? [800, 950, 1200, 1500, 1300, 1400, 1800, 1700, 2000, 2100, 2300, 2200] : [],
-                borderColor: "#D1D5DB",
-                backgroundColor: "rgba(209, 213, 219, 0.5)",
-                tension: 0.4,
-            },
-        ],
-    };
+                    setRecentOrders(recentOrdersWithFormattedDate);
 
-    const barData = {
-        labels: ["12", "13", "14", "15", "16", "17", "18"],
-        datasets: [
-            {
-                label: "Doanh thu",
-                data: [1000, 1200, 1525, 2525, 2100, 2300, 2400],
-                backgroundColor: "#10B981",
-            },
-        ],
-    };
 
-    return (
-        <AdminLayout>
-            <div className="p-4 sm:p-6 bg-gray-50 min-h-screen overflow-auto">
-                <div className="flex flex-wrap justify-between items-center mb-6">
-                    <h1 className="text-xl md:text-2xl font-bold text-gray-800">Bảng Điều Khiển</h1>
-                    <button className="flex items-center gap-2 px-4 py-2 text-blue-500 text-sm sm:text-base font-normal leading-normal rounded-lg shadow hover:bg-blue-100">
-                        <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="blue">
-                            <path d="m370-80-16-128q-13-5-24.5-12T307-235l-119 50L78-375l103-78q-1-7-1-13.5v-27q0-6.5 1-13.5L78-585l110-190 119 50q11-8 23-15t24-12l16-128h220l16 128q13 5 24.5 12t22.5 15l119-50 110 190-103 78q1 7 1 13.5v27q0 6.5-2 13.5l103 78-110 190-118-50q-11 8-23 15t-24 12L590-80H370Zm70-80h79l14-106q31-8 57.5-23.5T639-327l99 41 39-68-86-65q5-14 7-29.5t2-31.5q0-16-2-31.5t-7-29.5l86-65-39-68-99 42q-22-23-48.5-38.5T533-694l-13-106h-79l-14 106q-31 8-57.5 23.5T321-633l-99-41-39 68 86 64q-5 15-7 30t-2 32q0 16 2 31t7 30l-86 65 39 68 99-42q22 23 48.5 38.5T427-266l13 106Zm42-180q58 0 99-41t41-99q0-58-41-99t-99-41q-59 0-99.5 41T342-480q0 58 40.5 99t99.5 41Zm-2-140Z"/>
-                        </svg>
-                        Quản lý
-                    </button>
-                </div>
+                    // Lọc top 5 khách hàng có tổng chi tiêu cao nhất
+                    const accountSpending = orders.reduce((acc, order) => {
+                        const { account_id, total_price } = order;
+                        if (!acc[account_id]) {
+                            acc[account_id] = 0;
+                        }
+                        acc[account_id] += total_price;
+                        return acc;
+                    }, {});
+                    const updatedAccounts = accounts.map(account => ({
+                        ...account,
+                        total_spent: accountSpending[account.id] || 0,
+                    }));
+                    const topConsumers = updatedAccounts.sort((a, b) => b.total_spent - a.total_spent).slice(0, 10);
+                    setTopConsumers(topConsumers);
+                } catch (error) {
+                    console.error("Error fetching data", error);
+                }
+            };
+            fetchData();
+        }, []);
 
-                {/* Tổng quan */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6">
-                    {[
-                        { title: "Tổng doanh thu", value: "1.121.245.312 đ", growth: "+22.45%", bgColor: "bg-gray-200", textColor: "text-blue-500" },
-                        { title: "Đơn hàng", value: "1,056", growth: "+10.24%", bgColor: "bg-gray-200", textColor: "text-yellow-500" },
-                        { title: "Lượng truy cập", value: "5,420", growth: "+10.24%", bgColor: "bg-gray-200", textColor: "text-pink-500" },
-                        { title: "Số người dùng mới", value: "1,650", growth: "+15.34%", bgColor: "bg-gray-200", textColor: "text-green-500" },
-                    ].map((item, index) => (
-                        <div key={index} className={`p-4 ${item.bgColor} rounded-lg shadow`}>
-                            <p className="text-sm font-medium">{item.title}</p>
-                            <p className="text-lg sm:text-xl font-bold mt-2">{item.value}</p>
-                            <p className={`text-sm ${item.textColor}`}>{item.growth}</p>
+        const ordersPerDay = revenuePerDay.dates.map((date) => {
+            return orders.filter((order) => {
+                // Chuyển đổi ngày tạo của đơn hàng sang múi giờ Việt Nam
+                const orderDate = new Date(order.created_at);
+                const vietnamOrderDate = new Date(orderDate.getTime() + 7 * 60 * 60 * 1000);
+
+                // So sánh chỉ ngày (yyyy-mm-dd)
+                return vietnamOrderDate.toISOString().split("T")[0] === date;
+            }).length; // Đếm số lượng đơn hàng
+        });
+
+        const ordersData = {
+            labels: revenuePerDay.dates,
+            datasets: [
+                {
+                    label: "Số lượng đơn hàng",
+                    data: ordersPerDay,
+                    backgroundColor: "#3B82F6",
+                    borderColor: "#2563EB",
+                    pointBackgroundColor: "#60A5FA",
+                    pointBorderColor: "#1E3A8A",
+                    tension: 0.4,
+                    fill: false,
+                },
+            ],
+        };
+
+        const revenueData = {
+            labels: revenuePerDay.dates,
+            datasets: [
+                {
+                    label: "Doanh Thu",
+                    data: revenuePerDay.revenues,
+                    backgroundColor: "#10B981",
+                    borderColor: "#10B981",
+                    borderWidth: 1,
+                    borderRadius: 10,
+                    hoverBackgroundColor: "#34D399",
+                    hoverBorderColor: "#2D6A4F",
+                    hoverBorderWidth: 2,
+                    barPercentage: 0.6,
+                },
+            ],
+        };
+
+        return (
+            <AdminLayout>
+                <div className="p-6 bg-gray-50 min-h-screen">
+                    <h1 className="text-2xl font-bold text-gray-800 mb-8 mt-6">Bảng Điều Khiển</h1>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                        <div className="bg-white p-6 rounded-lg shadow-lg">
+                            <h2 className="text-lg font-medium mb-4">Tổng số đơn hàng</h2>
+                            <p className="text-3xl font-bold">{totalOrders}</p>
                         </div>
-                    ))}
-                </div>
+                        <div className="bg-white p-6 rounded-lg shadow-lg">
+                            <h2 className="text-lg font-medium mb-4">Tổng doanh thu</h2>
+                            <p className="text-3xl font-bold">{totalRevenue} đ</p>
+                        </div>
+                        <div className="bg-white p-6 rounded-lg shadow-lg">
+                            <h2 className="text-lg font-medium mb-4">Số người dùng</h2>
+                            <p className="text-3xl font-bold">{newUsersCount}</p>
+                        </div>
+                    </div>
 
-                {/* Charts */}
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
-                    {/* Orders Chart */}
-                    <div className="col-span-1 lg:col-span-2 bg-white p-4 rounded-lg shadow">
-                        <div className="flex justify-between items-center mb-4">
-                            <h2 className="text-lg font-medium">Thống Kê Đơn Hàng</h2>
-                            <div className="flex space-x-2">
-                                {["day", "week", "month"].map((filter) => (
-                                    <button
-                                        key={filter}
-                                        className={`px-3 py-1 text-sm bg-gray-100 rounded shadow ${
-                                            selectedFilter === filter ? "bg-gray-300" : ""
-                                        }`}
-                                        onClick={() => setSelectedFilter(filter)}
-                                    >
-                                        {filter === "day" ? "Hàng Ngày" : filter === "week" ? "Hàng Tuần" : "Hàng Tháng"}
-                                    </button>
-                                ))}
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                        <div className="bg-white p-6 rounded-lg shadow-lg">
+                            <h2 className="text-lg font-medium mb-4">Doanh Thu</h2>
+                            <Bar data={revenueData} />
+                        </div>
+                        <div className="bg-white p-6 rounded-lg shadow-lg">
+                            <h2 className="text-lg font-medium mb-4">Đơn hàng theo ngày</h2>
+                            <Line data={ordersData} />
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <div className="bg-white p-6 rounded-lg shadow-lg">
+                            <h2 className="text-lg font-semibold mb-4 text-gray-800">Khách hàng thân thiết</h2>
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-sm border-collapse rounded-lg shadow-md overflow-hidden">
+                                    <thead>
+                                    <tr className="bg-gray-100 border-b">
+                                        <th className="px-6 py-3 text-left font-semibold text-gray-600">Tên</th>
+                                        <th className="px-6 py-3 text-left font-semibold text-gray-600">Địa chỉ</th>
+                                        <th className="px-6 py-3 text-left font-semibold text-gray-600">Tổng Chi Tiêu</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    {topConsumers.map((user, index) => (
+                                        <tr
+                                            key={user.id}
+                                            className={`${
+                                                index % 2 === 0 ? "bg-white" : "bg-gray-50"
+                                            } hover:bg-gray-100 transition-all duration-150`}
+                                        >
+                                            <td className="px-6 py-4 text-gray-800 font-medium">
+                                                {user.first_name} {user.last_name}
+                                            </td>
+                                            <td className="px-6 py-4 text-gray-600">{user.address}</td>
+                                            <td className="px-6 py-4 text-green-600 font-bold">
+                                                {user.total_spent.toLocaleString()} đ
+                                            </td>
+                                        </tr>
+                                    ))}
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
-                        <div className="h-[300px] md:h-[400px]">
-                            <Line data={lineData} options={{ maintainAspectRatio: false }} />
-                        </div>
-                    </div>
 
-                    {/* Revenue Chart */}
-                    <div className="bg-white p-4 rounded-lg shadow">
-                        <h2 className="text-lg font-medium mb-4">Doanh Thu 7 Ngày Qua</h2>
-                        <div className="h-[300px] md:h-[400px]">
-                            <Bar data={barData} options={{ maintainAspectRatio: false }} />
-                        </div>
-                    </div>
-                </div>
-
-                {/* Tables */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mt-6">
-                    {/* Recent Transactions */}
-                    <div className="bg-white p-4 rounded-lg shadow">
-                        <h2 className="text-lg font-medium mb-4">Giao Dịch Gần Đây</h2>
-                        <div className="overflow-x-auto">
-                        <table className="w-full text-left border-separate border-spacing-2">
-                            <thead>
-                            <tr className="text-sm text-gray-500">
-                                <th className="px-4 py-2">Tên</th>
-                                <th className="px-4 py-2">Ngày</th>
-                                <th className="px-4 py-2">Số Tiền</th>
-                                <th className="px-4 py-2">Trạng Thái</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            {[{
-                                name: "Jagarnath S.", date: "24.05.2023", amount: "124.970 đ", status: "Đã thanh toán"
-                            }, {
-                                name: "Anand G.", date: "23.05.2023", amount: "55.420 đ", status: "Chờ thanh toán"
-                            }, {
-                                name: "Kartik S.", date: "23.05.2023", amount: "89.900 đ", status: "Đã thanh toán"
-                            }, {
-                                name: "Rakesh S.", date: "22.05.2023", amount: "144.940 đ", status: "Chờ thanh toán"
-                            }, {
-                                name: "Anup S.", date: "22.05.2023", amount: "240.200 đ", status: "Đã thanh toán"
-                            }].map((item, index) => (
-                                <tr key={index} className="text-sm">
-                                    <td className="px-4 py-2">{item.name}</td>
-                                    <td className="px-4 py-2">{item.date}</td>
-                                    <td className="px-4 py-2">{item.amount}</td>
-                                    <td className="px-4 py-2">
-                                            <span
-                                                className={`px-2 py-1 text-xs rounded ${item.status === "Đã thanh toán" ? "bg-green-100 text-green-500" : "bg-yellow-100 text-yellow-500"}`}
+                        <div className="bg-white p-6 rounded-lg shadow-lg">
+                            <h2 className="text-lg font-semibold mb-4 text-gray-800">Đơn hàng gần đây</h2>
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-sm border-collapse rounded-lg shadow-md overflow-hidden">
+                                    <thead>
+                                    <tr className="bg-gray-100 border-b">
+                                        <th className="px-6 py-3 text-left font-semibold text-gray-600">ID</th>
+                                        <th className="px-6 py-3 text-left font-semibold text-gray-600">Mã đơn</th>
+                                        <th className="px-6 py-3 text-left font-semibold text-gray-600">Trạng thái</th>
+                                        <th className="px-6 py-3 text-left font-semibold text-gray-600">Giá tiền</th>
+                                        <th className="px-6 py-3 text-left font-semibold text-gray-600">Ngày tạo</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    {recentOrders.map((order, index) => (
+                                        <tr
+                                            key={order.id}
+                                            className={`${
+                                                index % 2 === 0 ? "bg-white" : "bg-gray-50"
+                                            } hover:bg-gray-100 transition-all duration-150`}
+                                        >
+                                            <td className="px-6 py-4 text-gray-800 font-medium">{order.account_id}</td>
+                                            <td className="px-6 py-4 text-gray-600">{order.cart_id}</td>
+                                            <td
+                                                className={`px-6 py-4 ${
+                                                    order.status === "Đã giao hàng"
+                                                        ? "text-green-600 font-semibold"
+                                                        : order.status === "Đang giao hàng"
+                                                            ? "text-yellow-500 font-semibold"
+                                                            : "text-gray-600"
+                                                }`}
                                             >
-                                                {item.status}
-                                            </span>
-                                    </td>
-                                </tr>
-                            ))}
-                            </tbody>
-                        </table>
-                    </div>
-                    </div>
-
-                    {/* Best-Selling Products */}
-                    <div className="bg-white p-4 rounded-lg shadow">
-                        <h2 className="text-lg font-medium mb-4">Sản Phẩm Bán Chạy Nhất</h2>
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-sm text-left">
-                            <thead>
-                            <tr className="text-sm text-gray-500">
-                                <th className="px-4 py-2">Hình ảnh</th>
-                                <th className="px-4 py-2">Tên</th>
-                                <th className="px-4 py-2">Giá</th>
-                                <th className="px-4 py-2">Số Lượng Bán</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            {[{
-                                name: "Áo Hoodie Xám Nam",
-                                image: "https://www.pursuefitness.com/cdn/shop/files/oversized-hoodie-grey-marl-mens.jpg?v=1691625718",
-                                price: "300.000 đ",
-                                units: 204
-                            }, {
-                                name: "Áo Thun Kẻ Sọc Nữ",
-                                image: "https://image.uniqlo.com/UQ/ST3/vn/imagesgoods/476248/item/vngoods_69_476248_3x4.jpg?width=494",
-                                price: "400.000 đ",
-                                units: 155
-                            }, {
-                                name: "Áo Thun Trắng Nữ",
-                                image: "https://i5.walmartimages.com/seo/Gildan-Women-T-Shirts-Value-Pack-White-Shirts-Plain-Sleep-Single-OR-6-12-T-shirts-T-shirt-Casual-Shirt-Basic_5987debd-a4bd-480e-b472-d81c0be28213.f96c79d6c3dabae5ba0152e84fccd97e.jpeg",
-                                price: "900.000 đ",
-                                units: 120
-                            }, {
-                                name: "Áo Thun Trắng Nam",
-                                image: "https://cdn.shopify.com/s/files/1/0835/1005/files/Escuyer-crew-neck-t-shirt-white-1_1024x1024.jpg?15355619158198583135",
-                                price: "999.000 đ",
-                                units: 204
-                            }, {
-                                name: "Áo Thun Đỏ Nữ",
-                                image: "https://muselot.in/cdn/shop/products/Women_s-plain-red-t-shirt.jpg?v=1658093714",
-                                price: "565.000 đ",
-                                units: 155
-                            }].map((item, index) => (
-                                <tr key={index} className="text-sm">
-                                    <td className="px-4 py-2">
-                                        <img
-                                            src={item.image}
-                                            alt={item.name}
-                                            className="w-12 h-12 object-cover rounded"
-                                        />
-                                    </td>
-                                    <td className="px-4 py-2">{item.name}</td>
-                                    <td className="px-4 py-2">{item.price}</td>
-                                    <td className="px-4 py-2">{item.units}</td>
-                                </tr>
-                            ))}
-                            </tbody>
-                        </table>
+                                                {order.status}
+                                            </td>
+                                            <td className="px-6 py-4 text-green-600 font-bold">
+                                                {order.total_price.toLocaleString()} đ
+                                            </td>
+                                            <td className="px-6 py-4 text-gray-500">{order.formattedDate}</td>
+                                        </tr>
+                                    ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                </div>
-            </div>
-        </AdminLayout>
-    );
-};
+            </AdminLayout>
+        );
+    };
 
-export default DashboardPage;
+    export default DashboardPage;

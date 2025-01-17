@@ -1,73 +1,25 @@
-import React from "react";
-import LayoutAuthentication from "../../layout/LayoutAuthentication";
+import React, { useState } from "react";
+import LayoutAuthentication from "../../components/layout/LayoutAuthentication";
 import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { Label } from "../../components/label";
 import { Input } from "../../components/input";
 import FormGroup from "../../components/common/FormGroup";
 import { Button } from "../../components/button";
-import * as yup from "yup";
-import { yupResolver } from "@hookform/resolvers/yup";
 import useToggleValue from "../../components/hooks/useToogleValue";
 import axios from "axios";
-
-const schema = yup.object({
-    firstname: yup.string().required("First name is required"),
-    lastname: yup.string().required("Last name is required"),
-    email: yup
-        .string()
-        .email("Invalid email address")
-        .required("Email is required"),
-    phone: yup
-        .string()
-        .required("Phone number is required")
-        .matches(/^[0-9]{10,15}$/, "Invalid phone number"),
-    birth: yup
-        .date()
-        .required("Date of birth is required")
-        .typeError("Invalid date format"),
-    gender: yup
-        .string()
-        .oneOf(["Male", "Female", "Other"], "Please select a valid gender")
-        .required("Gender is required"),
-    password: yup
-        .string()
-        .required("Password is required")
-        .min(8, "Password must be at least 8 characters long")
-        .max(20, "Password must be no more than 20 characters long")
-        .matches(/[A-Z]/, "Password must contain at least one uppercase letter")
-        .matches(/[a-z]/, "Password must contain at least one lowercase letter")
-        .matches(/[0-9]/, "Password must contain at least one number")
-        .matches(/[@$!%*?&]/, "Password must contain at least one special character"),
-    confirm: yup
-        .string()
-        .oneOf([yup.ref("password")], "Passwords do not match")
-        .required("Confirm password is required"),
-});
+import {ecommerceAPI} from "../../config/config";
 
 const SignUpPage = () => {
-    const {
-        handleSubmit,
-        control,
-        formState: { errors },
-    } = useForm({
-        resolver: yupResolver(schema),
-        mode: "onSubmit",
-    });
-
+    const { handleSubmit, control } = useForm();
     const navigate = useNavigate();
-    const { value: showPassword, handleToggleValue: handleTogglePassword } =
-        useToggleValue();
-
+    const { value: showPassword, handleToggleValue: handleTogglePassword } = useToggleValue();
+    const [loading, setLoading] = useState(false);
 
     const handleSignUp = async (values) => {
+        setLoading(true);
+
         try {
-<<<<<<< HEAD
-            const response = await axios.post("http://localhost:5000/signup", values);
-            console.log("Response:", response.data);
-            navigate("/auth/sign-in", { state: { message: "Đăng ký thành công!" } });
-            alert("Đăng ký thành công! Vui lòng đăng nhập.");
-=======
             const payload = {
                 first_name: values.firstname,
                 last_name: values.lastname,
@@ -82,7 +34,7 @@ const SignUpPage = () => {
 
             console.log("Payload gửi lên server:", payload); // Kiểm tra dữ liệu gửi lên
 
-            const response = await axios.post("https://testbe-1.onrender.com/signup", payload, {
+            const response = await axios.post(`${ecommerceAPI.baseURL}signup`, payload, {
                 headers: {
                     "Content-Type": "application/json",
                 },
@@ -90,56 +42,23 @@ const SignUpPage = () => {
 
             if (response.status === 200) {
                 const serverMessage = response.data.message || "Đăng ký thành công!";
-                
-                const token = response.data.access_token; // Lấy token từ phản hồi
-                console.log("Tài khoản đã đăng ký thành công, token:", token);
-
-                // Thiết lập token cho các yêu cầu tiếp theo
-                const headers = { Authorization: `Bearer ${token}` };
-
-                // Kiểm tra xem giỏ hàng đã tồn tại chưa
-                try {
-                    const cartResponse = await axios.get("https://testbe-1.onrender.com/carts/me", { headers });
-                    console.log("Giỏ hàng hiện tại:", cartResponse.data);
-                } catch (error) {
-                    if (error.response?.status === 404) {
-                        // Nếu giỏ hàng chưa tồn tại, tạo giỏ hàng mới
-                        const createCartResponse = await axios.post(
-                            "https://testbe-1.onrender.com/carts/me",
-                            {},
-                            { headers }
-                        );
-                        console.log("Giỏ hàng mới được tạo:", createCartResponse.data);
-                    } else {
-                        console.error("Lỗi khi lấy giỏ hàng:", error);
-                    }
-                }
-            
-                
-                
                 alert(serverMessage);
-                navigate("/login", { state: { message: serverMessage } });
+                navigate("/auth/sign-in", { state: { message: serverMessage } });
             } else {
                 alert("Không thể đăng ký. Vui lòng thử lại.");
             }
->>>>>>> 361b2a012c3c43d33ec9ebc2fdb563222f5a4a43
         } catch (error) {
-            if (error.response && error.response.data) {
-                alert(`Lỗi: ${error.response.data.message}`);
-            } else {
-                console.error("Error:", error.message);
-                alert("Đăng ký thất bại. Vui lòng thử lại.");
-            }
+            console.error("Error:", error);
+            alert(error.response?.data?.message || "Đã xảy ra lỗi. Vui lòng thử lại.");
+        } finally {
+            setLoading(false);
         }
     };
-
 
     return (
         <LayoutAuthentication heading="FASCO">
             <div className="text-black text-3xl font-normal font-['Volkhov'] leading-10 mb-5">
-                Đăng Ký Tài Khoản
             </div>
-
             <form onSubmit={handleSubmit(handleSignUp)}>
                 <FormGroup>
                     <Label htmlFor="firstname"></Label>
@@ -147,10 +66,8 @@ const SignUpPage = () => {
                         control={control}
                         name="firstname"
                         type="text"
-                        className="text-[#9d9d9d] text-base font-normal font-['Poppins'] leading-10 tracking-wider w-full border-b border-gray-400 focus:border-[#9d9d9d] focus:outline-none"
-
-                        placeholder="Họ"
-                        error={errors.firstname?.message}
+                        className=" text-base font-normal font-['Poppins'] leading-10 tracking-wider w-full border-b border-gray-400 focus:border-[#9d9d9d] focus:outline-none"
+                        placeholder="Nhập họ"
                     />
                 </FormGroup>
                 <FormGroup>
@@ -159,45 +76,10 @@ const SignUpPage = () => {
                         control={control}
                         name="lastname"
                         type="text"
-                        placeholder="Tên"
-                        className="text-[#9d9d9d] text-base font-normal font-['Poppins'] leading-10 tracking-wider w-full border-b border-gray-400 focus:border-[#9d9d9d] focus:outline-none"
-                        error={errors.lastname?.message}
+                        className=" text-base font-normal font-['Poppins'] leading-10 tracking-wider w-full border-b border-gray-400 focus:border-[#9d9d9d] focus:outline-none"
+
+                        placeholder="Nhập tên"
                     />
-                </FormGroup>
-                <FormGroup>
-                    <Label htmlFor="phone"></Label>
-                    <Input
-                        control={control}
-                        name="phone"
-                        type="text"
-                        className="text-[#9d9d9d] text-base font-normal font-['Poppins'] leading-10 tracking-wider w-full border-b border-gray-400 focus:border-[#9d9d9d] focus:outline-none"
-                        placeholder="Số điện thoại"
-                        error={errors.phone?.message}
-                    />
-                </FormGroup>
-                <FormGroup>
-                    <Label htmlFor="birth"></Label>
-                    <Input
-                        control={control}
-                        name="birth"
-                        type="date"
-                        className="text-[#9d9d9d] text-base font-normal font-['Poppins'] leading-10 tracking-wider w-full border-b border-gray-400 focus:border-[#9d9d9d] focus:outline-none"
-                        placeholder="Ngày sinh"
-                        error={errors.birth?.message}
-                    />
-                </FormGroup>
-                <FormGroup>
-                    <Label htmlFor="gender"></Label>
-                    <select
-                        className="border rounded p-2 w-full"
-                        {...control.register("gender")}
-                    >
-                        <option value="">Chọn giới tính</option>
-                        <option value="Male">Nam</option>
-                        <option value="Female">Nữ</option>
-                        <option value="Other">Khác</option>
-                    </select>
-                    <p className="text-red-500">{errors.gender?.message}</p>
                 </FormGroup>
                 <FormGroup>
                     <Label htmlFor="email"></Label>
@@ -205,38 +87,81 @@ const SignUpPage = () => {
                         control={control}
                         name="email"
                         type="email"
-                        className="text-[#9d9d9d] text-base font-normal font-['Poppins'] leading-10 tracking-wider w-full border-b border-gray-400 focus:border-[#9d9d9d] focus:outline-none"
-                        placeholder="Email"
-                        error={errors.email?.message}
+                        className=" text-base font-normal font-['Poppins'] leading-10 tracking-wider w-full border-b border-gray-400 focus:border-[#9d9d9d] focus:outline-none"
+
+                        placeholder="Nhập email"
                     />
+                </FormGroup>
+                <FormGroup>
+                    <Label htmlFor="phone_number"></Label>
+                    <Input
+                        control={control}
+                        name="phone_number"
+                        type="text"
+                        className=" text-base font-normal font-['Poppins'] leading-10 tracking-wider w-full border-b border-gray-400 focus:border-[#9d9d9d] focus:outline-none"
+
+                        placeholder="Nhập số điện thoại"
+                    />
+                </FormGroup>
+                <FormGroup>
+                    <Label htmlFor="address"></Label>
+                    <Input
+                        control={control}
+                        name="address"
+                        type="text"
+                        className=" text-base font-normal font-['Poppins'] leading-10 tracking-wider w-full border-b border-gray-400 focus:border-[#9d9d9d] focus:outline-none"
+
+                        placeholder="Nhập địa chỉ"
+                    />
+                </FormGroup>
+                <FormGroup>
+                    <Label htmlFor="date_of_birth"></Label>
+                    <Input
+                        control={control}
+                        name="date_of_birth"
+                        className=" text-base font-normal font-['Poppins'] leading-10 tracking-wider w-full border-b border-gray-400 focus:border-[#9d9d9d] focus:outline-none"
+
+                        type="date"
+                    />
+                </FormGroup>
+                <FormGroup>
+                    <Label htmlFor="gender"></Label>
+                    <select {...control.register("gender")} className="border rounded p-2 w-full">
+                        <option value="">Chọn giới tính</option>
+                        <option value="Male">Nam</option>
+                        <option value="Female">Nữ</option>
+                        <option value="Other">Khác</option>
+                    </select>
                 </FormGroup>
                 <FormGroup>
                     <Label htmlFor="password"></Label>
                     <Input
                         control={control}
                         name="password"
-                        className="text-[#9d9d9d] text-base font-normal font-['Poppins'] leading-10 tracking-wider w-full border-b border-gray-400 focus:border-[#9d9d9d] focus:outline-none"
+                        placeholder="Nhập mật khẩu"
                         type={showPassword ? "text" : "password"}
-                        placeholder="Mật khẩu"
-                        error={errors.password?.message}
+
+                        className=" text-base font-normal font-['Poppins'] leading-10 tracking-wider w-full border-b border-gray-400 focus:border-[#9d9d9d] focus:outline-none"
+
                     />
                 </FormGroup>
+
                 <FormGroup>
-                    <Label htmlFor="confirm"></Label>
+                    <Label htmlFor="confirmpassword"></Label>
                     <Input
                         control={control}
-                        name="confirm"
-                        className="text-[#9d9d9d] text-base font-normal font-['Poppins'] leading-10 tracking-wider w-full border-b border-gray-400 focus:border-[#9d9d9d] focus:outline-none"
-                        type={showPassword ? "text" : "password"}
+                        name="confirmpassword"
                         placeholder="Xác nhận mật khẩu"
-                        error={errors.confirm?.message}
+                        type={showPassword ? "text" : "password"}
+
+                        className=" text-base font-normal font-['Poppins'] leading-10 tracking-wider w-full border-b border-gray-400 focus:border-[#9d9d9d] focus:outline-none"
+
                     />
                 </FormGroup>
                 <Button type="submit" className="w-full bg-black text-white py-3">
-                    Đăng ký
+                    {loading ? "Đang đăng ký..." : "Đăng ký"}
                 </Button>
             </form>
-
             <p className="text-center mt-5">
                 Bạn đã có tài khoản?{" "}
                 <Link to="/auth/sign-in" className="text-blue-500">
