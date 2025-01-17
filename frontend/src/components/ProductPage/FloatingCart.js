@@ -5,6 +5,9 @@ import axios from "axios";
 import "./FloatingCart.css";
 
 const FloatingCart = () => {
+
+  const apiURL = process.env.REACT_APP_API_URL;
+
   const { cart, toggleChosen, setCart, removeFromCart, updateQuantity } = useContext(CartContext);
   const [showCart, setShowCart] = useState(false);
   const [productDetails, setProductDetails] = useState({}); // Lưu trữ thông tin chi tiết của sản phẩm
@@ -31,7 +34,7 @@ const FloatingCart = () => {
         // Duyệt qua các item trong giỏ hàng và lấy thông tin sản phẩm
         for (let item of cart) {
           if (item.product_id && !productDetailsObj[item.product_id]) {
-            const response = await axios.get(`https://testbe-1.onrender.com/products/${item.product_id}`, { headers });
+            const response = await axios.get(`${apiURL}/products/${item.product_id}`, { headers });
             productDetailsObj[item.product_id] = response.data;
           }
         }
@@ -59,7 +62,7 @@ const FloatingCart = () => {
       const headers = { Authorization: `Bearer ${token}` };
 
       // Làm mới giỏ hàng sau khi cập nhật số lượng
-      const response = await axios.get("https://testbe-1.onrender.com/cart_items/me", { headers });
+      const response = await axios.get(`${apiURL}/cart_items/me`, { headers });
       setCart(response.data);
     } catch (error) {
       console.error("Error updating quantity:", error);
