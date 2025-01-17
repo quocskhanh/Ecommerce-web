@@ -4,11 +4,19 @@ import { useEffect, useState } from 'react';
 import axios from 'axios';
 
 const FilterByCategory = ({
+<<<<<<< HEAD
                             selectedCategoryId, // category_id được chọn
                             onFilterChange, // Hàm thay đổi category_id
                             selectedPriceRange,
                             onPriceRangeChange
                           }) => {
+=======
+  selectedCategoryId, // category_id được chọn
+  onFilterChange, // Hàm thay đổi category_id
+  selectedPriceRange,
+  onPriceRangeChange
+}) => {
+>>>>>>> 023a7b87aa947f7c2f3b4c304b3cbbc89b1fcb56
 
   const apiURL = process.env.REACT_APP_API_URL;
 
@@ -42,10 +50,24 @@ const FilterByCategory = ({
   ];
 
   return (
+<<<<<<< HEAD
       <div className="filter_by_category">
         {/* Lọc theo danh mục */}
         <h3>Lọc theo danh mục:</h3>
         <ul className="category_list">
+=======
+    <div className="filter_by_category">
+      {/* Lọc theo danh mục */}
+      <h3>Lọc theo danh mục:</h3>
+      <ul className="category_list">
+        <li
+          className={!selectedCategoryId ? 'active' : ''}
+          onClick={() => onFilterChange(null)}
+        >
+          All
+        </li>
+        {categories.map((category) => (
+>>>>>>> 023a7b87aa947f7c2f3b4c304b3cbbc89b1fcb56
           <li
               className={!selectedCategoryId ? 'active' : ''}
               onClick={() => onFilterChange(null)}
@@ -63,6 +85,7 @@ const FilterByCategory = ({
           ))}
         </ul>
 
+<<<<<<< HEAD
         {/* Lọc theo giá */}
         <h3>Lọc theo giá:</h3>
         <ul className="price_list">
@@ -77,6 +100,22 @@ const FilterByCategory = ({
           ))}
         </ul>
       </div>
+=======
+      {/* Lọc theo giá */}
+      <h3>Lọc theo giá:</h3>
+      <ul className="price_list">
+        {priceRanges.map((range) => (
+          <li
+            key={range.label}
+            className={selectedPriceRange && selectedPriceRange.label === range.label ? 'active' : ''}
+            onClick={() => onPriceRangeChange(range)}
+          >
+            {range.label}
+          </li>
+        ))}
+      </ul>
+    </div>
+>>>>>>> 023a7b87aa947f7c2f3b4c304b3cbbc89b1fcb56
   );
 };
 
