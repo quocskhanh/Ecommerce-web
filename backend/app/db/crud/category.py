@@ -5,7 +5,11 @@ from app.schemas.category import CategoryCreate, CategoryUpdate, CategoryRespons
 def create_category(db : Session, category: CategoryCreate):
     existing_category = db.query(Category).filter(Category.name == category.name).first()
     if existing_category:
-        raise ValueError(f"Loại này đã tồn tại")
+        existing_category.is_deleted = False
+        existing_category.image = category.image
+        db.commit()  # Thêm commit
+        db.refresh(existing_category)
+        return existing_category
     new_category = Category(
         name = category.name,
         image = category.image
