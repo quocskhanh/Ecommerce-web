@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
+import {ecommerceAPI} from "../../config/config";
 
 const DashboardTopbar = () => {
     const [menuVisible, setMenuVisible] = useState(false);
@@ -25,7 +26,7 @@ const DashboardTopbar = () => {
         // Tải danh sách sản phẩm từ backend
         const fetchProducts = async () => {
             try {
-                const response = await axios.get("https://testbe-1.onrender.com/products", {
+                const response = await axios.get(`${ecommerceAPI.baseURL}products`, {
                     headers: {
                         Authorization: `Bearer ${localStorage.getItem("access_token")}`,
                         "Content-Type": "application/json",
@@ -130,9 +131,6 @@ const DashboardTopbar = () => {
                     </div>
                     {menuVisible && (
                         <ul className="absolute right-0 mt-2 w-40 bg-black shadow-lg rounded-md z-50">
-                            <li className="px-4 py-2 hover:bg-gray-500 cursor-pointer">
-                                <Link to="/admin/setting">Cài đặt</Link>
-                            </li>
                             <li className="px-4 py-2 hover:bg-gray-500 cursor-pointer">
                                 <Link to="/admin/order">Đơn hàng</Link>
                             </li>

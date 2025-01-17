@@ -1,11 +1,11 @@
 import React, { useContext, useState, useEffect } from "react";
+
+import axios from "axios";
+import {CartContext} from "../components/ShopPage/ListProducts/CartContext";
+import Header from "../components/HomePage/Header/Header";
 import CheckoutForm from "../components/CheckOut/MainCheckOut";
-import { CartContext } from "../components/ShopPage/ListProducts/CartContext"; 
-import "../components/CheckOut/CheckOutPage.css";
-import Header from "../components/ShopPage/Header/Header";
 import Subscribe from "../components/ShopPage/Subscribe/Subscribe";
 import Footer from "../components/ShopPage/Footer/Footer";
-import axios from "axios";
 
 function CheckOutPage() {
   const { cart, cartId } = useContext(CartContext); // Lấy giỏ hàng và cart_id từ context
@@ -104,7 +104,7 @@ function CheckOutPage() {
 
       <Subscribe />
       <hr />
-      <Footer />
+      <Footer  />
     </div>
   );
 }

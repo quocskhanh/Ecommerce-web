@@ -1,7 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import AdminLayout from "../layout/AdminLayout";
+import AdminLayout from "../components/layout/AdminLayout";
 
 const LogOutUser = () => {
     const navigate = useNavigate();
@@ -46,7 +46,7 @@ const LogOutUser = () => {
     };
 
     return (
-        <AdminLayout>
+        <AdminLayout >
             <div className="min-h-screen flex items-center justify-center bg-gray-100">
                 <div className="bg-white shadow-lg rounded-lg p-8 text-center w-full max-w-md">
                     <h1 className="text-2xl font-bold mb-4 text-gray-800">Xác nhận Đăng Xuất</h1>

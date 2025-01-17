@@ -4,13 +4,13 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import { useNavigate } from "react-router-dom";
 import * as yup from "yup";
 import axios from "axios";
-import LayoutAuthentication from "../../layout/LayoutAuthentication";
 import { Label } from "../../components/label";
 import { Input } from "../../components/input";
 import FormGroup from "../../components/common/FormGroup";
 import { Button } from "../../components/button";
 import IconEyeToggle from "../../components/icons/IconEyeToggle";
 import useToggleValue from "../../components/hooks/useToogleValue";
+import LayoutAuthentication from "../../components/layout/LayoutAuthentication";
 
 // Validation schema using Yup
 const schema = yup.object({

@@ -87,13 +87,6 @@ const SignInPage = () => {
             setLoading(false);
         }
     };
-
-
-
-
-
-
-
     return (
         <LayoutAuthentication heading="FASCO">
             <div className="flex justify-center gap-4">
