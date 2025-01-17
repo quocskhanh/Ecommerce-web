@@ -1,7 +1,7 @@
 import React from "react";
 import "./Subscribe.css"
-import leftImg from "../../../images/f-img1.png"
-import rightImg from "../../../images/f-img2.png"
+import leftImg from "../../../images/f-img1.jpg"
+import rightImg from "../../../images/f-img2.jpg"
 
 const Subscribe = () => {
     return (
