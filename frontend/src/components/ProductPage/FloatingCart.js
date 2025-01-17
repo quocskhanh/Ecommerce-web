@@ -96,7 +96,7 @@ const FloatingCart = () => {
       {/* Popup hiển thị giỏ hàng */}
       {showCart && (
         <div className="cart-popup">
-          <h2>Your Cart</h2>
+          <h2>Giỏ Hàng:</h2>
           {cart.length === 0 ? (
             <p>Your cart is empty</p>
           ) : (
@@ -116,7 +116,7 @@ const FloatingCart = () => {
                           <img src={product.image || "placeholder.jpg"} alt={product.name} width="50" />
                           <div className="cart-item-details">
                             <p>{product.name || "Unknown Product"}</p>
-                            <p>Price: {(item.price_per_item || 0).toLocaleString()} VND</p>
+                            <p>Giá: {(item.price_per_item || 0).toLocaleString()} VND</p>
                             <input
                               type="number"
                               value={item.quantity || 1}
@@ -126,14 +126,14 @@ const FloatingCart = () => {
                           </div>
                         </>
                       )}
-                      <button onClick={() => handleRemoveItem(item.id)}>Remove</button>
+                      <button onClick={() => handleRemoveItem(item.id)}>Xóa</button>
                     </li>
                   );
                 })}
               </ul>
               <p className="cart-total">Tổng: {totalPrice.toLocaleString()} VND</p>
               <button className="checkout-button" onClick={handleCheckout}>
-                Checkout
+                Thanh Toán
               </button>
             </>
           )}
