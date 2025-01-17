@@ -115,7 +115,6 @@ const Slider = () => {
                 <p> Size:</p>
                 <button>M</button>
               </div>
-              <h2>$100.<span>00</span></h2>
                 <div className="buy-button">
                   <a href="#">Buy Now</a>
                 </div> 
