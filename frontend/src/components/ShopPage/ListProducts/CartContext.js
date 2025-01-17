@@ -35,15 +35,9 @@ const CartProvider = ({ children }) => {
           if (error.response?.status === 404) {
             // Nếu giỏ hàng chưa tồn tại, tạo mới
             const createCartResponse = await axios.post(
-<<<<<<< HEAD
                 `${apiURL}/carts/me`,
                 {},
                 { headers }
-=======
-              `${apiURL}/carts/me`,
-              {},
-              { headers }
->>>>>>> 023a7b87aa947f7c2f3b4c304b3cbbc89b1fcb56
             );
             setCartId(createCartResponse.data.id);
             console.log("New cart created:", createCartResponse.data);
@@ -72,7 +66,6 @@ const CartProvider = ({ children }) => {
 
       // Gửi yêu cầu thêm sản phẩm vào giỏ hàng
       const response = await axios.post(
-<<<<<<< HEAD
           `${apiURL}/cart_items/me?product_id=${product.id}`,
           {
             cart_id: cartId, // Sử dụng `cart_id`
@@ -82,17 +75,6 @@ const CartProvider = ({ children }) => {
             is_chosen: true,
           },
           { headers }
-=======
-        `${apiURL}/cart_items/me?product_id=${product.id}`,
-        {
-          cart_id: cartId, // Sử dụng `cart_id`
-          product_id: product.id,
-          quantity: 1,
-          price_per_item: product.price,
-          is_chosen: true,
-        },
-        { headers }
->>>>>>> 023a7b87aa947f7c2f3b4c304b3cbbc89b1fcb56
       );
 
       // Cập nhật giỏ hàng
@@ -143,15 +125,9 @@ const CartProvider = ({ children }) => {
       const headers = { Authorization: `Bearer ${token}` };
 
       const response = await axios.put(
-<<<<<<< HEAD
           `${apiURL}/cart_items/me/${itemId}`,
           { quantity },
           { headers }
-=======
-        `${apiURL}/cart_items/me/${itemId}`,
-        { quantity },
-        { headers }
->>>>>>> 023a7b87aa947f7c2f3b4c304b3cbbc89b1fcb56
       );
 
       // Cập nhật giỏ hàng

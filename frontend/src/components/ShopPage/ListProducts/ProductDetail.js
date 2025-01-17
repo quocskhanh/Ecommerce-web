@@ -60,18 +60,6 @@ const ProductDetail = ({ productId }) => {
           <button onClick={handleAddToCart}>Thêm vào giỏ hàng</button>
         </div>
       </div>
-<<<<<<< HEAD
-=======
-      <div className="detail-product-content">
-        <h2>{product.name}</h2>
-        <p>Mô tả: {product.description}</p>
-        <p>Màu: {product.colors}</p>
-        <p>Size: {product.sizes}</p>
-        <p>Giá: {product.price.toLocaleString()} VND</p>
-        <button onClick={handleAddToCart}>Thêm vào giỏ hàng</button>
-      </div>
-    </div>
->>>>>>> 023a7b87aa947f7c2f3b4c304b3cbbc89b1fcb56
   );
 };
 
