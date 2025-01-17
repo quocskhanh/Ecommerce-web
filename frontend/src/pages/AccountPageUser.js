@@ -1,8 +1,14 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { Link } from "react-router-dom";
+import Header from "../components/HomePage/Header/Header";
+import Subscribe from "../components/ShopPage/Subscribe/Subscribe";
+import Footer from "../components/ShopPage/Footer/Footer";
+import "./AccountPageUser.css"
 
 const AccountPageUser = () => {
+
+  const apiURL = process.env.REACT_APP_API_URL;
+
   const [userInfo, setUserInfo] = useState({});
   const [orders, setOrders] = useState([]);
   const [orderDetails, setOrderDetails] = useState(null); // Lưu trữ chi tiết sản phẩm trong đơn hàng
@@ -15,7 +21,7 @@ const AccountPageUser = () => {
       if (!token) return;
 
       try {
-        const response = await axios.get("https://testbe-1.onrender.com/accounts/me", {
+        const response = await axios.get(`${apiURL}/accounts/me`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setUserInfo(response.data);
@@ -29,7 +35,7 @@ const AccountPageUser = () => {
       if (!token) return;
     
       try {
-        const response = await axios.get("https://testbe-1.onrender.com/orders/me", {
+        const response = await axios.get(`${apiURL}/orders/me`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setOrders(response.data);
@@ -38,14 +44,13 @@ const AccountPageUser = () => {
         console.error("Error fetching orders:", error);
       }
     };
-    
 
     fetchUserInfo();
     fetchUserOrders();
   }, []);
 
-  // Lấy chi tiết đơn hàng theo `cart_id`
-  const fetchOrderDetails = async (orderId, cartId) => {
+  // Lấy chi tiết đơn hàng theo `order_id`
+  const fetchOrderDetails = async (orderId) => {
     const token = localStorage.getItem("access_token");
     if (!token) return;
   
@@ -53,44 +58,31 @@ const AccountPageUser = () => {
     setLoading(true);
   
     try {
-      console.log(`Fetching cart items for order ID: ${orderId}, cart ID: ${cartId}`); // Gỡ lỗi
+      console.log(`Fetching order items for order ID: ${orderId}`); // Gỡ lỗi
   
-      // Kiểm tra nếu `cartId` bị undefined
-      if (!cartId) {
-        console.error("Cart ID is undefined.");
-        setLoading(false);
-        return;
-      }
-  
-      const cartItemsResponse = await axios.get(
-        `https://testbe-1.onrender.com/cart_items/me?cart_id=${cartId}`,
+      const orderItemsResponse = await axios.get(
+        `${apiURL}/orders/${orderId}/items`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
   
-      let cartItems = cartItemsResponse.data;
-  
-      // Lọc các sản phẩm được chọn
-      cartItems = cartItems.filter(
-        (item) => item.is_chosen && item.order_id === orderId
-      );
-  
-      if (cartItems.length === 0) {
-        console.log("No chosen items found in this cart for the given order.");
+      const orderItems = orderItemsResponse.data;
+      if (orderItems.length === 0) {
+        console.log("No items found for this order.");
         setOrderDetails([]);
         setLoading(false);
         return;
       }
   
-      console.log("Filtered Cart Items:", cartItems);
+      console.log("Order Items:", orderItems);
   
       const productDetails = [];
   
       // Lấy thông tin chi tiết sản phẩm từ product_id
-      for (let item of cartItems) {
+      for (let item of orderItems) {
         const productResponse = await axios.get(
-          `https://testbe-1.onrender.com/products/${item.product_id}`,
+          `${apiURL}/products/${item.product_id}`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -106,106 +98,109 @@ const AccountPageUser = () => {
       // Cập nhật chi tiết sản phẩm
       setOrderDetails(productDetails);
     } catch (error) {
-      console.error("Error fetching cart items or product details:", error);
+      console.error("Error fetching order items or product details:", error);
     } finally {
       setLoading(false);
     }
   };
-  
+
   // Xử lý khi nhấn "View Details"
   const handleOrderClick = (order) => {
-    if (!order.cart_id) {
-      console.error(`Cart ID is undefined for order ID: ${order.id}`);
-      return;
-    }
-    fetchOrderDetails(order.id, order.cart_id);
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem("access_token");
-    window.location.reload(); // Tải lại trang
+    fetchOrderDetails(order.id);
   };
 
   return (
-    <div className="account-page">
-      <h1>Thông tin cá nhân</h1>
-      <p>Name: {userInfo.last_name || "N/A"}</p>
-      <p>Email: {userInfo.email || "N/A"}</p>
-      <p>Phone Number: {userInfo.phone_number || "N/A"}</p>
-      <button onClick={handleLogout} className="logout-button">
-      <Link to = "/">Logout</Link>
-      </button>
-
-      <h2>Order History</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>Order ID</th>
-            <th>Date</th>
-            <th>Total Price</th>
-            <th>Status</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          {orders.length > 0 ? (
-            orders.map((order) => (
-              <tr key={order.id}>
-                <td>{order.id}</td>
-                <td>{new Date(order.created_at).toLocaleDateString()}</td>
-                <td>{order.total_price.toLocaleString()} VND</td>
-                <td>{order.status}</td>
-                <td>
-                  <button onClick={() => handleOrderClick(order)}>View Details</button>
-                </td>
-              </tr>
-            ))
-          ) : (
-            <tr>
-              <td colSpan="5">No orders found.</td>
-            </tr>
-          )}
-        </tbody>
-      </table>
-
-      {loading && <p>Loading...</p>}
-
-      {orderDetails && orderDetails.length > 0 ? (
-        <div>
-          <h3>Order Details</h3>
-          <table>
-            <thead>
-              <tr>
-                <th>Product</th>
-                <th>Image</th>
-                <th>Quantity</th>
-                <th>Price per Item</th>
-                <th>Total Price</th>
-              </tr>
-            </thead>
-            <tbody>
-              {orderDetails.map((product, index) => (
-                <tr key={index}>
-                  <td>{product.name}</td>
-                  <td>
-                    <img
-                      src={product.image || "placeholder.jpg"}
-                      alt={product.name || "No Image"}
-                      width="50"
-                    />
-                  </td>
-                  <td>{product.quantity}</td>
-                  <td>{product.price_per_item.toLocaleString()} VND</td>
-                  <td>{(product.price_per_item * product.quantity).toLocaleString()} VND</td>
+    <>
+    <Header />
+      <div className="account-user-container">
+        <div className="account-page">
+          <div className="infor-user">
+            <h1>Thông tin cá nhân:</h1>
+              <div className="inner-infor-user">
+              <p>Tên: {userInfo.last_name || "N/A"}</p>
+              <p>Email: {userInfo.email || "N/A"}</p>
+              <p>Số điện thoại: {userInfo.phone_number || "N/A"}</p>
+              </div>
+          </div>
+          
+          <div className="table-order">
+            <h2>Đơn hàng đã tạo:</h2>
+            <table>
+              <thead>
+                <tr>
+                  <th>Ngày</th>
+                  <th>Tổng số tiền</th>
+                  <th>Trạng thái vận chuyển</th>
+                  <th>Sản phẩm</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {orders.length > 0 ? (
+                  orders.map((order) => (
+                    <tr key={order.id}>
+                      <td>{new Date(order.created_at).toLocaleDateString()}</td>
+                      <td>{order.total_price.toLocaleString()} VND</td>
+                      <td>{order.status}</td>
+                      <td>
+                        <button onClick={() => handleOrderClick(order)}>Xem chi tiết</button>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="5">Không tìm thấy sản phẩm.</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+          
+
+          {loading && <p>Loading...</p>}
+
+          {orderDetails && orderDetails.length > 0 ? (
+            <div>
+              <h3>Chi tiết đơn hàng:</h3>
+              <table>
+                <thead>
+                  <tr>
+                    <th>Sản phẩm</th>
+                    <th>Ảnh</th>
+                    <th>Số lượng</th>
+                    <th>Giá</th>
+                    <th>Tổng số tiền</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {orderDetails.map((product, index) => (
+                    <tr key={index}>
+                      <td>{product.name}</td>
+                      <td>
+                        <img
+                          src={product.image || "placeholder.jpg"}
+                          alt={product.name || "No Image"}
+                          width="50"
+                        />
+                      </td>
+                      <td>{product.quantity}</td>
+                      <td>{product.price_per_item.toLocaleString()} VND</td>
+                      <td>{(product.price_per_item * product.quantity).toLocaleString()} VND</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            !loading && <p>Không tìm thấy sản phẩm trong đơn hàng.</p>
+          )}
         </div>
-      ) : (
-        !loading && <p>No products found in this order.</p>
-      )}
-    </div>
+      </div>
+      
+      <Subscribe />
+      <hr></hr>
+      <Footer />
+    </>
+    
   );
 };
 
