@@ -32,8 +32,6 @@ const SignInPage = () => {
 
     const [errorMessage, setErrorMessage] = useState(""); // State lưu thông báo lỗi
 
-    const apiURL = process.env.REACT_APP_API_URL;
-
     const handleSignIn = async (values) => {
         setLoading(true);
         setErrorMessage(""); // Reset lỗi trước khi gửi yêu cầu mới
@@ -44,7 +42,7 @@ const SignInPage = () => {
             payload.append("username", values.username);
             payload.append("password", values.password);
 
-            const response = await axios.post(`${apiURL}/login`, payload, {
+            const response = await axios.post(`${ecommerceAPI.baseURL}login`, payload, {
                 headers: {
                     "Content-Type": "application/x-www-form-urlencoded",
                 },
@@ -91,99 +89,96 @@ const SignInPage = () => {
     };
     return (
         <LayoutAuthentication heading="FASCO">
-            {/* Logo */}
-
-            {/* Form Container */}
-            <div className="flex flex-col items-center mt-12">
-                <form
-                    onSubmit={handleSubmit(handleSignIn)}
-                    className="w-full max-w-md bg-white shadow-lg rounded-lg p-6"
-                >
-                    {/* Error Message */}
-                    {errorMessage && (
-                        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-2 mb-4 rounded">
-                            {errorMessage}
-                        </div>
-                    )}
-
-                    {/* Email Input */}
-                    <FormGroup>
-                        <Label
-                            htmlFor="email"
-                            className="text-gray-600 text-sm font-medium"
-                        >
-                            Email
-                        </Label>
-                        <Input
-                            control={control}
-                            name="username"
-                            type="email"
-                            className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                            placeholder="Nhập email của bạn"
-                            error={errors.email?.message}
-                        />
-                    </FormGroup>
-
-                    {/* Password Input */}
-                    <FormGroup>
-                        <Label
-                            htmlFor="password"
-                            className="text-gray-600 text-sm font-medium"
-                        >
-                            Mật khẩu
-                        </Label>
-                        <div className="relative">
-                            <Input
-                                control={control}
-                                name="password"
-                                type={`${showPassword ? "text" : "password"}`}
-                                className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                                placeholder="Nhập mật khẩu của bạn"
-                                error={errors.password?.message}
-                            />
-                            <span
-                                className="absolute right-4 top-1/2 transform -translate-y-1/2 cursor-pointer text-gray-500"
-                                onClick={handleTogglePassword}
-                            >
-                        <IconEyeToggle open={showPassword} />
-                    </span>
-                        </div>
-                    </FormGroup>
-
-                    {/* Login Button */}
-                    <Button
-                        className={`w-full bg-darkbg-600 text-white py-2 px-4 rounded-lg mt-4 transition-colors duration-200 ${
-                            loading ? "opacity-50 pointer-events-none" : "hover:bg-dark"
-                        }`}
-                        type="submit"
-                    >
-                        {loading ? (
-                            <div className="flex items-center justify-center">
-                                <div className="spinner-border animate-spin inline-block w-4 h-4 border-2 rounded-full text-white"></div>
-                                <span className="ml-2">Đang đăng nhập...</span>
-                            </div>
-                        ) : (
-                            "Đăng nhập"
-                        )}
-                    </Button>
-
-                    {/* Register & Forgot Password Links */}
-                    <div className="flex justify-between items-center mt-6">
-                        <Link
-                            to="/auth/sign-up"
-                            className="text-blue-600 hover:underline text-sm"
-                        >
-                            Đăng ký
-                        </Link>
-                        <Link
-                            to="/auth/reset"
-                            className="text-blue-600 hover:underline text-sm"
-                        >
-                            Quên mật khẩu?
-                        </Link>
-                    </div>
-                </form>
+            <div className="flex justify-center gap-4">
             </div>
+            <div className="flex flex-col items-center mt-20 mb-10">
+                <div className="flex items-center gap-4">
+                </div>
+            </div>
+
+            <form onSubmit={handleSubmit(handleSignIn)}>
+                {errorMessage && (
+                    <div className="bg-red-500 text-white text-center py-2 mb-4">
+                        {errorMessage}
+                    </div>
+                )}
+                <FormGroup>
+                    <Label
+                        className="text-[#121018] text-xs font-normal font-['Jost']"
+                        htmlFor="email"
+                    >
+                    </Label>
+                    <Input
+                        control={control}
+                        name="username"
+                        type="email"
+                        className="text-base font-normal font-['Poppins'] leading-10 tracking-wider w-full border-b border-gray-400 focus:border-[#9d9d9d] focus:outline-none"
+                        placeholder="Email"
+                        error={errors.email?.message}
+                    />
+
+                </FormGroup>
+
+                <FormGroup>
+                    <Label
+                        className="text-[#121018] text-xs font-normal font-['Jost']"
+                        htmlFor="password"
+                    >
+                    </Label>
+                    <Input
+                        control={control}
+                        name="password"
+                        type={`${showPassword ? "text" : "password"}`}
+                        className=" text-base font-normal font-['Poppins'] leading-10 tracking-wider w-full border-b border-gray-400 focus:border-[#9d9d9d] focus:outline-none"
+                        placeholder="Mật khẩu"
+                        error={errors.password?.message}
+                    >
+                        <IconEyeToggle open={showPassword} onClick={handleTogglePassword} />
+                    </Input>
+                </FormGroup>
+
+                <FormGroup>
+
+                </FormGroup>
+
+                <Button
+                    className={`bg-[#121018] w-full flex justify-center items-center ${
+                        loading ? "opacity-50 pointer-events-none" : ""
+                    }`}
+                    type="submit"
+                >
+                    {loading ? (
+                        <div className="flex items-center gap-2">
+                            <div className="spinner-border animate-spin inline-block w-4 h-4 border-2 rounded-full text-white"></div>
+                            <span>Đang đăng nhập...</span>
+                        </div>
+                    ) : (
+                        "Đăng nhập"
+                    )}
+                </Button>
+
+
+                <div className="w-full h-full r rounded-lg border border-[#5b86e5] mt-5 flex items-center justify-center">
+                    <Link
+                        to="/auth/sign-up"
+                        className="text-[#5b86e5] text-base font-semibold font-['Poppins'] leading-6 tracking-wider transition-colors duration-200 px-6 py-3 rounded-md"
+                    >
+                        Đăng ký
+                    </Link>
+
+                </div>
+
+                <div className="text-[#5b86e5] text-right text-base font-bold font-['Poppins'] leading-10 tracking-wider">
+                    <Link
+                        to="/auth/reset"
+                    >
+                        Quên mật khẩu?
+                    </Link></div>
+
+
+            </form>
+
+
         </LayoutAuthentication>
     );
 };

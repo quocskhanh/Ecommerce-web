@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import LayoutAuthentication from "../../components/layout/LayoutAuthentication";
+import LayoutAuthentication from "../../layout/LayoutAuthentication";
 import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { Label } from "../../components/label";
@@ -8,7 +8,6 @@ import FormGroup from "../../components/common/FormGroup";
 import { Button } from "../../components/button";
 import useToggleValue from "../../components/hooks/useToogleValue";
 import axios from "axios";
-import {ecommerceAPI} from "../../config/config";
 
 const SignUpPage = () => {
     const { handleSubmit, control } = useForm();
@@ -34,7 +33,7 @@ const SignUpPage = () => {
 
             console.log("Payload gửi lên server:", payload); // Kiểm tra dữ liệu gửi lên
 
-            const response = await axios.post(`${ecommerceAPI.baseURL}signup`, payload, {
+            const response = await axios.post("https://testbe-1.onrender.com/signup", payload, {
                 headers: {
                     "Content-Type": "application/json",
                 },
@@ -54,11 +53,11 @@ const SignUpPage = () => {
             setLoading(false);
         }
     };
-
     return (
         <LayoutAuthentication heading="FASCO">
             <div className="text-black text-3xl font-normal font-['Volkhov'] leading-10 mb-5">
             </div>
+
             <form onSubmit={handleSubmit(handleSignUp)}>
                 <FormGroup>
                     <Label htmlFor="firstname"></Label>
@@ -67,7 +66,8 @@ const SignUpPage = () => {
                         name="firstname"
                         type="text"
                         className=" text-base font-normal font-['Poppins'] leading-10 tracking-wider w-full border-b border-gray-400 focus:border-[#9d9d9d] focus:outline-none"
-                        placeholder="Nhập họ"
+
+                        placeholder="Họ"
                     />
                 </FormGroup>
                 <FormGroup>
@@ -76,11 +76,11 @@ const SignUpPage = () => {
                         control={control}
                         name="lastname"
                         type="text"
+                        placeholder="Tên"
                         className=" text-base font-normal font-['Poppins'] leading-10 tracking-wider w-full border-b border-gray-400 focus:border-[#9d9d9d] focus:outline-none"
-
-                        placeholder="Nhập tên"
                     />
                 </FormGroup>
+
                 <FormGroup>
                     <Label htmlFor="email"></Label>
                     <Input
@@ -88,8 +88,7 @@ const SignUpPage = () => {
                         name="email"
                         type="email"
                         className=" text-base font-normal font-['Poppins'] leading-10 tracking-wider w-full border-b border-gray-400 focus:border-[#9d9d9d] focus:outline-none"
-
-                        placeholder="Nhập email"
+                        placeholder="Email"
                     />
                 </FormGroup>
                 <FormGroup>
@@ -98,20 +97,19 @@ const SignUpPage = () => {
                         control={control}
                         name="phone_number"
                         type="text"
-                        className=" text-base font-normal font-['Poppins'] leading-10 tracking-wider w-full border-b border-gray-400 focus:border-[#9d9d9d] focus:outline-none"
-
-                        placeholder="Nhập số điện thoại"
+                        className="text-base font-normal font-['Poppins'] leading-10 tracking-wider w-full border-b border-gray-400 focus:border-[#9d9d9d] focus:outline-none"
+                        placeholder="Số điện thoại"
                     />
                 </FormGroup>
+
                 <FormGroup>
-                    <Label htmlFor="address"></Label>
+                    <Label htmlFor="adresss"></Label>
                     <Input
                         control={control}
-                        name="address"
+                        name="adresss"
                         type="text"
-                        className=" text-base font-normal font-['Poppins'] leading-10 tracking-wider w-full border-b border-gray-400 focus:border-[#9d9d9d] focus:outline-none"
-
-                        placeholder="Nhập địa chỉ"
+                        className="text-base font-normal font-['Poppins'] leading-10 tracking-wider w-full border-b border-gray-400 focus:border-[#9d9d9d] focus:outline-none"
+                        placeholder="Địa chỉ    "
                     />
                 </FormGroup>
                 <FormGroup>
@@ -119,49 +117,49 @@ const SignUpPage = () => {
                     <Input
                         control={control}
                         name="date_of_birth"
-                        className=" text-base font-normal font-['Poppins'] leading-10 tracking-wider w-full border-b border-gray-400 focus:border-[#9d9d9d] focus:outline-none"
-
                         type="date"
+                        className=" text-base font-normal font-['Poppins'] leading-10 tracking-wider w-full border-b border-gray-400 focus:border-[#9d9d9d] focus:outline-none"
+                        placeholder="Ngày sinh"
                     />
                 </FormGroup>
                 <FormGroup>
                     <Label htmlFor="gender"></Label>
-                    <select {...control.register("gender")} className="border rounded p-2 w-full">
+                    <select
+                        className="border rounded p-2 w-full"
+                        {...control.register("gender")}
+                    >
                         <option value="">Chọn giới tính</option>
                         <option value="Male">Nam</option>
                         <option value="Female">Nữ</option>
                         <option value="Other">Khác</option>
                     </select>
                 </FormGroup>
+
                 <FormGroup>
                     <Label htmlFor="password"></Label>
                     <Input
                         control={control}
                         name="password"
-                        placeholder="Nhập mật khẩu"
+                        className="text-base font-normal leading-10 tracking-wider w-full border-b border-gray-400 focus:border-[#9d9d9d] focus:outline-none"
                         type={showPassword ? "text" : "password"}
-
-                        className=" text-base font-normal font-['Poppins'] leading-10 tracking-wider w-full border-b border-gray-400 focus:border-[#9d9d9d] focus:outline-none"
-
+                        placeholder="Mật khẩu"
                     />
                 </FormGroup>
-
                 <FormGroup>
-                    <Label htmlFor="confirmpassword"></Label>
+                    <Label htmlFor="confirm_password"></Label>
                     <Input
                         control={control}
-                        name="confirmpassword"
-                        placeholder="Xác nhận mật khẩu"
-                        type={showPassword ? "text" : "password"}
-
+                        name="confirm_password"
                         className=" text-base font-normal font-['Poppins'] leading-10 tracking-wider w-full border-b border-gray-400 focus:border-[#9d9d9d] focus:outline-none"
-
+                        type={showPassword ? "text" : "password"}
+                        placeholder="Xác nhận mật khẩu"
                     />
                 </FormGroup>
                 <Button type="submit" className="w-full bg-black text-white py-3">
                     {loading ? "Đang đăng ký..." : "Đăng ký"}
                 </Button>
             </form>
+
             <p className="text-center mt-5">
                 Bạn đã có tài khoản?{" "}
                 <Link to="/auth/sign-in" className="text-blue-500">

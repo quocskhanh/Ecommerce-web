@@ -11,9 +11,6 @@ const ShippingPage = () => {
     const [editingShipping, setEditingShipping] = useState(null); // Shipping đang chỉnh sửa
     const [statusOptions] = useState(["Chờ lấy hàng", "Đang vận chuyển", "Đã vận chuyển"]); // Tùy chọn trạng thái
 
-
-    const apiURL = process.env.REACT_APP_API_URL;
-
     // Gọi API để lấy thông tin vận chuyển
     const fetchShipping = async () => {
         if (!orderId) {
@@ -25,7 +22,7 @@ const ShippingPage = () => {
         setError("");
 
         try {
-            const response = await fetch(`${apiURL}/shippings/${orderId}`, {
+            const response = await fetch(`${ecommerceAPI.baseURL}shippings/${orderId}`, {
                 method: "GET",
                 headers: {
                     Authorization: `Bearer ${localStorage.getItem("access_token")}`,
@@ -78,7 +75,7 @@ const ShippingPage = () => {
         try {
             // Cập nhật thông tin vận chuyển
             const shippingResponse = await fetch(
-                `${apiURL}/shippings/${editingShipping.id}`,
+                `${ecommerceAPI.baseURL}shippings/${editingShipping.id}`,
                 {
                     method: "PUT",
                     headers: {
@@ -100,7 +97,7 @@ const ShippingPage = () => {
             // Đồng bộ trạng thái đơn hàng dựa trên trạng thái mới của vận chuyển
             const orderStatus = mapShippingToOrderStatus(updatedShipping.status);
             const orderResponse = await fetch(
-                `${apiURL}/orders/${updatedShipping.order_id}`,
+                `${ecommerceAPI.baseURL}orders/${updatedShipping.order_id}`,
                 {
                     method: "PUT",
                     headers: {
@@ -133,7 +130,7 @@ const ShippingPage = () => {
     useEffect(() => {
         const syncShippingWithOrders = async () => {
             try {
-                const response = await fetch(`${apiURL}/orders`, {
+                const response = await fetch(`${ecommerceAPI.baseURL}orders`, {
                     method: "GET",
                     headers: {
                         Authorization: `Bearer ${localStorage.getItem("access_token")}`,
@@ -148,7 +145,7 @@ const ShippingPage = () => {
                 const orders = await response.json();
                 for (const order of orders) {
                     if (order.status === "Chờ giao hàng") {
-                        await fetch(`${apiURL}/shippings/`, {
+                        await fetch(`${ecommerceAPI.baseURL}shippings/`, {
                             method: "POST",
                             headers: {
                                 Authorization: `Bearer ${localStorage.getItem("access_token")}`,
@@ -175,7 +172,7 @@ const ShippingPage = () => {
     return (
         <AdminLayout>
             <div className="p-6">
-                <h1 className="text-2xl font-bold text-gray-800 w-full sm:w-auto mb-8 mt-10">Quản lý vận chuyển</h1>
+                <h1 className="text-2xl font-bold text-gray-800 w-full sm:w-auto mb-8 mt-6">Quản lý vận chuyển</h1>
 
                 {/* Nhập Order ID */}
                 <div className="mb-4">

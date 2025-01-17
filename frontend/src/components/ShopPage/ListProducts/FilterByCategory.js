@@ -41,7 +41,7 @@ const FilterByCategory = ({
   return (
     <div className="filter_by_category">
       {/* Lọc theo danh mục */}
-      <h3>Filter by Category</h3>
+      <h3>Lọc theo danh mục:</h3>
       <ul className="category_list">
         <li
           className={!selectedCategoryId ? 'active' : ''}
@@ -61,7 +61,7 @@ const FilterByCategory = ({
       </ul>
 
       {/* Lọc theo giá */}
-      <h3>Filter by Price</h3>
+      <h3>Lọc theo giá:</h3>
       <ul className="price_list">
         {priceRanges.map((range) => (
           <li

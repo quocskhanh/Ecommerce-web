@@ -62,40 +62,33 @@ const DashboardTopbar = () => {
     };
 
     return (
-        <div
-            className="fixed top-0 left-0 w-full h-16 bg-[#070b1d] flex items-center justify-between px-8 shadow-lg z-50"
-        >
+        <div className="fixed top-0 left-0 w-full h-16 bg-[#070b1d] flex items-center justify-between px-6 shadow-lg z-50">
             {/* Logo and Search */}
-            <div className="flex items-center gap-6">
-                <Link to="/admin" className="flex items-center gap-2">
-                    <img
-                        src="/Group%201000004658.png"
-                        alt="FASCO Logo"
-                        className="w-12 h-12 object-contain"
-                    />
-                    <span className="text-white text-2xl font-bold font-['Rubik Glitch']">
-        FASCO
-      </span>
+            <div className="flex items-center gap-4">
+                <Link to="/admin" className="flex items-center">
+                    <img src="/Group%201000004658.png" alt="FASCO Logo" className="w-11 h-12" />
+                    <span className="text-white text-2xl font-normal font-['Rubik Glitch'] ml-2">FASCO</span>
                 </Link>
-                <div className="relative hidden lg:block w-96 mt-5">
+                <div className="relative w-80 hidden lg:block">
                     <input
                         type="text"
                         placeholder="Tìm kiếm...."
-                        className="w-full py-3 pl-12 pr-4 bg-white text-sm text-gray-700 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm"
+                        className="w-full py-2 pl-12 pr-4 bg-white text rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                         value={searchTerm}
                         onChange={handleSearch}
                     />
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
-                        height="20px"
-                        width="20px"
+                        height="24px"
                         viewBox="0 -960 960 960"
-                        className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500"
+                        width="24px"
+                        fill=""
+                        className="w-5 h-5 text-gray-500 absolute left-3 top-1/2 transform -translate-y-1/2"
                     >
                         <path d="M784-120 532-372q-30 24-69 38t-83 14q-109 0-184.5-75.5T120-580q0-109 75.5-184.5T380-840q109 0 184.5 75.5T640-580q0 44-14 83t-38 69l252 252-56 56ZM380-400q75 0 127.5-52.5T560-580q0-75-52.5-127.5T380-760q-75 0-127.5 52.5T200-580q0 75 52.5 127.5T380-400Z" />
                     </svg>
                     {showResults && (
-                        <ul className="absolute top-14 left-0 w-full bg-[#1e2753] rounded-lg shadow-lg text-white z-50">
+                        <ul className="absolute top-12 left-0 w-full bg-[#1e2753] rounded-lg shadow-lg text-white">
                             {filteredResults.length > 0 ? (
                                 filteredResults.map((product) => (
                                     <li
@@ -103,7 +96,9 @@ const DashboardTopbar = () => {
                                         className="px-4 py-2 hover:bg-indigo-500 cursor-pointer"
                                         onClick={handleResultClick}
                                     >
-                                        <Link to={`/admin/product/${product.id}`}>{product.name}</Link>
+                                        <Link to={`/admin/product/${product.id}`}>
+                                            {product.name}
+                                        </Link>
                                     </li>
                                 ))
                             ) : (
@@ -121,23 +116,14 @@ const DashboardTopbar = () => {
                     onClick={toggleFullscreen}
                     className="cursor-pointer transition-colors duration-300 hover:text-indigo-500"
                 >
-      <svg
-          xmlns="http://www.w3.org/2000/svg"
-          height="24px"
-          viewBox="0 -960 960 960"
-          width="24px"
-          fill="white"
-      >
-        <path d="M120-120v-200h80v120h120v80H120Zm520 0v-80h120v-120h80v200H640ZM120-640v-200h200v80H200v120h-80Zm640 0v-120H640v-80h200v200h-80Z" />
-      </svg>
-    </span>
+                    <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="white">
+                        <path d="M120-120v-200h80v120h120v80H120Zm520 0v-80h120v-120h80v200H640ZM120-640v-200h200v80H200v120h-80Zm640 0v-120H640v-80h200v200h-80Z" />
+                    </svg>
+                </span>
 
                 {/* User Menu */}
                 <div className="relative">
-                    <div
-                        className="flex items-center gap-2 cursor-pointer"
-                        onClick={toggleMenu}
-                    >
+                    <div className="flex items-center gap-2 cursor-pointer" onClick={toggleMenu}>
                         <div className="bg-blue-600 text-white w-8 h-8 flex items-center justify-center rounded-full uppercase">
                             A
                         </div>

@@ -30,10 +30,6 @@ const ProductPage = () => {
     const [colorsList, setColors] = useState([]); // Updated color state name
 
 
-    const apiURL = process.env.REACT_APP_API_URL;
-
-    console.log(apiURL); // Output: https://testbe-1.onrender.com/
-
     const handleSave = async () => {
         // Kiểm tra các trường đầu vào
 
@@ -50,7 +46,7 @@ const ProductPage = () => {
         };
 
         try {
-            const response = await fetch(`${apiURL}/products`, {
+            const response = await fetch(`${ecommerceAPI.baseURL}products`, {
                 method: "POST",
                 headers: {
                     Authorization: `Bearer ${localStorage.getItem("access_token")}`,
@@ -72,7 +68,7 @@ const ProductPage = () => {
     const fetchProductsAndCategories = async () => {
         try {
             // Fetch products with Authorization header
-            const productResponse = await fetch(`${apiURL}/products`, {
+            const productResponse = await fetch(`${ecommerceAPI.baseURL}products`, {
                 method: "GET",
                 headers: {
                     Authorization: `Bearer ${localStorage.getItem("access_token")}`,
@@ -87,7 +83,7 @@ const ProductPage = () => {
             const productsData = await productResponse.json();
 
             // Fetch categories with Authorization header
-            const categoryResponse = await fetch(`${apiURL}/categories`, {
+            const categoryResponse = await fetch(`${ecommerceAPI.baseURL}categories`, {
                 method: "GET",
                 headers: {
                     Authorization: `Bearer ${localStorage.getItem("access_token")}`,
@@ -186,7 +182,7 @@ const ProductPage = () => {
         }
 
         try {
-            const response = await fetch(`${apiURL}products/${editingProduct.id}`, {
+            const response = await fetch(`${ecommerceAPI.baseURL}products/${editingProduct.id}`, {
                 method: "PUT",
                 headers: {
                     Authorization: `Bearer ${localStorage.getItem("access_token")}`,
@@ -247,7 +243,7 @@ const ProductPage = () => {
             // Sử dụng Promise.allSettled để xử lý từng yêu cầu riêng lẻ
             const results = await Promise.allSettled(
                 selectedIds.map(async (id) => {
-                    const response = await fetch(`${apiURL}products/${id}`, {
+                    const response = await fetch(`${ecommerceAPI.baseURL}products/${id}`, {
                         method: "DELETE",
                         headers: {
                             Authorization: `Bearer ${localStorage.getItem("access_token")}`,
@@ -298,9 +294,9 @@ const ProductPage = () => {
         <AdminLayout>
             <div className="p-6 ">
                 <div className="flex justify-between items-center mb-6 flex-wrap">
-                    <h1 className="text-2xl font-bold text-gray-800 w-full sm:w-auto mb-8 mt-10">Quản lý sản phẩm</h1>
+                    <h1 className="text-2xl font-bold text-gray-800 w-full sm:w-auto mb-8 mt-6">Quản lý sản phẩm</h1>
                     <div className="flex gap-4 w-full sm:w-auto justify-between sm:justify-end mt-4 sm:mt-0">
-                        <button className="px-4 py-2 bg-white text-black rounded border border-[#d6daec] hover:bg-gray-200">
+                        <button className="px-4 py-2 bg-white rounded border border-[#d6daec] hover:bg-gray-200">
                             Xuất
                         </button>
                         <button className="px-4 py-2 bg-[#1e5eff] rounded text-white hover:bg-blue-400" onClick={() => navigate("/admin/product/add-product")}>
@@ -309,12 +305,9 @@ const ProductPage = () => {
                     </div>
                 </div>
 
-                <div className="bg-white rounded-lg shadow-lg mt-5">
+                <div className="bg-white rounded-lg shadow-lg">
                     <div className="flex flex-col sm:flex-row justify-between items-center p-4 border-b">
-                        <div className="flex gap-4 w-full sm:w-auto"
-                             style={{ marginTop: "20px" }} // Thêm margin để dịch xuống
-                        >
-
+                        <div className="flex gap-4 w-full sm:w-auto">
                             <select
                                 className="border border-gray-600 rounded-lg px-4 py-2 w-full sm:w-auto"
                                 value={filter}
@@ -325,7 +318,7 @@ const ProductPage = () => {
                                     <option key={category.id} value={category.id}>{category.name}</option>
                                 ))}
                             </select>
-                            <div className="relative ">
+                            <div className="relative">
                                 <input
                                     type="text"
                                     value={searchTerm}
@@ -349,7 +342,7 @@ const ProductPage = () => {
 
                         <div className="flex flex-col sm:flex-row gap-4 ml-auto">
                             <button
-                                className="px-4 py-2 bg-white-500 bg-white text-gray-600 rounded border border-blue-400 hover:bg-blue-500 cursor-pointer w-full sm:w-auto "
+                                className="px-4 py-2 bg-white-500 text-gray-600 rounded border border-blue-400 hover:bg-blue-500 cursor-pointer w-full sm:w-auto"
                                 onClick={handleEditProduct}
                             >
                                 <span>
@@ -358,7 +351,7 @@ const ProductPage = () => {
                             </button>
 
                             <button
-                                className="px-4 py-2 bg-white-500 bg-white text-blue-400 border border-blue-400 rounded hover:bg-red-500 cursor-pointer w-full sm:w-auto"
+                                className="px-4 py-2 bg-white-500 text-blue-400 border border-blue-400 rounded hover:bg-red-500 cursor-pointer w-full sm:w-auto"
                                 onClick={() => {
                                     if (selected.length === 0) {
                                         // Nếu không có tài khoản nào được chọn, hiển thị cảnh báo hoặc thông báo
@@ -512,8 +505,25 @@ const ProductPage = () => {
 
                                 <div className="mb-4">
                                     <label className="block mb-2">Màu sắc</label>
-                                    {/* Dropdown để chọn màu */}
+                                    {/* Input để nhập màu hoặc chọn từ dropdown */}
                                     <div className="flex items-center gap-2 mb-2">
+                                        <input
+                                            type="text"
+                                            placeholder="Nhập màu hoặc chọn"
+                                            onKeyDown={(e) => {
+                                                if (e.key === "Enter" && e.target.value.trim() !== "") {
+                                                    const newColor = e.target.value.trim();
+                                                    if (!editingProduct.colors.includes(newColor)) {
+                                                        setEditingProduct((prevProduct) => ({
+                                                            ...prevProduct,
+                                                            colors: [...prevProduct.colors, newColor],
+                                                        }));
+                                                    }
+                                                    e.target.value = ""; // Xóa input sau khi thêm
+                                                }
+                                            }}
+                                            className="border rounded w-full p-2"
+                                        />
                                         <select
                                             onChange={(e) => {
                                                 const selectedColor = e.target.value;
@@ -524,7 +534,7 @@ const ProductPage = () => {
                                                     }));
                                                 }
                                             }}
-                                            className="border rounded p-2 w-full"
+                                            className="border rounded p-2"
                                         >
                                             <option value="">Chọn màu</option>
                                             <option value="Đỏ">Đỏ</option>
@@ -547,8 +557,8 @@ const ProductPage = () => {
                                                     }))
                                                 }
                                             >
-        {color} &times;
-      </span>
+                {color} &times;
+            </span>
                                         ))}
                                     </div>
                                 </div>

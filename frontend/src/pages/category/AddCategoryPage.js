@@ -11,8 +11,6 @@
         const [error, setError] = useState("");
         const [success, setSuccess] = useState("");
 
-        const apiURL = process.env.REACT_APP_API_URL;
-
         const handleInputChange = (e) => {
             const { name, value } = e.target;
             setCategoryData({
@@ -37,7 +35,7 @@
                     return;
                 }
 
-                const response = await fetch(`${apiURL}/categories/add`, {
+                const response = await fetch("https://testbe-1.onrender.com/categories/add", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",

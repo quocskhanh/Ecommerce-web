@@ -7,8 +7,6 @@ import {ecommerceAPI} from "../config/config";
 const LogoutPage = () => {
     const navigate = useNavigate();
 
-    const apiURL = process.env.REACT_APP_API_URL;
-
     const handleLogout = async () => {
         try {
             const token = localStorage.getItem("token");
@@ -20,7 +18,7 @@ const LogoutPage = () => {
             }
 
             const response = await axios.post(
-                `${apiURL}/logout`,
+                `${ecommerceAPI.baseURL}logout`,
                 {}, // Body rỗng
                 {
                     headers: {

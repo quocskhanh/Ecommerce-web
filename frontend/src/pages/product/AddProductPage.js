@@ -17,8 +17,6 @@ const AddProductPage = () => {
 
     const navigate = useNavigate();
 
-    const apiURL = process.env.REACT_APP_API_URL;
-
     const handleSave = async () => {
         // Kiểm tra các trường đầu vào
         if (
@@ -47,7 +45,7 @@ const AddProductPage = () => {
         };
 
         try {
-            const response = await fetch(`${apiURL}/products`, {
+            const response = await fetch(`${ecommerceAPI.baseURL}products`, {
                 method: "POST",
                 headers: {
                     Authorization: `Bearer ${localStorage.getItem("access_token")}`,
@@ -73,7 +71,7 @@ const AddProductPage = () => {
     useEffect(() => {
         const fetchCategories = async () => {
             try {
-                const response = await fetch(`${apiURL}/categories`, {
+                const response = await fetch(`${ecommerceAPI.baseURL}categories`, {
                     method: "GET",
                     headers: {
                         Authorization: `Bearer ${localStorage.getItem("access_token")}`, // Sử dụng token
@@ -101,7 +99,7 @@ const AddProductPage = () => {
     useEffect(() => {
         const fetchStatuses = async () => {
             try {
-                const response = await fetch(`${apiURL}/products`, {
+                const response = await fetch(`${ecommerceAPI.baseURL}products`, {
                     method: "GET",
                     headers: {
                         Authorization: `Bearer ${localStorage.getItem("access_token")}`, // Sử dụng token

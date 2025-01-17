@@ -98,6 +98,12 @@ function ProductList({ products, sortOrder, onSortChange, selectedCategoryId, se
             </div>
             <div className="text_title_price">
               <h3>{item.name}</h3>
+              
+              <div>
+                Size: {item.sizes}-{item.colors}
+                {/* Màu: {item.colors} */}
+              </div>
+
               <p>{item.price.toLocaleString()} VND</p>
             </div>
           </div>
