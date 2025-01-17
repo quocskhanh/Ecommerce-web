@@ -60,7 +60,7 @@ def get_total_revenue(
         raise HTTPException(status_code=403, detail="Permission denied")
 
     # Lấy tổng doanh thu từ các đơn hàng đã thanh toán
-    total_revenue = db.query(func.sum(Order.total_price)).filter(Order.status == "Đã thanh toán").scalar()
+    total_revenue = db.query(func.sum(Order.total_price)).filter(Order.status == "Đã giao hàng").scalar()
 
     return {"total_revenue": total_revenue or 0.0}
 
