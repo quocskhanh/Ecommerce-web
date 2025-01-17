@@ -81,3 +81,11 @@ def delete_cart_item_from_cart(
         return {"message": "Cart item deleted successfully."}
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+    
+# Route GET để lấy cart item theo id
+@router.get("/cart_items/{id}", response_model=CartItemResponse)
+def read_cart_item(id: int, db: Session = Depends(get_db)):
+    cart_item = get_cart_item_by_id(db, id)
+    if not cart_item:
+        raise HTTPException(status_code=404, detail="Cart item not found")
+    return cart_item
