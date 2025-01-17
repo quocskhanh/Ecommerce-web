@@ -4,11 +4,14 @@ import { useEffect, useState } from 'react';
 import axios from 'axios';
 
 const FilterByCategory = ({
-  selectedCategoryId, // category_id được chọn
-  onFilterChange, // Hàm thay đổi category_id
-  selectedPriceRange,
-  onPriceRangeChange
-}) => {
+                            selectedCategoryId, // category_id được chọn
+                            onFilterChange, // Hàm thay đổi category_id
+                            selectedPriceRange,
+                            onPriceRangeChange
+                          }) => {
+
+  const apiURL = process.env.REACT_APP_API_URL;
+
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -17,7 +20,7 @@ const FilterByCategory = ({
     const fetchCategories = async () => {
       try {
         setLoading(true);
-        const response = await axios.get('https://testbe-1.onrender.com/categories'); // Thay URL bằng API thực tế
+        const response = await axios.get(`${apiURL}/categories`); // Thay URL bằng API thực tế
         setCategories(response.data);
       } catch (err) {
         setError('Không thể tải danh sách danh mục. Vui lòng thử lại sau.');
@@ -39,41 +42,41 @@ const FilterByCategory = ({
   ];
 
   return (
-    <div className="filter_by_category">
-      {/* Lọc theo danh mục */}
-      <h3>Filter by Category</h3>
-      <ul className="category_list">
-        <li
-          className={!selectedCategoryId ? 'active' : ''}
-          onClick={() => onFilterChange(null)}
-        >
-          All
-        </li>
-        {categories.map((category) => (
+      <div className="filter_by_category">
+        {/* Lọc theo danh mục */}
+        <h3>Lọc theo danh mục:</h3>
+        <ul className="category_list">
           <li
-            key={category.id}
-            className={selectedCategoryId === category.id ? 'active' : ''}
-            onClick={() => onFilterChange(category.id)}
+              className={!selectedCategoryId ? 'active' : ''}
+              onClick={() => onFilterChange(null)}
           >
-            {category.name}
+            All
           </li>
-        ))}
-      </ul>
+          {categories.map((category) => (
+              <li
+                  key={category.id}
+                  className={selectedCategoryId === category.id ? 'active' : ''}
+                  onClick={() => onFilterChange(category.id)}
+              >
+                {category.name}
+              </li>
+          ))}
+        </ul>
 
-      {/* Lọc theo giá */}
-      <h3>Filter by Price</h3>
-      <ul className="price_list">
-        {priceRanges.map((range) => (
-          <li
-            key={range.label}
-            className={selectedPriceRange && selectedPriceRange.label === range.label ? 'active' : ''}
-            onClick={() => onPriceRangeChange(range)}
-          >
-            {range.label}
-          </li>
-        ))}
-      </ul>
-    </div>
+        {/* Lọc theo giá */}
+        <h3>Lọc theo giá:</h3>
+        <ul className="price_list">
+          {priceRanges.map((range) => (
+              <li
+                  key={range.label}
+                  className={selectedPriceRange && selectedPriceRange.label === range.label ? 'active' : ''}
+                  onClick={() => onPriceRangeChange(range)}
+              >
+                {range.label}
+              </li>
+          ))}
+        </ul>
+      </div>
   );
 };
 
