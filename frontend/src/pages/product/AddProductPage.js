@@ -1,152 +1,66 @@
-import React, {useEffect, useState} from "react";
+import React, { useState } from "react";
 import AdminLayout from "../../layout/AdminLayout";
-import { useNavigate } from "react-router-dom";
-import colors from "tailwindcss/colors";
+import {useNavigate} from "react-router-dom";
 
 const AddProductPage = () => {
+    const [shippingWeight, setShippingWeight] = useState("");
+    const [shippingCountry, setShippingCountry] = useState("");
+    const [isDigitalItem, setIsDigitalItem] = useState(false);
     const [productName, setProductName] = useState("");
     const [productDescription, setProductDescription] = useState("");
     const [productPrice, setProductPrice] = useState("");
-    const [categories, setCategories] = useState("");
+    const [discountPrice, setDiscountPrice] = useState("");
+    const [categories, setCategories] = useState([]);
+    const [tags, setTags] = useState([]);
+    const [seoTitle, setSeoTitle] = useState("");
+    const [seoDescription, setSeoDescription] = useState("");
     const [images, setImages] = useState([]);
-    const [colorsList, setColors] = useState([]); // Updated color state name
-    const [sizes, setSizes] = useState([]); // Updated sizes state name
-    const [showModal, setShowModal] = useState(false);
-    const [status, setStatus] = useState([]);
+    const [hasOptions, setHasOptions] = useState(false);
+    const [options, setOptions] = useState([{ size: "Size", values: [] }]);
+    const [showModal, setShowModal] = useState(false); // Modal state
 
-    const navigate = useNavigate();
 
-    const handleSave = async () => {
-        // Kiểm tra các trường đầu vào
-        if (
-            !productName ||
-            !productDescription ||
-            !productPrice ||
-            !status ||
-            sizes.length === 0 ||
-            colorsList.length === 0 ||
-            categories.length === 0
-        ) {
-            alert("Vui lòng điền đầy đủ thông tin và chọn ít nhất một kích cỡ, màu sắc và danh mục!");
-            return;
-        }
 
-        // Chuyển đổi giá trị trước khi gửi
-        const productData = {
-            name: productName,
-            description: productDescription,
-            price: parseFloat(productPrice), // Giá sản phẩm dạng số thực
-            category_id: parseInt(categories), // Danh mục dạng số nguyên
-            status: status, // Trạng thái là chuỗi
-            colors: colorsList, // Mảng màu sắc
-            sizes: sizes, // Mảng kích cỡ
-            image: images[0] || "", // Chỉ lấy URL đầu tiên trong mảng `images`
-        };
-
-        try {
-            const response = await fetch("https://testbe-1.onrender.com/products", {
-                method: "POST",
-                headers: {
-                    Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify(productData),
-            });
-
-            if (response.ok) {
-                setShowModal(true); // Hiển thị modal thành công
-            } else {
-                console.error("Failed to add product");
-            }
-        } catch (error) {
-            console.error("Error:", error);
-        }
+    const handleSave = () => {
+        console.log({
+            productName,
+            productDescription,
+            productPrice,
+            discountPrice,
+            categories,
+            tags,
+            seoTitle,
+            seoDescription,
+            images,
+            options: hasOptions ? options : null,
+        });
     };
 
-
-
-    const [availableCategories, setAvailableCategories] = useState([]);
-
-    useEffect(() => {
-        const fetchCategories = async () => {
-            try {
-                const response = await fetch("https://testbe-1.onrender.com/categories", {
-                    method: "GET",
-                    headers: {
-                        Authorization: `Bearer ${localStorage.getItem("access_token")}`, // Sử dụng token
-                        "Content-Type": "application/json",
-                    },
-                });
-
-                if (response.ok) {
-                    const data = await response.json();
-                    setAvailableCategories(data); // Dữ liệu phải chứa { id, name }
-                } else {
-                    console.error(`Failed to fetch categories: ${response.statusText}`);
-                }
-            } catch (error) {
-                console.error("Error fetching categories:", error);
-            }
-        };
-
-        fetchCategories();
-    }, []);
-
-
-    const [availableStatuses, setAvailableStatuses] = useState([]);
-
-    useEffect(() => {
-        const fetchStatuses = async () => {
-            try {
-                const response = await fetch("https://testbe-1.onrender.com/products", {
-                    method: "GET",
-                    headers: {
-                        Authorization: `Bearer ${localStorage.getItem("access_token")}`, // Sử dụng token
-                        "Content-Type": "application/json",
-                    },
-                });
-
-                if (response.ok) {
-                    const data = await response.json();
-                    setAvailableStatuses(data); // Giả sử dữ liệu là một mảng chứa các đối tượng trạng thái
-                } else {
-                    console.error(`Failed to fetch statuses: ${response.statusText}`);
-                }
-            } catch (error) {
-                console.error("Error fetching statuses:", error);
-            }
-        };
-
-        fetchStatuses();
-    }, []);
-
-    const handleImageURLInput = (e) => {
-        const url = e.target.value;
-        setImages([url]); // Lưu duy nhất một URL ảnh
+    const handleAddOption = () => {
+        setOptions([...options, { size: "Size", values: [] }]);
     };
+
+    const handleImageUpload = (event) => {
+        const files = Array.from(event.target.files).map((file) =>
+            URL.createObjectURL(file)
+        );
+        setImages([...images, ...files]);
+    };
+    const navigate = useNavigate()
 
     return (
         <AdminLayout>
             <div className="flex">
                 {/* Main Content */}
                 <div className="w-full overflow-y-auto h-screen p-6">
+
                     {/* Back Button */}
                     <div className="flex items-center mb-6">
                         <button
-                            onClick={() => navigate("/admin/product")}
-                            className="flex items-center px-4 py-2 text-gray-600 bg-gray-200 rounded-lg hover:bg-gray-300 transition duration-300"
+                            onClick={() => navigate("/admin/product")} // Navigate back to product page
+                            className="px-4 py-2 text-gray-600 bg-gray-200 rounded hover:bg-gray-300"
                         >
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                height="24px"
-                                viewBox="0 -960 960 960"
-                                width="24px"
-                                fill="#5f6368"
-                                className="mr-2"
-                            >
-                                <path d="M360-240 120-480l240-240 56 56-144 144h488v-160h80v240H272l144 144-56 56Z" />
-                            </svg>
-                            <span>Quay Lại</span>
+                            ← Quay Lại
                         </button>
                     </div>
                     <header className=" mb-6">
@@ -167,7 +81,7 @@ const AddProductPage = () => {
                                 />
                             </div>
                             <div>
-                                <label className="block font-semibold mb-2">Mô tả sản phẩm</label>
+                                <label className="block font-semibold mb-2">Miêu tả sản phẩm</label>
                                 <textarea
                                     value={productDescription}
                                     onChange={(e) => setProductDescription(e.target.value)}
@@ -177,144 +91,239 @@ const AddProductPage = () => {
 
                             {/* Images */}
                             <div>
-                                <label className="block font-semibold mb-2">Ảnh (URL)</label>
+                                <label className="block font-semibold mb-2">Ảnh</label>
                                 <input
-                                    type="url"
-                                    onChange={handleImageURLInput}
+                                    type="file"
+                                    multiple
+                                    onChange={handleImageUpload}
                                     className="border px-4 py-2 w-full rounded"
-                                    placeholder="Nhập URL ảnh sản phẩm"
                                 />
-                                {images.length > 0 && (
-                                    <div className="mt-2">
+                                <div className="flex gap-2 mt-2">
+                                    {images.map((img, index) => (
                                         <img
-                                            src={images[0]} // Hiển thị ảnh đầu tiên
+                                            key={index}
+                                            src={img}
                                             alt="Preview"
                                             className="w-16 h-16 object-cover rounded border"
                                         />
-                                    </div>
-                                )}
+                                    ))}
+                                </div>
                             </div>
 
                             {/* Price */}
-                            <div className="flex gap-3">
+                            <div className="flex gap-4">
                                 <div className="flex-1">
                                     <label className="block font-semibold mb-2">Giá sản phẩm</label>
                                     <input
-                                        type="number"
+                                        type="text"
                                         value={productPrice}
                                         onChange={(e) => setProductPrice(e.target.value)}
                                         className="border px-4 py-2 w-full rounded"
                                     />
                                 </div>
                                 <div className="flex-1">
-                                    <label className="block font-semibold mb-2">Tồn kho</label>
-                                    <select
-                                        value={status}
-                                        onChange={(e) => setStatus(e.target.value)}
+                                    <label className="block font-semibold mb-2">Giá khuyến mãi</label>
+                                    <input
+                                        type="text"
+                                        value={discountPrice}
+                                        onChange={(e) => setDiscountPrice(e.target.value)}
                                         className="border px-4 py-2 w-full rounded"
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Different Options */}
+                            <div className="mt-6">
+                                <label className="block font-semibold text-lg mb-4">Các lựa chọn khác</label>
+
+                                {/* Toggle Switch for Options */}
+                                <div className="flex items-center gap-4 mb-6">
+                                    <div
+                                        className={`relative w-14 h-8 rounded-full cursor-pointer transition-colors duration-300 ${
+                                            hasOptions ? "bg-blue-500" : "bg-gray-300"
+                                        }`}
+                                        onClick={() => setHasOptions(!hasOptions)}
                                     >
-                                        <option value="">Chọn trạng thái</option> {/* Default option */}
-                                        <option value="Còn hàng">Còn hàng</option>
-                                        <option value="Hết hàng">Hết hàng</option>
-                                    </select>
+                                        <div
+                                            className={`absolute top-1 left-1 w-6 h-6 bg-white rounded-full shadow-md transform transition-transform duration-300 ${
+                                                hasOptions ? "translate-x-6" : "translate-x-0"
+                                            }`}
+                                        ></div>
+                                    </div>
+                                    <span className="text-sm font-medium text-gray-700">
+            {hasOptions ? "Sản phẩm này có nhiều tùy chọn." : "Kích hoạt các tùy chọn cho sản phẩm này"}
+        </span>
+                                </div>
+
+                                {/* Options Section */}
+
+                                <div className={`${hasOptions ? "block" : "hidden"} transition-opacity duration-300`}>
+                                    {options.map((option, index) => (
+                                        <div key={index} className="mb-6">
+                                            {/* Option Label */}
+                                            <label className="block font-medium mb-2">Option {index + 1}</label>
+
+                                            <div className="flex items-center gap-4">
+                                                {/* Dropdown for Option */}
+                                                <select
+                                                    value={option.size}
+                                                    onChange={(e) => {
+                                                        const newOptions = [...options];
+                                                        newOptions[index].size = e.target.value;
+                                                        setOptions(newOptions);
+                                                    }}
+                                                    className="flex-1 border px-4 py-2 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-400 focus:outline-none bg-white"
+                                                >
+                                                    <option value="">Chọn size</option>
+                                                    <option value="S">S</option>
+                                                    <option value="M">M</option>
+                                                    <option value="L">L</option>
+                                                    <option value="XL">XL</option>
+                                                </select>
+
+                                                {/* Option Values Input */}
+                                                <input
+                                                    type="text"
+                                                    placeholder="Kích cỡ (S, M, L, XL)"
+                                                    value={option.values?.join(", ")}
+                                                    onChange={(e) => {
+                                                        const newOptions = [...options];
+                                                        newOptions[index].values = e.target.value
+                                                            .split(",")
+                                                            .map((val) => val.trim());
+                                                        setOptions(newOptions);
+                                                    }}
+                                                    className="flex-1 border px-4 py-2 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-400 focus:outline-none"
+                                                />
+                                            </div>
+                                        </div>
+                                    ))}
+                                    <button
+                                        type="button"
+                                        onClick={handleAddOption}
+                                        className="text-blue-500 hover:text-blue-600 underline font-medium"
+                                    >
+                                        Tiếp tục
+                                    </button>
                                 </div>
 
                             </div>
 
-                            {/* Size and Color */}
-                            <div className="flex gap-3">
-                                {/* Màu sắc */}
-                                <div className="flex-1">
-                                    <label className="block font-semibold mb-2">Màu sắc</label>
-                                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                                        {["Đỏ", "Xanh", "Vàng", "Trắng", "Đen", "Hồng", "Xám", "Nâu"].map((color) => (
-                                            <label
-                                                key={color}
-                                                className="flex items-center space-x-2 bg-gray-50 p-3 rounded-lg border-2 border-gray-300 hover:border-blue-500 hover:bg-blue-50 transition duration-300"
-                                            >
-                                                <input
-                                                    type="checkbox"
-                                                    value={color}
-                                                    checked={colorsList.includes(color)} // Kiểm tra nếu màu đã được chọn
-                                                    onChange={(e) => {
-                                                        // Thêm hoặc xóa màu từ mảng `colorsList` khi thay đổi
-                                                        setColors((prev) =>
-                                                            e.target.checked
-                                                                ? [...prev, color] // Thêm màu nếu checkbox được chọn
-                                                                : prev.filter((item) => item !== color) // Xóa màu nếu checkbox không được chọn
-                                                        );
-                                                    }}
-                                                    className="form-checkbox text-blue-500"
-                                                />
-                                                <span className="text-gray-700">{color}</span>
-                                            </label>
-                                        ))}
+
+
+                            {/* Shipping */}
+                            <div className="mt-6">
+                                <label className="block font-semibold text-lg mb-4">Vận chuyển</label>
+
+                                {/* Shipping Weight and Country */}
+                                <div className="flex gap-6 mb-6">
+                                    <div className="flex-1">
+                                        <label className="block font-medium mb-2">Cân nặng (kg)</label>
+                                        <input
+                                            type="text"
+                                            value={shippingWeight}
+                                            onChange={(e) => setShippingWeight(e.target.value)}
+                                            className="border px-4 py-2 w-full rounded-lg shadow-sm focus:ring-2 focus:ring-blue-400 focus:outline-none"
+                                        />
+                                    </div>
+                                    <div className="flex-1">
+                                        <label className="block font-medium mb-2">Quốc gia</label>
+                                        <select
+                                            value={shippingCountry}
+                                            onChange={(e) => setShippingCountry(e.target.value)}
+                                            className="border px-4 py-2 w-full rounded-lg shadow-sm focus:ring-2 focus:ring-blue-400 focus:outline-none"
+                                        >
+                                            <option value="">Quốc gia</option>
+                                            <option value="US">Việt Nam</option>
+                                            <option value="CA">Trung Quốc</option>
+                                            <option value="UK">Nhật Bản</option>
+                                            <option value="AU">Hàn Quốc</option>
+                                        </select>
                                     </div>
                                 </div>
 
-                                {/* Kích cỡ */}
-                                <div className="flex-1">
-                                    <label className="block font-semibold mb-2">Kích cỡ</label>
-                                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                                        {[
-                                            "XXL",
-                                            "XL",
-                                            "L",
-                                            "M",
-                                            "31",
-                                            "30",
-                                            "29",
-                                            "38mm - 44mm",
-                                            "26mm - 36mm",
-                                            "42",
-                                            "41",
-                                            "36",
-                                            "35",
-                                            "11x9cm",
-                                        ].map((size) => (
-                                            <label
-                                                key={size}
-                                                className="flex items-center space-x-2 bg-gray-50 p-3 rounded-lg border-2 border-gray-300 hover:border-blue-500 hover:bg-blue-50 transition duration-300"
-                                            >
-                                                <input
-                                                    type="checkbox"
-                                                    value={size}
-                                                    checked={sizes.includes(size)} // Kiểm tra nếu kích cỡ đã được chọn
-                                                    onChange={(e) => {
-                                                        // Thêm hoặc xóa kích cỡ từ mảng `sizes` khi thay đổi
-                                                        setSizes((prev) =>
-                                                            e.target.checked
-                                                                ? [...prev, size] // Thêm kích cỡ nếu checkbox được chọn
-                                                                : prev.filter((item) => item !== size) // Xóa kích cỡ nếu checkbox không được chọn
-                                                        );
-                                                    }}
-                                                    className="form-checkbox text-blue-500"
-                                                />
-                                                <span className="text-gray-700">{size}</span>
-                                            </label>
-                                        ))}
+                                {/* Toggle for Digital Item */}
+                                <div className="flex items-center gap-4">
+                                    {/* Toggle Switch */}
+                                    <div
+                                        className={`relative w-14 h-8 rounded-full cursor-pointer transition-colors duration-300 ${
+                                            isDigitalItem ? "bg-blue-500" : "bg-gray-300"
+                                        }`}
+                                        onClick={() => setIsDigitalItem(!isDigitalItem)}
+                                    >
+                                        <div
+                                            className={`absolute top-1 left-1 w-6 h-6 bg-white rounded-full shadow-md transform transition-transform duration-300 ${
+                                                isDigitalItem ? "translate-x-6" : "translate-x-0"
+                                            }`}
+                                        ></div>
                                     </div>
+                                    {/* Toggle Label */}
+                                    <span className="text-sm font-medium text-gray-700">
+            {isDigitalItem ? "Đây là sản phẩm vật lý" : "Đây là sản phẩm kỹ thuật số"}
+        </span>
                                 </div>
                             </div>
-
                         </div>
 
-                        {/* Right Column */}
+                            {/* Right Column */}
                         <div className="space-y-6">
+                            {/* Categories */}
                             <div className="bg-white p-4 rounded-lg shadow-md">
                                 <label className="block font-semibold mb-2">Danh mục sản phẩm</label>
-                                <select
-                                    value={categories}
-                                    onChange={(e) => setCategories(e.target.value)}
-                                    className="border px-4 py-2 w-full rounded"
-                                >
-                                    <option value="">Chọn danh mục</option>
-                                    {availableCategories.map((category) => (
-                                        <option key={category.id} value={category.id}>
-                                            {category.name}
-                                        </option>
+                                <div className="space-y-2">
+                                    {["Quần áo thể thao", "Áo dạ", "Áo len", "Quần âu", "Váy"].map((category) => (
+                                        <label key={category} className="block">
+                                            <input
+                                                type="checkbox"
+                                                value={category}
+                                                onChange={(e) =>
+                                                    setCategories((prev) =>
+                                                        e.target.checked
+                                                            ? [...prev, e.target.value]
+                                                            : prev.filter((cat) => cat !== e.target.value)
+                                                    )
+                                                }
+                                            />
+                                            <span className="ml-2">{category}</span>
+                                        </label>
                                     ))}
-                                </select>
+                                </div>
+                            </div>
+
+                            {/* Tags */}
+                            <div className="bg-white p-4 rounded-lg shadow-md">
+                                <label className="block font-semibold mb-2">Nhãn</label>
+                                <input
+                                    type="text"
+                                    value={tags.join(", ")}
+                                    onChange={(e) =>
+                                        setTags(e.target.value.split(", ").map((tag) => tag.trim()))
+                                    }
+                                    className="border px-4 py-2 w-full rounded"
+                                    placeholder="Add tags (e.g. T-Shirt, Men Clothes)"
+                                />
+                            </div>
+
+                            {/* SEO Settings */}
+                            <div className="bg-white p-4 rounded-lg shadow-md">
+                                <label className="block font-semibold mb-2">Tùy chỉnh SEO</label>
+                                <div>
+                                    <label className="block font-semibold mb-2">Tiêu đề</label>
+                                    <input
+                                        type="text"
+                                        value={seoTitle}
+                                        onChange={(e) => setSeoTitle(e.target.value)}
+                                        className="border px-4 py-2 w-full rounded"
+                                    />
+                                </div>
+                                <div className="mt-4">
+                                    <label className="block font-semibold mb-2">Miêu tả</label>
+                                    <textarea
+                                        value={seoDescription}
+                                        onChange={(e) => setSeoDescription(e.target.value)}
+                                        className="border px-4 py-2 w-full rounded"
+                                    />
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -323,21 +332,22 @@ const AddProductPage = () => {
                     <div className="flex justify-end mt-6 gap-4">
                         <button
                             type="button"
-                            onClick={() => navigate("/admin/product")}
+                            onClick={() => navigate("/product")} // Navigate back to product page
                             className="px-6 py-2 bg-gray-200 text-gray-700 rounded shadow-md hover:bg-gray-300"
                         >
                             Hủy
                         </button>
                         <button
                             type="button"
-                            onClick={handleSave} // Call the API to save the product
+                            onClick={() => {
+                                setShowModal(true);
+                            }}
                             className="px-6 py-2 bg-blue-500 text-white rounded shadow-md hover:bg-blue-600"
                         >
                             Lưu
                         </button>
                     </div>
 
-                    {/* Modal */}
                     {showModal && (
                         <div
                             className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 transition-opacity duration-300 ease-in-out"
@@ -349,36 +359,30 @@ const AddProductPage = () => {
                             >
                                 <div className="flex items-center justify-center mb-4">
                                     <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center shadow-md">
-                                        <svg
-                                            xmlns="http://www.w3.org/2000/svg"
-                                            height="24px"
-                                            viewBox="0 -960 960 960"
-                                            width="24px"
-                                            fill="blue"
-                                        >
-                                            <path d="M382-240 154-468l57-57 171 171 367-367 57 57-424 424Z" />
-                                        </svg>
+                                        <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="blue"><path d="M382-240 154-468l57-57 171 171 367-367 57 57-424 424Z"/></svg>
                                     </div>
                                 </div>
-                                <h2 className="text-xl font-semibold">Thêm sản phẩm thành công</h2>
-                                    <p className="text-gray-600 mt-2">Đã thêm sản phẩm mới vào cửa hàng của bạn.</p>
+                                <h2 className="text-xl font-semibold">Import Successful</h2>
+                                <p className="text-gray-600 mt-2">Added new products to your store.</p>
                                 <button
                                     onClick={() => {
-                                        const modalElement = document.querySelector(".bg-white");
+                                        const modalElement = document.querySelector('.bg-white');
                                         modalElement.style.animation = "scaleOut 0.3s forwards";
 
                                         setTimeout(() => {
-                                            setShowModal(false);
-                                            navigate("/admin/product");
-                                        }, 300);
+                                            setShowModal(false); // Đóng modal
+                                            navigate("/product"); // Điều hướng đến trang "add-product"
+                                        }, 300); // Tùy chỉnh thời gian trễ nếu cần
                                     }}
                                     className="mt-4 px-6 py-2 bg-blue-500 text-white rounded shadow-md hover:bg-blue-600 transition-transform duration-200 hover:scale-105"
                                 >
-                                    Tiếp tục
+                                    Continue
                                 </button>
                             </div>
                         </div>
                     )}
+
+
                 </div>
             </div>
         </AdminLayout>

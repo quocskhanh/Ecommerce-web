@@ -59,7 +59,7 @@ const AddAccountPage = () => {
                 <div className="w-full overflow-y-auto h-screen p-6">
                     <div className="flex items-center mb-6">
                         <button
-                            onClick={() => navigate("/admin/accounts")}
+                            onClick={() => navigate("/accounts")}
                             className="px-4 py-2 text-gray-600 bg-gray-200 rounded hover:bg-gray-300"
                         >
                             ← Quay Lại

@@ -8,54 +8,35 @@ const OrderPage = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const [selectedOrders, setSelectedOrders] = useState([]);
     const [filterStatus, setFilterStatus] = useState("");
-    const [statuses, setStatuses] = useState([]); // Store unique statuses
     const itemsPerPage = 5;
     const [editingOrder, setEditingOrder] = useState(null);
     const [showSuccessModal, setShowSuccessModal] = useState(false); // Track success modal visibility
-    const [filtereOrders, setFilteredOrders] = useState([]); // Dữ liệu đã lọc
+
     const [editedCustomerData, setEditedCustomerData] = useState({
-        account_id: '',
-        cart_id: '',
-        total_price: '',
-        status: ''
+        customer: '',
+        paymentStatus: '',
+        orderStatus: '',
+        total: ''
     });
     const [showDeleteModal, setShowDeleteModal] = useState(null); // Track the order being deleted
     const [showEditModal, setShowEditModal] = useState(false); // Track edit modal visibility
 
     const navigate = useNavigate();
 
-
     // Fetch orders from db.json
-    const fetchOrders = async () => {
-        try {
-            const response = await fetch("https://testbe-1.onrender.com/orders", {
-                method: "GET",
-                headers: {
-                    Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-                    "Content-Type": "application/json",
-                },
-            });
-            const data = await response.json();
-            console.log("Orders fetched from API:", data); // Log dữ liệu orders
-            setOrders(data);
-
-            // Extract unique statuses
-            const uniqueStatuses = [...new Set(data.map((order) => order.status))];
-            setStatuses(uniqueStatuses);
-        } catch (error) {
-            console.error("Error fetching orders:", error);
-        }
-    };
-
     useEffect(() => {
-        const fetchData = async () => {
-            await fetchOrders(); // Lấy danh sách đơn hàng
+        const fetchOrders = async () => {
+            try {
+                const response = await fetch("http://localhost:5000/orders");
+                const data = await response.json();
+                setOrders(data);
+            } catch (error) {
+                console.error("Error fetching orders:", error);
+            }
         };
-        fetchData();
 
-
+        fetchOrders();
     }, []);
-
 
     // Handle delete
 
@@ -72,12 +53,8 @@ const OrderPage = () => {
     const handleConfirmDelete = async () => {
         try {
             for (const id of selectedOrders) {
-                await fetch(`https://testbe-1.onrender.com/orders/${id}`, {
+                await fetch(`http://localhost:5000/orders/${id}`, {
                     method: "DELETE",
-                    headers: {
-                        Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-                        "Content-Type": "application/json",
-                    },
                 });
             }
             setOrders(orders.filter((order) => !selectedOrders.includes(order.id)));
@@ -91,77 +68,7 @@ const OrderPage = () => {
     };
 
 
-    const fetchShippingStatus = async () => {
-        try {
-            // Đồng bộ trạng thái đơn hàng với trạng thái vận chuyển
-            const updatedOrders = await Promise.all(
-                orders.map(async (order) => {
-                    const response = await fetch(`https://testbe-1.onrender.com/shippings/${order.id}`, {
-                        method: "GET",
-                        headers: {
-                            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-                            "Content-Type": "application/json",
-                        },
-                    });
-
-                    if (response.ok) {
-                        const shipping = await response.json();
-                        let updatedStatus = order.status;
-
-                        // Đồng bộ trạng thái vận chuyển -> trạng thái đơn hàng
-                        if (shipping.status === "Chờ lấy hàng") {
-                            updatedStatus = "Chờ giao hàng";
-                        } else if (shipping.status === "Đang giao hàng") {
-                            updatedStatus = "Đang giao hàng";
-                        } else if (shipping.status === "Đã giao hàng") {
-                            updatedStatus = "Đã giao hàng";
-                        }
-
-                        // Cập nhật lại trạng thái đơn hàng trong bảng orders
-                        if (updatedStatus !== order.status) {
-                            await fetch(`https://testbe-1.onrender.com/orders/${order.id}`, {
-                                method: "PUT",
-                                headers: {
-                                    "Content-Type": "application/json",
-                                },
-                                body: JSON.stringify({ status: updatedStatus }),
-                            });
-                        }
-
-                        // Trả về đơn hàng đã được cập nhật
-                        return { ...order, status: updatedStatus };
-                    }
-
-                    // Trường hợp không có thông tin vận chuyển
-                    return { ...order, status: order.status || "Chưa cập nhật" };
-                })
-            );
-
-            setOrders(updatedOrders);
-        } catch (error) {
-            console.error("Error fetching shipping data:", error);
-        }
-    };
-
-    useEffect(() => {
-        const fetchData = async () => {
-            await fetchOrders(); // Lấy danh sách đơn hàng
-            await fetchShippingStatus(); // Đồng bộ trạng thái vận chuyển
-        };
-        fetchData();
-    }, []);
-
-
-    useEffect(() => {
-        const fetchData = async () => {
-            await fetchOrders(); // Lấy danh sách đơn hàng
-        };
-        fetchData();
-    }, []);
-
-
     // Handle edit (populate editedCustomerData with the selected order data)
-// Handle edit (populate editedCustomerData with the selected order data)
     const handleEditOrder = () => {
         if (selectedOrders.length === 1) {
             const selectedOrder = orders.find((order) => order.id === selectedOrders[0]);
@@ -175,7 +82,9 @@ const OrderPage = () => {
         }
     };
 
-// Handle input change for editing
+
+
+    // Handle input change for editing
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setEditedCustomerData((prevData) => ({
@@ -186,22 +95,18 @@ const OrderPage = () => {
 
     const handleSaveOrder = async () => {
         try {
-            // Update order data in the backend
-            await fetch(`https://testbe-1.onrender.com/orders/${editingOrder}`, {
+            await fetch(`http://localhost:5000/orders/${editingOrder}`, {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify(editedCustomerData),
             });
-
-            // Update orders list in the frontend
-            setOrders((prevOrders) =>
-                prevOrders.map((order) =>
-                    order.id === editingOrder ? { ...order, ...editedCustomerData } : order
+            setOrders(
+                orders.map((order) =>
+                    order.id === editingOrder ? editedCustomerData : order
                 )
             );
-
             setEditingOrder(null);
             setShowEditModal(false); // Close edit modal after saving changes
             alert("Đơn hàng đã được cập nhật!");
@@ -209,7 +114,6 @@ const OrderPage = () => {
             console.error("Error saving order:", error);
         }
     };
-
 
     // Handle checkbox selection
     const toggleSelectOrder = (id) => {
@@ -223,10 +127,10 @@ const OrderPage = () => {
     // Filter and paginate orders
     const filteredOrders = orders.filter((order) => {
         const matchesSearch =
-            order.status?.toLowerCase().includes(searchTerm.toLowerCase());
+            order.customer?.toLowerCase().includes(searchTerm.toLowerCase());
         const matchesFilter =
             filterStatus === "" ||
-            order.status?.toLowerCase() === filterStatus.toLowerCase();
+            order.orderStatus?.toLowerCase() === filterStatus.toLowerCase();
         return matchesSearch && matchesFilter;
     });
 
@@ -256,53 +160,67 @@ const OrderPage = () => {
         return Array.from({ length: end - start + 1 }, (_, i) => start + i);
     };
 
-
     return (
         <AdminLayout>
-            <div className="p-4 max-w-screen-xl mx-auto">
-                <div className="flex flex-wrap justify-between items-center mb-6">
-                    <h1 className="text-2xl font-bold text-gray-800 w-full sm:w-auto mb-8 mt-6">Đơn hàng</h1>
+            <div className="p-6">
+                <div className="flex justify-between items-center mb-6 flex-wrap">
+                    <h1 className="text-2xl font-bold text-gray-800 w-full sm:w-auto">Đơn hàng</h1>
                     <div className="flex gap-4 w-full sm:w-auto justify-between sm:justify-end">
-
                         <button
-                            className="px-4 py-2 bg-whiterounded border border-[#d6daec] hover:bg-gray-200"
+                            className="px-4 py-2 bg-white rounded border border-[#d6daec] hover:bg-gray-200"
                         >
                             Xuất
                         </button>
-
+                        <button
+                            className="px-4 py-2 bg-[#1e5eff] rounded text-white hover:bg-blue-400"
+                            onClick={() => navigate("/order/add-order")}
+                        >
+                            + Thêm đơn hàng
+                        </button>
                     </div>
                 </div>
 
+                {/* Edit Modal */}
                 {showEditModal && (
                     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
                         <div className="bg-white rounded-lg p-6 w-96 sm:w-full sm:max-w-xs shadow-lg">
                             <h2 className="text-xl font-semibold mb-4">Chỉnh sửa đơn hàng</h2>
-
-                            {/* Dropdown trạng thái */}
                             <div className="mb-4">
-                                <label className="block mb-2">Trạng thái đơn hàng</label>
-                                <select
-                                    name="status"
-                                    value={editedCustomerData.status}
-                                    onChange={handleInputChange}
-                                    className="border rounded w-full p-2"
-                                >
-                                    <option value="">Chọn trạng thái</option>
-                                    {statuses.map((status) => (
-                                        <option key={status} value={status}>
-                                            {status}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-
-                            {/* Tổng tiền */}
-                            <div className="mb-4">
-                                <label className="block mb-2">Tổng tiền</label>
+                                <label className="block mb-2">Khách hàng</label>
                                 <input
                                     type="text"
-                                    name="total_price"
-                                    value={editedCustomerData.total_price || ''}
+                                    value={editedCustomerData.customer}
+                                    name="customer"
+                                    onChange={handleInputChange}
+                                    className="border rounded w-full p-2"
+                                />
+                            </div>
+                            <div className="mb-4">
+                                <label className="block mb-2">Trạng thái thanh toán</label>
+                                <input
+                                    type="text"
+                                    value={editedCustomerData.paymentStatus}
+                                    name="paymentStatus"
+                                    onChange={handleInputChange}
+                                    className="border rounded w-full p-2"
+                                />
+                            </div>
+                            <div className="mb-4">
+                                <label className="block mb-2">Trạng thái đơn hàng</label>
+                                <input
+                                    type="text"
+                                    value={editedCustomerData.orderStatus}
+                                    name="orderStatus"
+                                    onChange={handleInputChange}
+                                    className="border rounded w-full p-2"
+                                />
+                            </div>
+                            <div className="mb-4">
+                                <label className="block mb-2">Số tiền</label>
+                                <input
+                                    type="text"
+                                    value={editedCustomerData.total}
+                                    name="total"
                                     onChange={handleInputChange}
                                     className="border rounded w-full p-2"
                                 />
@@ -311,7 +229,7 @@ const OrderPage = () => {
                             <div className="flex justify-end gap-4">
                                 <button
                                     className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
-                                    onClick={() => setShowEditModal(false)}
+                                    onClick={() => setShowEditModal(false)} // Close modal without saving
                                 >
                                     Hủy
                                 </button>
@@ -325,7 +243,6 @@ const OrderPage = () => {
                         </div>
                     </div>
                 )}
-
 
                 {/* Delete Modal */}
                 {showDeleteModal && (
@@ -358,7 +275,7 @@ const OrderPage = () => {
                     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
                         <div className="bg-white p-8 rounded-lg max-w-md sm:max-w-xs modal-enter-active">
                             <h3 className="text-xl font-semibold mb-4">Thông báo</h3>
-                            <p>Đơn hàng đã được xóa thành công!</p>
+                            <p>Khách hàng đã được xóa thành công!</p>
                             <div className="flex justify-end gap-4 mt-4">
                                 <button
                                     onClick={() => setShowSuccessModal(false)}
@@ -372,19 +289,18 @@ const OrderPage = () => {
                 )}
 
                 <div className="bg-white rounded-lg shadow-lg">
-                    <div className="flex flex-col sm:flex-row justify-between items-center p-4 border-b">
+                    <div className="flex items-center p-4 border-b flex-wrap">
                         <select
                             className="border rounded-lg px-4 py-2 mb-4 sm:mb-0"
                             value={filterStatus}
                             onChange={(e) => setFilterStatus(e.target.value)}
                         >
                             <option value="">Tất cả</option>
-                            {statuses.map((status) => (
-                                <option key={status} value={status}>
-                                    {status}
-                                </option>))}
+                            <option value="Chờ lấy hàng">Chờ lấy hàng</option>
+                            <option value="Đã chuẩn bị hàng">Đã chuẩn bị hàng</option>
+                            <option value="Đang giao hàng">Đang giao hàng</option>
+                            <option value="Đã giao hàng">Đã giao hàng</option>
                         </select>
-
 
                         <div className="relative ml-4 mb-4 sm:mb-0">
                             <input
@@ -394,44 +310,34 @@ const OrderPage = () => {
                                 onChange={(e) => setSearchTerm(e.target.value)}
                                 className="border rounded-lg px-4 py-2 pl-10"
                             />
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                height="24px"
-                                viewBox="0 -960 960 960"
-                                width="24px"
-                                fill="#5f6368"
-                                className="w-5 h-5 text-gray-500 absolute left-3 top-1/2 transform -translate-y-1/2"
-                            >
-                                <path d="M784-120 532-372q-30 24-69 38t-83 14q-109 0-184.5-75.5T120-580q0-109 75.5-184.5T380-840q109 0 184.5 75.5T640-580q0 44-14 83t-38 69l252 252-56 56ZM380-400q75 0 127.5-52.5T560-580q0-75-52.5-127.5T380-760q-75 0-127.5 52.5T200-580q0 75 52.5 127.5T380-400Z" />
-                            </svg>
                         </div>
 
                         <div className="flex gap-4 ml-auto w-full sm:w-auto justify-between sm:justify-end">
                             <button
-                                className="px-4 py-2 bg-white-500 text-gray-600 rounded border border-blue-400 hover:bg-blue-500 cursor-pointer"
+                                className="px-5 py-3 bg-white-500 text-gray-600 rounded border border-blue-400 hover:bg-gray-300 cursor-pointer"
                                 onClick={handleEditOrder}
                             >
                                 <span>
-                                    <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="black"><path d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h357l-80 80H200v560h560v-278l80-80v358q0 33-23.5 56.5T760-120H200Zm280-360ZM360-360v-170l367-367q12-12 27-18t30-6q16 0 30.5 6t26.5 18l56 57q11 12 17 26.5t6 29.5q0 15-5.5 29.5T897-728L530-360H360Zm481-424-56-56 56 56ZM440-440h56l232-232-28-28-29-28-231 231v57Zm260-260-29-28 29 28 28 28-28-28Z"/></svg>
+                                    <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#5f6368"><path d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h357l-80 80H200v560h560v-278l80-80v358q0 33-23.5 56.5T760-120H200Zm280-360ZM360-360v-170l367-367q12-12 27-18t30-6q16 0 30.5 6t26.5 18l56 57q11 12 17 26.5t6 29.5q0 15-5.5 29.5T897-728L530-360H360Zm481-424-56-56 56 56ZM440-440h56l232-232-28-28-29-28-231 231v57Zm260-260-29-28 29 28 28 28-28-28Z"/></svg>
                                 </span>
                             </button>
 
                             <button
-                                className="px-4 py-2 bg-white-500 text-blue-400 border border-blue-400 rounded hover:bg-red-500 cursor-pointer"
+                                className="px-5 py-3 bg-white-500 text-blue-400 border border-blue-400 rounded hover:bg-gray-300 cursor-pointer"
                                 onClick={handleDeleteTrigger}
                             >
                                 <span>
-                                    <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="black"><path d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z"/></svg>
+                                    <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#5f6368"><path d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z"/></svg>
                                 </span>
                             </button>
                         </div>
                     </div>
 
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-center">
+                    <div className="overflow-x-auto max-h-[400px]">
+                        <table className="w-full text-left">
                             <thead className="bg-gray-300 sticky top-0">
                             <tr>
-                                <th className="p-4 border border-gray-400 text-center ">
+                                <th className="p-4">
                                     <input
                                         type="checkbox"
                                         onChange={(e) => {
@@ -443,38 +349,32 @@ const OrderPage = () => {
                                         checked={selectedOrders.length === orders.length && orders.length > 0}
                                     />
                                 </th>
-                                <th className="border border-gray-400 p-4">ID Đơn hàng</th>
-                                <th className="border border-gray-400 p-4">ID Khách hàng</th>
-                                <th className="border border-gray-400 p-4">Trạng thái thanh toán</th>
-                                <th className="border border-gray-400 p-4">Mã giỏ hàng</th>
-                                <th className="border border-gray-400 p-4">Tổng số tiền</th>
+                                <th className="p-4">Đơn hàng</th>
+                                <th className="p-4">Thời gian</th>
+                                <th className="p-4">Khách hàng</th>
+                                <th className="p-4">Trạng thái thanh toán</th>
+                                <th className="p-4">Trạng thái đơn hàng</th>
+                                <th className="p-4">Tổng số tiền</th>
                             </tr>
                             </thead>
                             <tbody>
-                            { currentOrders.length > 0 ? (currentOrders.map((order) => (
-                                    <tr key={order.id} className="border-b hover:bg-gray-100 border border-gray-300">
-                                        <td className="p-4">
-                                            <input
-                                                type="checkbox"
-                                                checked={selectedOrders.includes(order.id)}
-                                                onChange={() => toggleSelectOrder(order.id)}
-                                            />
-                                        </td>
-                                        <td className="p-4 border border-gray-300">{order.id}</td>
-                                        <td className="p-4 border border-gray-300">{order.account_id}</td>
-                                        <td className="p-4 border border-gray-300">{order.status}</td>
-                                        <td className="p-4 border border-gray-300">{order.cart_id}</td>
-                                        <td className="p-4 border border-gray-300">{order.total_price}</td>
-                                    </tr>
-                                ))
-                            ):(
-                                <tr>
-                                    <td colSpan="7" className="p-4 text-center">
-                                        Không có đơn hàng nào được tìm thấy.
+                            {currentOrders.map((order) => (
+                                <tr key={order.id} className="border-b hover:bg-gray-50">
+                                    <td className="p-4">
+                                        <input
+                                            type="checkbox"
+                                            checked={selectedOrders.includes(order.id)}
+                                            onChange={() => toggleSelectOrder(order.id)}
+                                        />
                                     </td>
+                                    <td className="p-4">{order.id}</td>
+                                    <td className="p-4">{order.date}</td>
+                                    <td className="p-4">{order.customer}</td>
+                                    <td className="p-4">{order.paymentStatus}</td>
+                                    <td className="p-4">{order.orderStatus}</td>
+                                    <td className="p-4">{order.total}</td>
                                 </tr>
-                            )
-                            }
+                            ))}
                             </tbody>
                         </table>
                     </div>
@@ -482,8 +382,8 @@ const OrderPage = () => {
                     {/* Pagination */}
                     <div className="p-4 flex justify-between items-center">
                         <p>
-                            Hiển thị {Math.min((currentPage - 1) * itemsPerPage + 1, orders.length)}-
-                            {Math.min(currentPage * itemsPerPage, orders.length)} trong {orders.length}
+                            Showing {Math.min((currentPage - 1) * itemsPerPage + 1, orders.length)}-
+                            {Math.min(currentPage * itemsPerPage, orders.length)} of {orders.length}
                         </p>
                         <div className="flex gap-2">
                             <button
@@ -507,8 +407,7 @@ const OrderPage = () => {
                                 >
                                     {page}
                                 </button>
-                            ))
-                            }
+                            ))}
                             <button
                                 className="px-3 py-1 bg-gray-200 rounded disabled:opacity-50"
                                 disabled={currentPage === totalPages}

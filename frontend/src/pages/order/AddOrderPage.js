@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import AdminLayout from '../../layout/AdminLayout';
 import { useNavigate } from 'react-router-dom';
 
@@ -8,60 +8,18 @@ const AddOrderPage = () => {
     // State to store form information
     const [order, setOrder] = useState({
         id: '',
-        account_id: '',
-        cart_id: '',
-        total_price: '',
-        status: '', // Default value
+        order: '',
+        date: '',
+        customer: '',
+        paymentStatus: 'Đã thanh toán', // Default value
+        orderStatus: 'Chờ lấy hàng', // Default value
+        total: ''
     });
 
-    // State for fetching statuses from the orders API
-    const [statuses, setStatuses] = useState([]);
+    // State to show API loading status
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [showModal, setShowModal] = useState(false); // Modal state
-
-    // Fetch statuses from API on component mount
-    useEffect(() => {
-        const fetchStatuses = async () => {
-            try {
-                const token = localStorage.getItem("access_token");
-                console.log('Token:', token);
-                if (!token) {
-                    alert('Token không tồn tại. Vui lòng đăng nhập lại.');
-                    navigate('/login'); // Điều hướng đến trang đăng nhập
-                    return;
-                }
-
-                const response = await fetch('https://testbe-1.onrender.com/orders', {
-                    method: 'GET',
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                        'Content-Type': 'application/json',
-                    },
-                });
-
-                if (!response.ok) {
-                    if (response.status === 401) {
-                        alert('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
-                        navigate('/login'); // Điều hướng đến trang đăng nhập
-                    }
-                    throw new Error(`Lỗi ${response.status}: Không thể lấy trạng thái đơn hàng`);
-                }
-
-                const data = await response.json();
-
-                // Extract unique statuses from the orders
-                const uniqueStatuses = [...new Set(data.orders.map(order => order.status))];
-                setStatuses(uniqueStatuses);
-            } catch (err) {
-                console.error('Error fetching statuses:', err.message);
-                setError(err.message || 'Unable to fetch statuses');
-            }
-        };
-
-        fetchStatuses();
-    }, []);
-
 
     // Handle input change
     const handleChange = (e) => {
@@ -73,8 +31,8 @@ const AddOrderPage = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        // Validation: Check required fields
-        if (!order.id || !order.account_id || !order.cart_id || !order.total_price || !order.status) {
+        // Validation: Check if any field is empty
+        if (!order.id || !order.order || !order.date || !order.customer || !order.total) {
             alert("Vui lòng điền đầy đủ thông tin đơn hàng.");
             return;
         }
@@ -83,34 +41,24 @@ const AddOrderPage = () => {
         setError(null);
 
         try {
-            const token = localStorage.getItem("access_token");
-            if (!token) {
-                alert('Token không tồn tại. Vui lòng đăng nhập lại.');
-                navigate('/login'); // Điều hướng đến trang đăng nhập
-                return;
-            }
-
-            const response = await fetch('https://testbe-1.onrender.com/orders', {
+            // Call API to add the order
+            const response = await fetch('http://localhost:5000/orders', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token}`, // Thêm token xác thực
+                    'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({
-                    ...order,
-                    createdDate: new Date().toISOString(),
-                }),
+                body: JSON.stringify(order)
             });
 
             if (!response.ok) {
-                if (response.status === 401) {
-                    alert('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
-                    navigate('/login'); // Điều hướng đến trang đăng nhập
-                }
                 throw new Error(`Lỗi ${response.status}: Không thể thêm đơn hàng`);
             }
 
-            setShowModal(true); // Show success modal
+            const result = await response.json();
+            console.log('API Response:', result);
+
+            // Show success modal
+            setShowModal(true);
         } catch (err) {
             console.error(err);
             setError(err.message || 'Đã xảy ra lỗi khi thêm đơn hàng');
@@ -122,114 +70,173 @@ const AddOrderPage = () => {
     // Close modal and navigate to orders page
     const handleModalConfirm = () => {
         setShowModal(false);
-        navigate('/admin/order');
+        navigate('/order');
     };
 
     const handleCancel = () => {
         // Navigate back to orders page
-        navigate("/admin/order");
+        navigate("/order");
     };
 
     return (
         <AdminLayout>
             <div className="flex">
                 <div className="w-full overflow-y-auto h-screen p-8 bg-gray-50">
-                    <button
-                        onClick={() => navigate("/admin/order")} // Navigate back to category list page
-                        className="flex mb-10 items-center px-4 py-2 text-gray-600 bg-gray-200 rounded-lg hover:bg-gray-300 transition duration-300"
-                    >
-                        <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#5f6368" className="mr-2">
-                            <path d="M360-240 120-480l240-240 56 56-144 144h488v-160h80v240H272l144 144-56 56Z"/>
-                        </svg>
-                        <span>Quay Lại</span>
-                    </button>
+                    {/* Back Button */}
+                    <div className="flex items-center mb-6">
+                        <button
+                            onClick={() => navigate('/order')} // Navigate back to orders page
+                            className="px-4 py-2 text-gray-600 bg-gray-200 rounded hover:bg-gray-300"
+                        >
+                            ← Quay lại
+                        </button>
+                    </div>
 
-                    <header className="mb-10">
+                    {/* Header */}
+                    <header className="mb-8">
                         <h1 className="text-[#131523] text-2xl font-bold leading-9">Thêm đơn hàng</h1>
                     </header>
 
-                    <form onSubmit={handleSubmit} className="bg-white shadow-md rounded-lg p-8 space-y-8 border-t-4">
+                    {/* Scrollable Form Container with Border */}
+                    <div className="bg-white shadow-md rounded-lg p-8 space-y-8 border-t-4">
+                        {/* Order Information */}
                         <div>
                             <h2 className="text-xl font-semibold text-gray-700 mb-3">Thông tin đơn hàng</h2>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <p className="text-sm text-gray-500 mb-4">Thông tin chi tiết về đơn hàng</p>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
                                 <input
                                     type="text"
                                     name="id"
                                     value={order.id}
                                     onChange={handleChange}
                                     placeholder="ID đơn hàng"
-                                    className="border rounded-md p-4 w-full"
+                                    className="border rounded-md p-4 w-full focus:outline-none focus:ring-2 focus:ring-blue-400 transition duration-300"
                                 />
                                 <input
                                     type="text"
-                                    name="account_id"
-                                    value={order.account_id}
+                                    name="order"
+                                    value={order.order}
                                     onChange={handleChange}
-                                    placeholder="ID tài khoản"
-                                    className="border rounded-md p-4 w-full"
+                                    placeholder="Mã đơn hàng"
+                                    className="border rounded-md p-4 w-full focus:outline-none focus:ring-2 focus:ring-blue-400 transition duration-300"
+                                />
+                                <input
+                                    type="datetime-local"
+                                    name="date"
+                                    value={order.date}
+                                    onChange={handleChange}
+                                    placeholder="Ngày đặt hàng"
+                                    className="border rounded-md p-4 w-full focus:outline-none focus:ring-2 focus:ring-blue-400 transition duration-300"
                                 />
                                 <input
                                     type="text"
-                                    name="cart_id"
-                                    value={order.cart_id}
+                                    name="customer"
+                                    value={order.customer}
                                     onChange={handleChange}
-                                    placeholder="ID giỏ hàng"
-                                    className="border rounded-md p-4 w-full"
-                                />
-                                <input
-                                    type="number"
-                                    name="total_price"
-                                    value={order.total_price}
-                                    onChange={handleChange}
-                                    placeholder="Tổng tiền"
-                                    className="border rounded-md p-4 w-full"
+                                    placeholder="Tên khách hàng"
+                                    className="border rounded-md p-4 w-full focus:outline-none focus:ring-2 focus:ring-blue-400 transition duration-300"
                                 />
                             </div>
                         </div>
 
+                        {/* Payment Status */}
+                        <div>
+                            <h2 className="text-xl font-semibold text-gray-700 mb-3">Trạng thái thanh toán</h2>
+                            <p className="text-sm text-gray-500 mb-4">Chọn trạng thái thanh toán cho đơn hàng</p>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
+                                <select
+                                    name="paymentStatus"
+                                    value={order.paymentStatus}
+                                    onChange={handleChange}
+                                    className="border rounded-md p-4 w-full focus:outline-none focus:ring-2 focus:ring-blue-400 transition duration-300"
+                                >
+                                    <option value="Đã thanh toán">Đã thanh toán</option>
+                                    <option value="Đang xử lý">Đang xử lý</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        {/* Order Status */}
                         <div>
                             <h2 className="text-xl font-semibold text-gray-700 mb-3">Trạng thái đơn hàng</h2>
-                            {error && <p className="text-red-500">{error}</p>}
-                            <select
-                                name="status"
-                                value={order.status}
-                                onChange={handleChange}
-                                className="border rounded-md p-4 w-full"
-                                disabled={loading} // Disable dropdown while loading
-                            >
-                                <option value="">Chọn trạng thái</option>
-                                <option value="Đã thanh toán">Đã thanh toán</option>
-                                <option value="Chưa thanh toán">Chưa thanh toán</option>
-                                <option value="Đã hủy">Đã hủy</option>
-
-                            </select>
+                            <p className="text-sm text-gray-500 mb-4">Chọn trạng thái của đơn hàng</p>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
+                                <select
+                                    name="orderStatus"
+                                    value={order.orderStatus}
+                                    onChange={handleChange}
+                                    className="border rounded-md p-4 w-full focus:outline-none focus:ring-2 focus:ring-blue-400 transition duration-300"
+                                >
+                                    <option value="Chờ lấy hàng">Chờ lấy hàng</option>
+                                    <option value="Đang giao hàng">Đang giao hàng</option>
+                                    <option value="Đã giao hàng">Đã giao hàng</option>
+                                </select>
+                            </div>
                         </div>
 
-                        <div className="flex justify-end space-x-4">
-                            <button
-                                type="button"
-                                onClick={handleCancel}
-                                className="px-6 py-3 border border-gray-300 rounded-md text-gray-600 hover:bg-gray-200"
-                            >
-                                Hủy
-                            </button>
-                            <button
-                                type="submit"
-                                className={`px-6 py-3 bg-blue-500 text-white rounded-md hover:bg-blue-600 ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
-                                disabled={loading}
-                            >
-                                {loading ? 'Đang thêm...' : 'Lưu'}
-                            </button>
+                        {/* Total Amount */}
+                        <div>
+                            <h2 className="text-xl font-semibold text-gray-700 mb-3">Tổng tiền</h2>
+                            <p className="text-sm text-gray-500 mb-4">Nhập tổng số tiền đơn hàng</p>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
+                                <input
+                                    type="text"
+                                    name="total"
+                                    value={order.total}
+                                    onChange={handleChange}
+                                    placeholder="Nhập tổng tiền (VD: 1.000.000 đ)"
+                                    className="border rounded-md p-4 w-full focus:outline-none focus:ring-2 focus:ring-blue-400 transition duration-300"
+                                />
+                            </div>
                         </div>
-                    </form>
+                    </div>
 
+                    {/* Action Buttons */}
+                    <div className="flex justify-end mt-8 space-x-6 bottom-0 p-6">
+                        <button
+                            onClick={handleCancel}
+                            className="px-6 py-3 border border-gray-300 rounded-md text-gray-600 hover:bg-gray-200 transition duration-300"
+                        >
+                            Hủy
+                        </button>
+                        <button
+                            type="submit"
+                            onClick={handleSubmit}
+                            className="px-6 py-2 bg-blue-500 text-white rounded shadow-md hover:bg-blue-600"
+                        >
+                            Lưu
+                        </button>
+                    </div>
+
+                    {/* Modal for success */}
                     {showModal && (
-                        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                            <div className="bg-white rounded-lg p-6 text-center">
-                                <h2 className="text-xl font-semibold mb-4">Thêm đơn hàng thành công</h2>
+                        <div
+                            className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 transition-opacity duration-300 ease-in-out"
+                            style={{ animation: 'fadeIn 0.3s' }}
+                        >
+                            <div
+                                className="bg-white rounded-lg p-6 w-96 shadow-lg text-center transform transition-transform duration-300 ease-in-out scale-90"
+                                style={{ animation: 'scaleIn 0.3s forwards' }}
+                            >
+                                <div className="flex items-center justify-center mb-4">
+                                    <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center shadow-md">
+                                        <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="blue">
+                                            <path d="M382-240 154-468l57-57 171 171 367-367 57 57-424 424Z" />
+                                        </svg>
+                                    </div>
+                                </div>
+                                <h2 className="text-xl font-semibold">Thêm đơn hàng thành công</h2>
                                 <button
-                                    onClick={handleModalConfirm}
-                                    className="px-6 py-2 bg-blue-500 text-white rounded shadow-md hover:bg-blue-600"
+                                    onClick={() => {
+                                        const modalElement = document.querySelector('.bg-white');
+                                        modalElement.style.animation = 'scaleOut 0.3s forwards';
+
+                                        setTimeout(() => {
+                                            setShowModal(false); // Close modal
+                                            navigate('/order'); // Navigate to the orders page
+                                        }, 300); // Customize delay if needed
+                                    }}
+                                    className="mt-4 px-6 py-2 bg-blue-500 text-white rounded shadow-md hover:bg-blue-600 transition-transform duration-200 hover:scale-105"
                                 >
                                     Tiếp tục
                                 </button>

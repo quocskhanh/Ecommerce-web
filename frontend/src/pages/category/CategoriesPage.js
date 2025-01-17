@@ -1,138 +1,33 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import AdminLayout from "../../layout/AdminLayout";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+
+const categories = [
+    { id: "menclothes", name: "Thời trang nam", items: 24, image: "https://360.com.vn/wp-content/uploads/2023/11/ANHTK407-APTTK403-QGNTK407-2-Custom.jpg" },
+    { id: "womenclothes", name: "Thời trang nữ", items: 12, image: "https://media.istockphoto.com/id/916092484/photo/women-clothes-hanging-on-hangers-clothing-rails-fashion-design.jpg?s=612x612&w=0&k=20&c=fUpcbOITkQqitglZfgJkWO3py-jsbuhc8eZfb4sdrfE=" },
+    { id: "accessories", name: "Phụ kiện", items: 43, image: "https://product.hstatic.net/1000104930/product/n-30864m-10_02056484010148cabb6eb48eee20a82e.jpg" },
+    { id: "cottonclothes", name: "Quần áo Cotton", items: 31, image: "https://pomp.store/cdn/shop/articles/znz92h1hor8cdjtqx1cftqeriu6swbs95bqw0f968ck9ujbz_3.jpg?v=1676547961&width=1500" },
+    { id: "summerclothes", name: "Quần áo mùa hè", items: 26, image: "https://down-vn.img.susercontent.com/file/vn-11134207-7r98o-lyhqx3o2grs17b" },
+    { id: "weddingclothes", name: "Trang phục cưới", items: 52, image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQwDYsyP0tv4Vf5RDDQKBGdahNXx1wzqpSoNA&s" },
+    { id: "springcollect", name: "Bộ sưu tập mùa xuân", items: 24, image: "https://hoaigiangshop.com/wp-content/uploads/2017/10/ao-dai-nu-mau-do-ve-hoa-tiet-mua-xuan.jpg" },
+    { id: "casualclothes", name: "Quần áo thường ngày", items: 52, image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT7N9lgie7KH1WPKZZocZwbchE89yOA4zg08w&s" },
+    { id: "hats", name: "Mũ", items: 26, image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT2YOC9gy9NhVPy8wm7dsGGzCzsA38ivngvhA&s" },
+];
 
 const CategoriesPage = () => {
-    const [categories, setCategories] = useState([]);
     const navigate = useNavigate();
-
-    // Fetch categories on component mount
-    useEffect(() => {
-        const fetchCategories = async () => {
-            try {
-                const token = localStorage.getItem("access_token");
-                if (!token) {
-                    alert("Bạn cần đăng nhập để tiếp tục.");
-                    return;
-                }
-
-                const response = await axios.get("https://testbe-1.onrender.com/categories", {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                        "Content-Type": "application/json",
-                    },
-                });
-
-                setCategories(response.data);
-            } catch (error) {
-                console.error("Lỗi khi lấy danh mục:", error);
-                alert("Không thể tải danh mục. Vui lòng thử lại sau.");
-            }
-        };
-
-        fetchCategories();
-    }, []);
-
-    // Handle category deletion
-    const handleDelete = async (categoryId) => {
-        if (!window.confirm("Bạn chắc chắn muốn xóa danh mục này và tất cả sản phẩm liên quan?")) {
-            return;
-        }
-
-        try {
-            const token = localStorage.getItem("access_token");
-
-            // Lấy danh sách sản phẩm trong danh mục
-            const productResponse = await axios.get(`https://testbe-1.onrender.com/products?category_id=${categoryId}`, {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                    "Content-Type": "application/json",
-                },
-            });
-
-            const products = productResponse.data;
-
-            // Xóa từng sản phẩm liên quan
-            for (const product of products) {
-                await axios.delete(`https://testbe-1.onrender.com/products/${product.id}`, {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                        "Content-Type": "application/json",
-                    },
-                });
-            }
-
-            // Xóa danh mục
-            await axios.delete(`https://testbe-1.onrender.com/categories/delete?category_id=${categoryId}`, {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                    "Content-Type": "application/json",
-                },
-            });
-
-            // Cập nhật danh sách danh mục sau khi xóa
-            setCategories((prevCategories) =>
-                prevCategories.filter((category) => category.id !== categoryId)
-            );
-
-            alert("Danh mục và các sản phẩm liên quan đã được xóa thành công.");
-        } catch (error) {
-            console.error("Lỗi khi xóa danh mục:", error.response?.data || error.message);
-            alert("Không thể xóa danh mục. Vui lòng thử lại sau.");
-        }
-    };
-            // Handle navigation to edit category page
-    const handleEdit = async (categoryId) => {
-        const newName = prompt("Nhập tên mới cho danh mục:");
-        if (!newName) {
-            alert("Tên danh mục không được để trống.");
-            return;
-        }
-
-        try {
-            const token = localStorage.getItem("access_token");
-            if (!token) {
-                alert("Không tìm thấy token. Vui lòng đăng nhập lại.");
-                return;
-            }
-
-            await axios.put(
-                `https://testbe-1.onrender.com/categories/change?category_id=${categoryId}`,
-                { name: newName }, // Truyền thông tin mới cần chỉnh sửa
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                        "Content-Type": "application/json",
-                    },
-                }
-            );
-
-            setCategories((prevCategories) =>
-                prevCategories.map((category) =>
-                    category.id === categoryId ? { ...category, name: newName } : category
-                )
-            );
-
-            alert("Danh mục đã được cập nhật thành công.");
-        } catch (error) {
-            console.error("Lỗi khi chỉnh sửa danh mục:", error.response?.data || error.message);
-            alert("Không thể chỉnh sửa danh mục. Vui lòng thử lại sau.");
-        }
-    };
 
     return (
         <AdminLayout>
             <div className="p-6 overflow-y-auto h-full">
                 <div className="flex justify-between items-center mb-6">
-                    <h1 className="text-2xl font-bold text-gray-800 mb-8 mt-6">Danh mục sản phẩm</h1>
-                    <button
-                        className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
-                        onClick={() => navigate("/admin/categories/add-category")}
-                    >
+                    <h1 className="text-2xl font-bold text-gray-800">Danh mục sản phẩm</h1>
+                    <button className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+                            onClick={() => navigate("/categories/add-category")}>
                         + Thêm
                     </button>
                 </div>
+                {/* Chỉnh sửa grid cho responsive */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-6">
                     {categories.map((category) => (
                         <div
@@ -147,24 +42,28 @@ const CategoriesPage = () => {
                                 <h2 className="text-lg font-medium text-gray-800">
                                     {category.name}
                                 </h2>
+                                <p className="text-gray-500">{category.items} items</p>
                             </div>
+                            {/* Hiệu ứng nút Edit */}
                             <div
                                 className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300"
                             >
-                                <div className="flex space-x-4">
-                                    <button
-                                        onClick={() => handleEdit(category.id)}
-                                        className="text-blue-600 bg-white px-4 py-2 rounded-md shadow-md hover:bg-blue-500 hover:text-white transition duration-300"
+                                <button
+                                    onClick={() => navigate(`/categories/${category.id}`)}
+                                    className="flex items-center space-x-2 text-blue-600 bg-white px-4 py-2 rounded-md shadow-md hover:bg-blue-500 hover:text-white transition duration-300"
+                                >
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        height="24px"
+                                        viewBox="0 -960 960 960"
+                                        width="24px"
+                                        fill="currentColor"
+                                        className="w-5 h-5"
                                     >
-                                        <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill=""><path d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h357l-80 80H200v560h560v-278l80-80v358q0 33-23.5 56.5T760-120H200Zm280-360ZM360-360v-170l367-367q12-12 27-18t30-6q16 0 30.5 6t26.5 18l56 57q11 12 17 26.5t6 29.5q0 15-5.5 29.5T897-728L530-360H360Zm481-424-56-56 56 56ZM440-440h56l232-232-28-28-29-28-231 231v57Zm260-260-29-28 29 28 28 28-28-28Z"/></svg>
-                                    </button>
-                                    <button
-                                        onClick={() => handleDelete(category.id)}
-                                        className="text-red-600 bg-white px-4 py-2 rounded-md shadow-md hover:bg-red-500 hover:text-white transition duration-300"
-                                    >
-                                        <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill=""><path d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z"/></svg>
-                                    </button>
-                                </div>
+                                        <path d="M200-200h57l391-391-57-57-391 391v57Zm-80 80v-170l528-527q12-11 26.5-17t30.5-6q16 0 31 6t26 18l55 56q12 11 17.5 26t5.5 30q0 16-5.5 30.5T817-647L290-120H120Zm640-584-56-56 56 56Zm-141 85-28-29 57 57-29-28Z" />
+                                    </svg>
+                                    <span>Edit</span>
+                                </button>
                             </div>
                         </div>
                     ))}
@@ -173,5 +72,4 @@ const CategoriesPage = () => {
         </AdminLayout>
     );
 };
-
 export default CategoriesPage;

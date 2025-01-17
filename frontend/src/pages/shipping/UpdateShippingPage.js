@@ -24,7 +24,7 @@ const AddCategoryPage = () => {
                     {/* Back Button */}
                     <div className="flex items-center mb-6">
                         <button
-                            onClick={() => navigate("/categories")} // Navigate back to category list page
+                            onClick={() => navigate("/shipping")} // Navigate back to category list page
                             className="px-4 py-2 text-gray-600 bg-gray-200 rounded-lg hover:bg-gray-300 transition duration-300"
                         >
                             ← Quay Lại
@@ -33,20 +33,32 @@ const AddCategoryPage = () => {
 
                     {/* Page Header */}
                     <header className="mb-6">
-                        <h1 className="text-3xl font-semibold text-gray-800">Thêm danh mục sản phẩm</h1>
+                        <h1 className="text-3xl font-semibold text-gray-800">Vận chuyển</h1>
                     </header>
 
                     {/* Category Form */}
                     <form onSubmit={handleFormSubmit} className="bg-white p-6 rounded-lg shadow-md">
                         <div className="mb-4">
-                            <label htmlFor="categoryName" className="block text-lg font-medium text-gray-700">Tên danh mục</label>
+                            <label htmlFor="categoryName" className="block text-lg font-medium text-gray-700">Mã đơn</label>
                             <input
                                 id="categoryName"
                                 type="text"
                                 value={categoryName}
                                 onChange={(e) => setCategoryName(e.target.value)}
                                 className="mt-2 p-3 w-full border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                placeholder="Nhập tên danh mục"
+                                placeholder="Nhập mã đơn"
+                                required
+                            />
+                        </div>
+                        <div className="mb-4">
+                            <label htmlFor="categoryName" className="block text-lg font-medium text-gray-700">Địa chỉ giao hàng</label>
+                            <input
+                                id="categoryName"
+                                type="text"
+                                value={categoryName}
+                                onChange={(e) => setCategoryName(e.target.value)}
+                                className="mt-2 p-3 w-full border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                placeholder="Nhập địa chỉ"
                                 required
                             />
                         </div>
@@ -60,7 +72,7 @@ const AddCategoryPage = () => {
                                 type="submit"
                                 className="px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition duration-300"
                             >
-                                Thêm danh mục
+                                Thêm
                             </button>
                         </div>
                     </form>

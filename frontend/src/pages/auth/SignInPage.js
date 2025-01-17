@@ -11,13 +11,11 @@ import useToggleValue from "../../components/hooks/useToogleValue";
 import { Button } from "../../components/button";
 import IconEyeToggle from "../../components/icons/IconEyeToggle";
 import axios from "axios";
-// import GoogleLogin from "react-google-login";
 
 const schema = yup.object({
-    username: yup.string().required("Username is required"),
-    password: yup.string().required("Password is required"),
+    email: yup.string().email("Invalid email address").required("This field is required"),
+    password: yup.string().required("This field is required"),
 });
-
 
 const SignInPage = () => {
     const [loading, setLoading] = useState(false);
@@ -34,73 +32,66 @@ const SignInPage = () => {
     const handleSignIn = async (values) => {
         setLoading(true);
         setErrorMessage(""); // Reset lỗi trước khi gửi yêu cầu mới
-
         try {
-            // Chuyển payload sang định dạng application/x-www-form-urlencoded
-            const payload = new URLSearchParams();
-            payload.append("username", values.username);
-            payload.append("password", values.password);
-
-            const response = await axios.post("https://testbe-1.onrender.com/login", payload, {
-                headers: {
-                    "Content-Type": "application/x-www-form-urlencoded",
-                },
-            });
-
+            const response = await axios.post("http://localhost:5000/login", values);
+            console.log(response.data);
+            navigate("/admin");
             if (response.status === 200) {
                 const userData = response.data;
-
-                // Kiểm tra access_token
-                if (!userData.access_token) {
-                    throw new Error("Access token không tồn tại trong phản hồi từ server.");
-                }
-
-
-
-
-                console.log(response);
-                // Lưu token và thông tin user vào localStorage
-                localStorage.setItem("access_token", userData.access_token);
                 localStorage.setItem("user", JSON.stringify(userData));
-
-                // Chuyển hướng đến trang admin
-                navigate("/admin");
             } else {
-                setErrorMessage("Thông tin đăng nhập không chính xác.");
+                setErrorMessage("Thông tin đăng nhập không chính xác."); // Cập nhật lỗi
             }
         } catch (error) {
             console.error("Error:", error);
-
             if (error.response) {
-                console.error("Chi tiết lỗi từ server:", error.response.data);
-                const serverError = error.response.data.detail || error.response.data.message;
-                setErrorMessage(serverError || "Đã xảy ra lỗi trong quá trình đăng nhập. Vui lòng thử lại.");
-            } else if (error.message === "Access token không tồn tại trong phản hồi từ server.") {
-                setErrorMessage("Không nhận được token từ server. Vui lòng liên hệ quản trị viên.");
-            } else if (error.message === "Bạn không có quyền truy cập vào trang này.") {
-                setErrorMessage("Bạn không có quyền truy cập. Vui lòng đăng nhập với tài khoản admin.");
+                setErrorMessage(`Lỗi: ${error.response.data.message || "Đăng nhập thất bại"}`);
             } else {
-                setErrorMessage("Không thể kết nối tới server. Vui lòng kiểm tra kết nối mạng và thử lại.");
+                setErrorMessage("Không thể kết nối tới server. Vui lòng thử lại.");
             }
-        } finally {
-            setLoading(false);
         }
+        setLoading(false);
     };
 
+    const handleGoogleSignIn = () => {
+        console.log("Google Sign-In clicked");
+        // Integrate Google Sign-In API logic here
+    };
 
-
-
-
-
+    const handleFacebookSignIn = () => {
+        console.log("Facebook Sign-In clicked");
+        // Integrate Facebook Login API logic here
+    };
 
     return (
         <LayoutAuthentication heading="FASCO">
             <div className="flex justify-center gap-4">
-            </div>
-            <div className="flex flex-col items-center mt-20 mb-10">
-                <div className="flex items-center gap-4">
+                <div className="w-[294px] h-[55px] bg-white rounded-lg border border-[#5b86e5] flex items-center justify-center">
+                    <img src="/Google__G__logo.svg.webp" alt="Google Logo" className="w-6 h-6 mr-2" />
+                    <div className="text-black text-base font-normal font-['Poppins'] leading-10 tracking-wider whitespace-nowrap">
+                        Đăng nhập với Google
+                    </div>
+                </div>
+
+                <div className="w-[310px] h-[55px] bg-white rounded-lg border border-[#5b86e5] flex items-center justify-center">
+                    <img src="/fb.png" alt="Facebook Logo" className="w-6 h-6 mr-2" />
+                    <div className="text-black text-base font-normal font-['Poppins'] leading-10 tracking-wider whitespace-nowrap">
+                        Đăng nhập với Facebook
+                    </div>
                 </div>
             </div>
+
+
+            <div className="flex flex-col items-center mt-20 mb-10">
+                <div className="flex items-center gap-4">
+                    <div className="w-[30px] h-[5px] bg-[#828282]"></div>
+                    <div className="text-[#828282] text-3xl font-bold font-['Poppins'] leading-10 tracking-widest">Hoặc</div>
+                    <div className="w-[30px] h-[5px] bg-[#828282]"></div>
+                </div>
+            </div>
+
+
+
 
             <form onSubmit={handleSubmit(handleSignIn)}>
                 {errorMessage && (
@@ -116,9 +107,9 @@ const SignInPage = () => {
                     </Label>
                     <Input
                         control={control}
-                        name="username"
+                        name="email"
                         type="email"
-                        className="text-base font-normal font-['Poppins'] leading-10 tracking-wider w-full border-b border-gray-400 focus:border-[#9d9d9d] focus:outline-none"
+                        className="text-[#9d9d9d] text-base font-normal font-['Poppins'] leading-10 tracking-wider w-full border-b border-gray-400 focus:border-[#9d9d9d] focus:outline-none"
                         placeholder="Email"
                         error={errors.email?.message}
                     />
@@ -135,8 +126,8 @@ const SignInPage = () => {
                         control={control}
                         name="password"
                         type={`${showPassword ? "text" : "password"}`}
-                        className=" text-base font-normal font-['Poppins'] leading-10 tracking-wider w-full border-b border-gray-400 focus:border-[#9d9d9d] focus:outline-none"
-                        placeholder="Mật khẩu"
+                        className="text-[#9d9d9d] text-base font-normal font-['Poppins'] leading-10 tracking-wider w-full border-b border-gray-400 focus:border-[#9d9d9d] focus:outline-none"
+                        placeholder="Password"
                         error={errors.password?.message}
                     >
                         <IconEyeToggle open={showPassword} onClick={handleTogglePassword} />
@@ -156,7 +147,7 @@ const SignInPage = () => {
                     {loading ? (
                         <div className="flex items-center gap-2">
                             <div className="spinner-border animate-spin inline-block w-4 h-4 border-2 rounded-full text-white"></div>
-                            <span>Đang đăng nhập...</span>
+                            <span>Signing In...</span>
                         </div>
                     ) : (
                         "Đăng nhập"
