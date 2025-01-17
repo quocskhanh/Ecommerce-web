@@ -20,7 +20,7 @@ const FilterByCategory = ({
     const fetchCategories = async () => {
       try {
         setLoading(true);
-        const response = await axios.get(`${apiURL}/categorie`); // Thay URL bằng API thực tế
+        const response = await axios.get(`${apiURL}/categories`); // Thay URL bằng API thực tế
         setCategories(response.data);
       } catch (err) {
         setError('Không thể tải danh sách danh mục. Vui lòng thử lại sau.');
@@ -44,7 +44,7 @@ const FilterByCategory = ({
   return (
     <div className="filter_by_category">
       {/* Lọc theo danh mục */}
-      <h3>Filter by Category</h3>
+      <h3>Lọc theo danh mục:</h3>
       <ul className="category_list">
         <li
           className={!selectedCategoryId ? 'active' : ''}
@@ -64,7 +64,7 @@ const FilterByCategory = ({
       </ul>
 
       {/* Lọc theo giá */}
-      <h3>Filter by Price</h3>
+      <h3>Lọc theo giá:</h3>
       <ul className="price_list">
         {priceRanges.map((range) => (
           <li
