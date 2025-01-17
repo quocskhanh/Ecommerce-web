@@ -72,6 +72,6 @@ def delete_order(db: Session, order_id: int):
     if not order:
         raise ValueError("Không tìm thấy đơn hàng")
     
-    db.delete(order)
+    db.query(Order).filter(Order.id == order_id).delete(synchronize_session=False)
     db.commit()
     return order

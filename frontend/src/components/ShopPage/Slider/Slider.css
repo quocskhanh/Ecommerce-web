@@ -96,9 +96,10 @@ h3 {
 }
 
 button {
+    padding: 10px 20px;
     margin-left: 10px;
-    background-color: #000;
-    color: white;
+    background-color: #000000;
+    color: rgb(253, 251, 251);
     font-size: 20px;
     border-radius: 10px;
 }
@@ -108,7 +109,7 @@ button {
     align-items: center;
     background-color: black;
     color: white;
-    margin: 0;
+    margin-top: 30px;
     width: 200px;
     height: 60px;
     justify-content: center;

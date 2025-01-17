@@ -62,10 +62,67 @@ const SignUpPage = () => {
 
     const handleSignUp = async (values) => {
         try {
+<<<<<<< HEAD
             const response = await axios.post("http://localhost:5000/signup", values);
             console.log("Response:", response.data);
             navigate("/auth/sign-in", { state: { message: "Đăng ký thành công!" } });
             alert("Đăng ký thành công! Vui lòng đăng nhập.");
+=======
+            const payload = {
+                first_name: values.firstname,
+                last_name: values.lastname,
+                email: values.email,
+                phone_number: values.phone_number,
+                address: values.address,
+                date_of_birth: values.date_of_birth,
+                gender: values.gender,
+                password: values.password,
+                role: false, // Giá trị mặc định cho role
+            };
+
+            console.log("Payload gửi lên server:", payload); // Kiểm tra dữ liệu gửi lên
+
+            const response = await axios.post("https://testbe-1.onrender.com/signup", payload, {
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            });
+
+            if (response.status === 200) {
+                const serverMessage = response.data.message || "Đăng ký thành công!";
+                
+                const token = response.data.access_token; // Lấy token từ phản hồi
+                console.log("Tài khoản đã đăng ký thành công, token:", token);
+
+                // Thiết lập token cho các yêu cầu tiếp theo
+                const headers = { Authorization: `Bearer ${token}` };
+
+                // Kiểm tra xem giỏ hàng đã tồn tại chưa
+                try {
+                    const cartResponse = await axios.get("https://testbe-1.onrender.com/carts/me", { headers });
+                    console.log("Giỏ hàng hiện tại:", cartResponse.data);
+                } catch (error) {
+                    if (error.response?.status === 404) {
+                        // Nếu giỏ hàng chưa tồn tại, tạo giỏ hàng mới
+                        const createCartResponse = await axios.post(
+                            "https://testbe-1.onrender.com/carts/me",
+                            {},
+                            { headers }
+                        );
+                        console.log("Giỏ hàng mới được tạo:", createCartResponse.data);
+                    } else {
+                        console.error("Lỗi khi lấy giỏ hàng:", error);
+                    }
+                }
+            
+                
+                
+                alert(serverMessage);
+                navigate("/login", { state: { message: serverMessage } });
+            } else {
+                alert("Không thể đăng ký. Vui lòng thử lại.");
+            }
+>>>>>>> 361b2a012c3c43d33ec9ebc2fdb563222f5a4a43
         } catch (error) {
             if (error.response && error.response.data) {
                 alert(`Lỗi: ${error.response.data.message}`);

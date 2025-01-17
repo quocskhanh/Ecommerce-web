@@ -1,5 +1,7 @@
 import React from 'react';
 import './Filter.css';
+import { useEffect, useState } from 'react';
+import axios from 'axios';
 
 const FilterByCategory = ({
   selectedCategoryId, // category_id được chọn
@@ -7,12 +9,26 @@ const FilterByCategory = ({
   selectedPriceRange,
   onPriceRangeChange
 }) => {
-  const categories = [
-    { id: 1, name: 'Áo' },
-    { id: 2, name: 'Quần' },
-    { id: 3, name: 'Giày dép' },
-    { id: 4, name: 'Phụ kiện' }
-  ];
+  const [categories, setCategories] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        setLoading(true);
+        const response = await axios.get('https://testbe-1.onrender.com/categories'); // Thay URL bằng API thực tế
+        setCategories(response.data);
+      } catch (err) {
+        setError('Không thể tải danh sách danh mục. Vui lòng thử lại sau.');
+        console.error('Error fetching categories:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCategories();
+  }, []);
 
   const priceRanges = [
     { label: 'All', min: 0, max: Infinity },

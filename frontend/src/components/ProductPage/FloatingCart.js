@@ -1,23 +1,50 @@
-import React, { useContext, useState, useMemo } from "react";
+import React, { useContext, useState, useMemo, useEffect } from "react";
 import { CartContext } from "../ShopPage/ListProducts/CartContext";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import "./FloatingCart.css";
 
 const FloatingCart = () => {
-  const { cart, toggleChosen,  setCart, removeFromCart, updateQuantity } = useContext(CartContext);
+  const { cart, toggleChosen, setCart, removeFromCart, updateQuantity } = useContext(CartContext);
   const [showCart, setShowCart] = useState(false);
+  const [productDetails, setProductDetails] = useState({}); // Lưu trữ thông tin chi tiết của sản phẩm
   const navigate = useNavigate();
 
   // Tính tổng tiền, chỉ chạy lại khi cart thay đổi
   const totalPrice = useMemo(() => {
     return cart
-    .filter((item) => item.is_chosen)
-    .reduce((total, item) => total + (item.price_per_item || 0) * (item.quantity || 1), 0);
+      .filter((item) => item.is_chosen)
+      .reduce((total, item) => total + (item.price_per_item || 0) * (item.quantity || 1), 0);
   }, [cart]);
 
   // Toggle hiển thị giỏ hàng
   const toggleCart = () => setShowCart(!showCart);
+
+  // Lấy thông tin chi tiết của sản phẩm
+  useEffect(() => {
+    const fetchProductDetails = async () => {
+      const token = localStorage.getItem("access_token");
+      const headers = { Authorization: `Bearer ${token}` };
+
+      try {
+        const productDetailsObj = {};
+        // Duyệt qua các item trong giỏ hàng và lấy thông tin sản phẩm
+        for (let item of cart) {
+          if (item.product_id && !productDetailsObj[item.product_id]) {
+            const response = await axios.get(`https://testbe-1.onrender.com/products/${item.product_id}`, { headers });
+            productDetailsObj[item.product_id] = response.data;
+          }
+        }
+        setProductDetails(productDetailsObj);
+      } catch (error) {
+        console.error("Error fetching product details:", error);
+      }
+    };
+
+    if (cart.length > 0) {
+      fetchProductDetails();
+    }
+  }, [cart]);
 
   // Xử lý chỉnh số lượng sản phẩm
   const handleQuantityChange = async (itemId, newQuantity) => {
@@ -55,7 +82,7 @@ const FloatingCart = () => {
       alert("Your cart is empty. Please add some products.");
       return;
     }
-    navigate("/checkout", { state: { chosenItems } } );
+    navigate("/checkout", { state: { chosenItems } });
   };
 
   return (
@@ -75,35 +102,34 @@ const FloatingCart = () => {
           ) : (
             <>
               <ul>
-                {cart.map((item) => (
-                  <li key={item.id} className="cart-item">
-
-                  <input
-                      type="checkbox"
-                      checked={item.is_chosen}
-                      onChange={(e) => toggleChosen(item.id, e.target.checked)}
-                    />
-
-                    <img
-                      src={item.product?.image || "placeholder.jpg"}
-                      alt={item.product?.name || "Unknown Product"}
-                      width="50"
-                    />
-                    <div className="cart-item-details">
-                      <p>{item.product?.name || "Unknown Product"}</p>
-                      <p>Price: {(item.price_per_item || 0).toLocaleString()} VND</p>
+                {cart.map((item) => {
+                  const product = productDetails[item.product_id];
+                  return (
+                    <li key={item.id} className="cart-item">
                       <input
-                        type="number"
-                        value={item.quantity || 1}
-                        min="1"
-                        onChange={(e) =>
-                          handleQuantityChange(item.id, Number(e.target.value))
-                        }
+                        type="checkbox"
+                        checked={item.is_chosen}
+                        onChange={(e) => toggleChosen(item.id, e.target.checked)}
                       />
-                    </div>
-                    <button onClick={() => handleRemoveItem(item.id)}>Remove</button>
-                  </li>
-                ))}
+                      {product && (
+                        <>
+                          <img src={product.image || "placeholder.jpg"} alt={product.name} width="50" />
+                          <div className="cart-item-details">
+                            <p>{product.name || "Unknown Product"}</p>
+                            <p>Price: {(item.price_per_item || 0).toLocaleString()} VND</p>
+                            <input
+                              type="number"
+                              value={item.quantity || 1}
+                              min="1"
+                              onChange={(e) => handleQuantityChange(item.id, Number(e.target.value))}
+                            />
+                          </div>
+                        </>
+                      )}
+                      <button onClick={() => handleRemoveItem(item.id)}>Remove</button>
+                    </li>
+                  );
+                })}
               </ul>
               <p className="cart-total">Tổng: {totalPrice.toLocaleString()} VND</p>
               <button className="checkout-button" onClick={handleCheckout}>

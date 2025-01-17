@@ -32,6 +32,8 @@ def update_shipping(db: Session, shipping_id: int, shipping_update: ShippingUpda
     if shipping_update.status == "Đã vận chuyển":
         shipping.delivered_at = datetime.utcnow()
         shipping.order.status = "Đã giao hàng"
+        order = shipping.order
+        order.account.total_spent += order.total_price
     for key, value in update_data.items():
         setattr(shipping, key, value)
     

@@ -3,6 +3,11 @@
     padding-bottom: 40px;
 }
 
+.wrap {
+    display: flex;
+    justify-content: space-between;
+}
+
 .f-container {
     width: 100%;
     max-width: 1200px;

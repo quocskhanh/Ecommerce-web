@@ -6,7 +6,7 @@ import axios from "axios";
 const ListProduct = () => {
   const [products, setProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
-  const [selectedCategoryId, setSelectedCategoryId] = useState(null); // Lọc theo category_id
+  const [selectedCategoryId, setSelectedCategoryId] = useState(null); 
   const [selectedPriceRange, setSelectedPriceRange] = useState(null);
   const [sortOrder, setSortOrder] = useState('price-asc');
   
@@ -20,7 +20,7 @@ const ListProduct = () => {
 
 
 
-        setProducts(response.data); // Lưu toàn bộ sản phẩm
+        setProducts(response.data); // Lưu tất sản phẩm
         setFilteredProducts(response.data); // Lưu sản phẩm đã lọc
       } catch (error) {
         console.error("Error fetching products:", error);
@@ -71,18 +71,12 @@ const ListProduct = () => {
     setSortOrder(sortOrder);
   };
 
-  const categories = [
-    { id: 1, name: 'Áo' },
-    { id: 2, name: 'Quần' },
-    { id: 3, name: 'Giày dép' },
-    { id: 4, name: 'Phụ kiện' }
-  ];
+  const categories = []
 
   return (
     <div className="list_product_container">
       {/* Phần bộ lọc */}
       <div className="list_product_left_content">
-        <h2>Filter</h2>
         <FilterByCategory
           categories={categories} 
           selectedCategoryId={selectedCategoryId}

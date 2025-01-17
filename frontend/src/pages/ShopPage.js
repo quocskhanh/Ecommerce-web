@@ -1,4 +1,4 @@
-import Header from "../components/ShopPage/Header/Header"
+import Header from "../components/HomePage/Header/Header"
 import Footer from "../components/ShopPage/Footer/Footer"
 import Subscribe from "../components/ShopPage/Subscribe/Subscribe"
 import Gallery from "../components/ShopPage/Gallery/Gallery"
