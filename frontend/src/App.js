@@ -1,5 +1,5 @@
 import { Routes, Route } from "react-router-dom";
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import CategoriesPage from "./pages/category/CategoriesPage";
 import ReportPage from "./pages/report/ReportPage";
 import SettingPage from "./pages/SettingPage";
@@ -20,12 +20,11 @@ import HomePage from "./pages/HomePage";
 import CheckOutPage from './pages/CheckOutPage';
 import ProductPageUser from './pages/ProductPage';
 import { CartProvider } from "./components/ShopPage/ListProducts/CartContext";
-import SignInPage2 from './pages/auth/SignInPage';
-import SignUpPage from './pages/auth/SignUpPage';
+
 
 import Login from "./pages/auth/Login";
 import AccountPageUser from "./pages/AccountPageUser";
-
+import LogOutUser from "./pages/LogOutUser";
 
 
 // Lazy load components
@@ -34,6 +33,21 @@ const DashboardPage = lazy(() => import("./pages/DashboardPage"));
 const OrderPage = lazy(() =>import( "./pages/order/OrderPage"))
 
 function App() {
+
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    const token = localStorage.getItem("access_token");
+    if (token) {
+      setIsLoggedIn(true);
+    }
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem("access_token");
+    setIsLoggedIn(false);
+  };
+
   return (
     <CartProvider>
         <Suspense>
@@ -52,21 +66,12 @@ function App() {
             <Route path="/admin/logout" element={<LogoutPage />} />
             <Route path="/admin/reports" element={<ReportPage />} />
             <Route path="/admin/product/add-product" element={<AddProductPage />} />
-
-
-
-
-
-
-
             <Route path="/admin/categories/add-category" element={<AddCategoryPage/>} />
             <Route path="/admin/order/add-order" element={<AddOrderPage/>} />
 
 
 
-            {/* Các route cho người dùng */}
-            {/*<Route path="/user/*" element={<UserDashboardPage />} />*/}
-            {/*<Route path="/user/profile" element={<UserProfilePage />} />*/}
+
 
 
             <Route path="/" element={<HomePage />} /> 
@@ -75,6 +80,7 @@ function App() {
             <Route path="/checkout" element={<CheckOutPage />} />
             <Route path="/login" element={<Login />} />
             <Route path="/account" element={<AccountPageUser />} />
+            <Route path="/log-out" element={<LogOutUser />} />
           </Routes>
         </Suspense>
       </CartProvider>
