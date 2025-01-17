@@ -6,6 +6,9 @@ import Footer from "../components/ShopPage/Footer/Footer";
 import "./AccountPageUser.css"
 
 const AccountPageUser = () => {
+
+  const apiURL = process.env.REACT_APP_API_URL;
+
   const [userInfo, setUserInfo] = useState({});
   const [orders, setOrders] = useState([]);
   const [orderDetails, setOrderDetails] = useState(null); // Lưu trữ chi tiết sản phẩm trong đơn hàng
@@ -18,7 +21,7 @@ const AccountPageUser = () => {
       if (!token) return;
 
       try {
-        const response = await axios.get("https://testbe-1.onrender.com/accounts/me", {
+        const response = await axios.get(`${apiURL}/accounts/me`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setUserInfo(response.data);
@@ -32,7 +35,7 @@ const AccountPageUser = () => {
       if (!token) return;
     
       try {
-        const response = await axios.get("https://testbe-1.onrender.com/orders/me", {
+        const response = await axios.get(`${apiURL}/orders/me`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setOrders(response.data);
@@ -58,7 +61,7 @@ const AccountPageUser = () => {
       console.log(`Fetching order items for order ID: ${orderId}`); // Gỡ lỗi
   
       const orderItemsResponse = await axios.get(
-        `https://testbe-1.onrender.com/orders/${orderId}/items`,
+        `${apiURL}/orders/${orderId}/items`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -79,7 +82,7 @@ const AccountPageUser = () => {
       // Lấy thông tin chi tiết sản phẩm từ product_id
       for (let item of orderItems) {
         const productResponse = await axios.get(
-          `https://testbe-1.onrender.com/products/${item.product_id}`,
+          `${apiURL}/products/${item.product_id}`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }

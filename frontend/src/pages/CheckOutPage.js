@@ -8,6 +8,9 @@ import Subscribe from "../components/ShopPage/Subscribe/Subscribe";
 import Footer from "../components/ShopPage/Footer/Footer";
 
 function CheckOutPage() {
+
+  const apiURL = process.env.REACT_APP_API_URL;
+
   const { cart, cartId } = useContext(CartContext); // Lấy giỏ hàng và cart_id từ context
   const [productDetails, setProductDetails] = useState({}); // Lưu thông tin sản phẩm chi tiết
 
@@ -30,7 +33,7 @@ function CheckOutPage() {
         // Duyệt qua các item trong giỏ hàng và lấy thông tin sản phẩm
         for (let item of chosenItems) {
           if (item.product_id && !productDetailsObj[item.product_id]) {
-            const response = await axios.get(`https://testbe-1.onrender.com/products/${item.product_id}`, { headers });
+            const response = await axios.get(`${apiURL}/products/${item.product_id}`, { headers });
             productDetailsObj[item.product_id] = response.data;
           }
         }
