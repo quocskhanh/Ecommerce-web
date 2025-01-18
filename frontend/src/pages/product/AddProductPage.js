@@ -274,6 +274,7 @@ const AddProductPage = () => {
                                             "36",
                                             "35",
                                             "11x9cm",
+                                            "22cm - 26cm"
                                         ].map((size) => (
                                             <label
                                                 key={size}

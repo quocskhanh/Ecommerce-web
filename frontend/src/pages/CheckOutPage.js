@@ -6,7 +6,6 @@ import Header from "../components/HomePage/Header/Header";
 import CheckoutForm from "../components/CheckOut/MainCheckOut";
 import Subscribe from "../components/ShopPage/Subscribe/Subscribe";
 import Footer from "../components/ShopPage/Footer/Footer";
-import "../components/CheckOut/CheckOutPage.css"
 
 function CheckOutPage() {
 
@@ -70,9 +69,9 @@ function CheckOutPage() {
           </div>
 
           <div className="checkout-cart-summary">
-            <h2>Giỏ hàng:</h2>
+            <h2>Your Cart</h2>
             {chosenItems.length === 0 ? (
-                <p>Giỏ hàng trống. Bạn hãy quay lại shop để thêm sản phẩm.</p>
+                <p>Your cart is empty. Please go back and select items.</p>
             ) : (
                 <ul className="cart-summary-list">
                   {chosenItems.map((item) => {
@@ -100,7 +99,7 @@ function CheckOutPage() {
                 </ul>
             )}
             <div className="cart-summary-total">
-              <p>Tổng:</p>
+              <p>Total:</p>
               <p>{calculateTotalPrice().toLocaleString()} VND</p>
             </div>
           </div>

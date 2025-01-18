@@ -186,7 +186,7 @@ const ProductPage = () => {
         }
 
         try {
-            const response = await fetch(`${apiURL}products/${editingProduct.id}`, {
+            const response = await fetch(`${apiURL}/products/${editingProduct.id}`, {
                 method: "PUT",
                 headers: {
                     Authorization: `Bearer ${localStorage.getItem("access_token")}`,
@@ -247,7 +247,7 @@ const ProductPage = () => {
             // Sử dụng Promise.allSettled để xử lý từng yêu cầu riêng lẻ
             const results = await Promise.allSettled(
                 selectedIds.map(async (id) => {
-                    const response = await fetch(`${apiURL}products/${id}`, {
+                    const response = await fetch(`${apiURL}/products/${id}`, {
                         method: "DELETE",
                         headers: {
                             Authorization: `Bearer ${localStorage.getItem("access_token")}`,
@@ -281,7 +281,7 @@ const ProductPage = () => {
             if (failedIds.length > 0) {
                 alert(`Một số sản phẩm không thể xóa:\n${failedIds.join("\n")}`);
             } else {
-                alert("Tất cả sản phẩm đã được xóa thành công.");
+                alert("Sản phẩm đã được xóa thành công.");
             }
 
             setShowDeleteModal(false);
@@ -394,7 +394,7 @@ const ProductPage = () => {
 
                                 <th className="border border-gray-400 p-2">Tên sản phẩm</th>
                                 <th className="border border-gray-400 p-2">Giá</th>
-                                <th className="border border-gray-400 p-2">Mô tả</th>
+                                {/*<th className="border border-gray-400 p-2">Mô tả</th>*/}
                                 <th className="border border-gray-400 p-2">Trạng thái</th>
                                 <th className="border border-gray-400 p-2">Màu sắc</th>
                                 <th className="border border-gray-400 p-2">Kích cỡ</th>
@@ -421,7 +421,7 @@ const ProductPage = () => {
                                         </td>
                                         <td className="p-4 border border-gray-300">{item.name}</td>
                                         <td className="p-4 border border-gray-300">{item.price.toLocaleString()} đ</td>
-                                        <td className="p-4 border border-gray-300">{item.description}</td>
+                                        {/*<td className="p-4 border border-gray-300">{item.description}</td>*/}
                                         <td className="p-4 border border-gray-300">
                                             {item.status }
                                         </td>
