@@ -1,7 +1,7 @@
 services:
   db:
     image: postgres:17  # Sử dụng phiên bản PostgreSQL ổn định
-    container_name: ecommerce_postgres
+    container_name: ecommerce_postgress
     restart: always
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
@@ -15,7 +15,7 @@ services:
       - ecommerce-network
   backend:
     build:
-      context: .
+      context: ./backend
       dockerfile: Dockerfile
     ports:
       - "8000:8000"
@@ -28,7 +28,16 @@ services:
       - db
     networks:
       - ecommerce-network
-
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:80"  # Mapping cổng 3000 trên host với cổng 80 trong container
+    depends_on:
+      - backend
+    networks:
+      - ecommerce-network
 networks:
   ecommerce-network:
     driver: bridge
