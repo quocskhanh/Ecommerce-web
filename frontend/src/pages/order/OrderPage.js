@@ -205,15 +205,7 @@ const OrderPage = () => {
             <div className="p-6 max-w-screen-xl mx-auto">
                 <div className="flex flex-wrap justify-between items-center mb-6">
                     <h1 className="text-2xl font-bold text-gray-800 w-full sm:w-auto mb-8 mt-10">Đơn hàng</h1>
-                    <div className="flex gap-4 w-full sm:w-auto justify-between sm:justify-end">
 
-                        <button
-                            className="px-4 py-2 bg-whiterounded border border-[#d6daec] bg-white text-darkbg hover:bg-gray-200"
-                        >
-                            Xuất
-                        </button>
-
-                    </div>
                 </div>
 
 
@@ -360,7 +352,6 @@ const OrderPage = () => {
                                 <th className="border border-gray-400 p-4">ID Đơn hàng</th>
                                 <th className="border border-gray-400 p-4">ID Khách hàng</th>
                                 <th className="border border-gray-400 p-4">Trạng thái thanh toán</th>
-                                <th className="border border-gray-400 p-4">Mã giỏ hàng</th>
                                 <th className="border border-gray-400 p-4">Tổng số tiền</th>
                                 <th className="border border-gray-400 p-4">Chi tiết</th>
                             </tr>
@@ -378,7 +369,6 @@ const OrderPage = () => {
                                         <td className="p-4 border border-gray-300">{order.id}</td>
                                         <td className="p-4 border border-gray-300">{order.account_id}</td>
                                         <td className="p-4 border border-gray-300">{order.status}</td>
-                                        <td className="p-4 border border-gray-300">{order.cart_id}</td>
                                         <td className="p-4 border border-gray-300">{order.total_price.toLocaleString()} đ</td>
                                         <td className="p-4 border border-gray-300">
                                             <button

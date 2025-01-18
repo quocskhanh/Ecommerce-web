@@ -7,6 +7,7 @@ import CheckoutForm from "../components/CheckOut/MainCheckOut";
 import Subscribe from "../components/ShopPage/Subscribe/Subscribe";
 import Footer from "../components/ShopPage/Footer/Footer";
 
+import "../components/CheckOut/CheckOutPage.css"
 function CheckOutPage() {
 
   const apiURL = process.env.REACT_APP_API_URL;

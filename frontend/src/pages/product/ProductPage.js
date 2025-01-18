@@ -300,9 +300,7 @@ const ProductPage = () => {
                 <div className="flex justify-between items-center mb-6 flex-wrap">
                     <h1 className="text-2xl font-bold text-gray-800 w-full sm:w-auto mb-8 mt-10">Quản lý sản phẩm</h1>
                     <div className="flex gap-4 w-full sm:w-auto justify-between sm:justify-end mt-4 sm:mt-0">
-                        <button className="px-4 py-2 bg-white text-black rounded border border-[#d6daec] hover:bg-gray-200">
-                            Xuất
-                        </button>
+
                         <button className="px-4 py-2 bg-[#1e5eff] rounded text-white hover:bg-blue-400" onClick={() => navigate("/admin/product/add-product")}>
                             + Thêm sản phẩm
                         </button>
@@ -389,7 +387,6 @@ const ProductPage = () => {
                                         checked={selected.length === filteredProducts.length && filteredProducts.length > 0}
                                     />
                                 </th>
-                                <th className="p-2 border border-gray-400">ID</th>
                                 <th className="p-2 border border-gray-400">Ảnh</th>
 
                                 <th className="border border-gray-400 p-2">Tên sản phẩm</th>
@@ -415,7 +412,6 @@ const ProductPage = () => {
                                                 onChange={() => toggleSelect(item.id)}
                                             />
                                         </td>
-                                        <td className="p-4 border border-gray-300">{item.id}</td>
                                         <td className="p-4 border border-gray-300">
                                             <img src={item.image} alt={item.name} className="w-20 h-20 object-cover" />
                                         </td>
