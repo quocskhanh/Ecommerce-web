@@ -257,7 +257,7 @@
                                             } hover:bg-gray-100 transition-all duration-150`}
                                         >
                                             <td className="px-6 py-4 text-gray-800 font-medium">{order.account_id}</td>
-                                            <td className="px-6 py-4 text-gray-600">{order.cart_id}</td>
+                                            <td className="px-6 py-4 text-gray-600">{order.id}</td>
                                             <td
                                                 className={`px-6 py-4 ${
                                                     order.status === "Đã giao hàng"
