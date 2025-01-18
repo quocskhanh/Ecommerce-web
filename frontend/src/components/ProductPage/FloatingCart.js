@@ -99,9 +99,9 @@ const FloatingCart = () => {
       {/* Popup hiển thị giỏ hàng */}
       {showCart && (
         <div className="cart-popup">
-          <h2>Your Cart</h2>
+          <h2>Giỏ hàng:</h2>
           {cart.length === 0 ? (
-            <p>Your cart is empty</p>
+            <p>Giỏ hàng của bạn đang trống.</p>
           ) : (
             <>
               <ul>
@@ -136,7 +136,7 @@ const FloatingCart = () => {
               </ul>
               <p className="cart-total">Tổng: {totalPrice.toLocaleString()} VND</p>
               <button className="checkout-button" onClick={handleCheckout}>
-                Checkout
+                Thanh toán
               </button>
             </>
           )}
