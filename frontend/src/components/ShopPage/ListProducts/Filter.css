@@ -19,6 +19,11 @@
     margin: 0;
 }
 
+.filter_by_category h3 {
+    text-decoration: none;
+    margin-top: 3%;
+}
+
 .category_list li, .price_list li, .size_list li {
     padding: 10px;
     margin-bottom: 5px;
