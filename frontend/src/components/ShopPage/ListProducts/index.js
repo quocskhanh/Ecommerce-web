@@ -10,10 +10,10 @@ const ListProduct = () => {
 
   const [products, setProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
-  const [selectedCategoryId, setSelectedCategoryId] = useState(null); 
+  const [selectedCategoryId, setSelectedCategoryId] = useState(null);
   const [selectedPriceRange, setSelectedPriceRange] = useState(null);
   const [sortOrder, setSortOrder] = useState('price-asc');
-  
+
 
   // Lấy danh sách sản phẩm từ API
   useEffect(() => {
@@ -46,7 +46,7 @@ const ListProduct = () => {
     // Lọc theo khoảng giá
     if (selectedPriceRange) {
       updatedProducts = updatedProducts.filter(
-        (product) => product.price >= selectedPriceRange.min && product.price <= selectedPriceRange.max
+          (product) => product.price >= selectedPriceRange.min && product.price <= selectedPriceRange.max
       );
     }
 
@@ -78,26 +78,26 @@ const ListProduct = () => {
   const categories = []
 
   return (
-    <div className="list_product_container">
-      {/* Phần bộ lọc */}
-      <div className="list_product_left_content">
-        <FilterByCategory
-          categories={categories} 
-          selectedCategoryId={selectedCategoryId}
-          onFilterChange={handleFilterChange}
-          selectedPriceRange={selectedPriceRange}
-          onPriceRangeChange={handlePriceRangeChange}
-        />
-      </div>
+      <div className="list_product_container">
+        {/* Phần bộ lọc */}
+        <div className="list_product_left_content">
+          <FilterByCategory
+              categories={categories}
+              selectedCategoryId={selectedCategoryId}
+              onFilterChange={handleFilterChange}
+              selectedPriceRange={selectedPriceRange}
+              onPriceRangeChange={handlePriceRangeChange}
+          />
+        </div>
 
-      <div className="list_product_right_content">
-        <ProductList
-          products={filteredProducts}
-          sortOrder={sortOrder}
-          onSortChange={handleSortChange}
-        />
+        <div className="list_product_right_content">
+          <ProductList
+              products={filteredProducts}
+              sortOrder={sortOrder}
+              onSortChange={handleSortChange}
+          />
+        </div>
       </div>
-    </div>
   );
 };
 

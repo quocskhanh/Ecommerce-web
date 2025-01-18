@@ -35,9 +35,9 @@ const CartProvider = ({ children }) => {
           if (error.response?.status === 404) {
             // Nếu giỏ hàng chưa tồn tại, tạo mới
             const createCartResponse = await axios.post(
-              `${apiURL}/carts/me`,
-              {},
-              { headers }
+                `${apiURL}/carts/me`,
+                {},
+                { headers }
             );
             setCartId(createCartResponse.data.id);
             console.log("New cart created:", createCartResponse.data);
@@ -61,20 +61,20 @@ const CartProvider = ({ children }) => {
         console.error("No token found, user not authenticated.");
         return;
       }
-  
+
       const headers = { Authorization: `Bearer ${token}` };
-  
+
       // Gửi yêu cầu thêm sản phẩm vào giỏ hàng
       const response = await axios.post(
-        `${apiURL}/cart_items/me?product_id=${product.id}`,
-        {
-          cart_id: cartId, // Sử dụng `cart_id`
-          product_id: product.id,
-          quantity: 1,
-          price_per_item: product.price,
-          is_chosen: true,
-        },
-        { headers }
+          `${apiURL}/cart_items/me?product_id=${product.id}`,
+          {
+            cart_id: cartId, // Sử dụng `cart_id`
+            product_id: product.id,
+            quantity: 1,
+            price_per_item: product.price,
+            is_chosen: true,
+          },
+          { headers }
       );
 
       // Cập nhật giỏ hàng
@@ -94,9 +94,9 @@ const CartProvider = ({ children }) => {
 
       // Cập nhật trạng thái
       setCart((prevCart) =>
-        prevCart.map((item) =>
-          item.id === itemId ? { ...item, is_chosen: isChosen } : item
-        )
+          prevCart.map((item) =>
+              item.id === itemId ? { ...item, is_chosen: isChosen } : item
+          )
       );
     } catch (error) {
       console.error("Error toggling is_chosen:", error);
@@ -125,16 +125,16 @@ const CartProvider = ({ children }) => {
       const headers = { Authorization: `Bearer ${token}` };
 
       const response = await axios.put(
-        `${apiURL}/cart_items/me/${itemId}`,
-        { quantity },
-        { headers }
+          `${apiURL}/cart_items/me/${itemId}`,
+          { quantity },
+          { headers }
       );
 
       // Cập nhật giỏ hàng
       setCart((prevCart) =>
-        prevCart.map((item) =>
-          item.id === itemId ? { ...item, quantity: response.data.quantity } : item
-        )
+          prevCart.map((item) =>
+              item.id === itemId ? { ...item, quantity: response.data.quantity } : item
+          )
       );
     } catch (error) {
       console.error("Error updating quantity:", error);
@@ -142,18 +142,18 @@ const CartProvider = ({ children }) => {
   };
 
   return (
-    <CartContext.Provider
-      value={{
-        cart,
-        cartId,
-        addToCart,
-        toggleChosen,
-        removeFromCart,
-        updateQuantity,
-      }}
-    >
-      {children}
-    </CartContext.Provider>
+      <CartContext.Provider
+          value={{
+            cart,
+            cartId,
+            addToCart,
+            toggleChosen,
+            removeFromCart,
+            updateQuantity,
+          }}
+      >
+        {children}
+      </CartContext.Provider>
   );
 };
 

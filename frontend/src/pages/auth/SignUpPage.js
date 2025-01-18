@@ -45,7 +45,7 @@ const SignUpPage = () => {
             if (response.status === 200) {
                 const serverMessage = response.data.message || "Đăng ký thành công!";
                 alert(serverMessage);
-                navigate("/login", { state: { message: serverMessage } });
+                navigate("/auth/sign-in", { state: { message: serverMessage } });
             } else {
                 alert("Không thể đăng ký. Vui lòng thử lại.");
             }

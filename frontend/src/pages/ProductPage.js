@@ -11,15 +11,15 @@ import FloatingCart from "../components/ProductPage/FloatingCart"
 
 function ProductPageUser() {
 
-    const { id: productId } = useParams(); 
+    const { id: productId } = useParams();
 
     return (
         <>
             <Header />
             <CartProvider>
                 <div>
-                <ProductDetail productId={productId} /> 
-                <FloatingCart />
+                    <ProductDetail productId={productId} />
+                    <FloatingCart />
                 </div>
             </CartProvider>
             <Slider />
@@ -33,5 +33,3 @@ function ProductPageUser() {
 }
 
 export default ProductPageUser
-
-

@@ -17,7 +17,7 @@ function ShopPage() {
             <CartProvider>
                 <FloatingCart />
             </CartProvider>
-            
+
             <DealsOfTheMonth />
             <Slider />
             <Feature />

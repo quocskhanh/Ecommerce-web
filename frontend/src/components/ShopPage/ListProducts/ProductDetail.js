@@ -47,19 +47,19 @@ const ProductDetail = ({ productId }) => {
   if (!product) return <p>Sản phẩm không tồn tại</p>;
 
   return (
-    <div className="detail-product-container">
-      <div className="detail-product-img">
-        <img src={product.image || "placeholder.jpg"} alt={product.name} />
+      <div className="detail-product-container">
+        <div className="detail-product-img">
+          <img src={product.image || "placeholder.jpg"} alt={product.name} />
+        </div>
+        <div className="detail-product-content">
+          <h2>{product.name}</h2>
+          <p>Mô tả: {product.description}</p>
+          <p>Màu: {product.colors}</p>
+          <p>Size: {product.sizes}</p>
+          <p>Giá: {product.price.toLocaleString()} VND</p>
+          <button onClick={handleAddToCart}>Thêm vào giỏ hàng</button>
+        </div>
       </div>
-      <div className="detail-product-content">
-        <h2>{product.name}</h2>
-        <p>Mô tả: {product.description}</p>
-        <p>Màu: {product.colors}</p>
-        <p>Size: {product.sizes}</p>
-        <p>Giá: {product.price.toLocaleString()} VND</p>
-        <button onClick={handleAddToCart}>Thêm vào giỏ hàng</button>
-      </div>
-    </div>
   );
 };
 
