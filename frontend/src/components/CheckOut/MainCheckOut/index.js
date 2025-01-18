@@ -4,9 +4,11 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
 function CheckoutForm({ chosenItems, totalPrice, cartId, onOrderSuccess }) {
-  
+
+  const apiURL = process.env.REACT_APP_API_URL;
+
   const navigate = useNavigate()
-  
+
   const handlePayNow = async () => {
     try {
       const token = localStorage.getItem("access_token");
@@ -14,13 +16,12 @@ function CheckoutForm({ chosenItems, totalPrice, cartId, onOrderSuccess }) {
 
       // Gửi yêu cầu tạo đơn hàng
       const response = await axios.post(
-        "https://testbe-1.onrender.com/orders/",
-        {
-          cart_id: cartId, 
-          total_price: totalPrice,
-          status: "Đã thanh toán", 
-        },
-        { headers }
+          `${apiURL}/orders/`,
+          {
+            cart_id: cartId,
+            total_price: totalPrice,
+          },
+          { headers }
       );
 
       console.log("Order created:", response.data);
@@ -38,54 +39,21 @@ function CheckoutForm({ chosenItems, totalPrice, cartId, onOrderSuccess }) {
   };
 
   return (
-    <div className="checkout-container">
-      <div className="checkout-form">
-        <h2>Contact</h2>
-        <div className="form-group">
-          <input type="email" placeholder="Email Address" />
-        </div>
-
-        <h2>Delivery</h2>
-        <div className="form-group">
-          <select>
-            <option>Country / Region</option>
-            <option>United States</option>
-            <option>Canada</option>
-            <option>Vietnam</option>
-          </select>
-          <div className="name-fields">
-            <input type="text" placeholder="First Name" />
-            <input type="text" placeholder="Last Name" />
+      <div className="checkout-container">
+        <div className="checkout-form">
+          <h2>Thông tin liên hệ</h2>
+          <div className="form-group">
+            <input type="email" placeholder="Email- SĐT" />
           </div>
-          <input type="text" placeholder="Address" />
-          <div className="city-postal">
-            <input type="text" placeholder="City" />
-            <input type="text" placeholder="Postal Code" />
-          </div>
-        </div>
 
-        <h2>Payment</h2>
-        <div className="form-group">
-          <select>
-            <option>Credit Card</option>
-            <option>PayPal</option>
-          </select>
-          <input type="text" placeholder="Card Number" />
-          <div className="card-details">
-            <input type="text" placeholder="Expiration Date" />
-            <input type="text" placeholder="Security Code" />
-          </div>
-          <input type="text" placeholder="Card Holder Name" />
+          <button className="pay-now" onClick={handlePayNow}>
+            Đặt Hàng
+          </button>
+          <footer>
+            <p>Hãy mua ngay đừng chần chừ !!!</p>
+          </footer>
         </div>
-
-        <button className="pay-now" onClick={handlePayNow}>
-          Pay Now
-        </button>
-        <footer>
-          <p>Copyright © 2022 FASCO. All Rights Reserved.</p>
-        </footer>
       </div>
-    </div>
   );
 }
 
