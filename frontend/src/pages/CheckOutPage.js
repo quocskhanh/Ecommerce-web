@@ -6,6 +6,7 @@ import Header from "../components/HomePage/Header/Header";
 import CheckoutForm from "../components/CheckOut/MainCheckOut";
 import Subscribe from "../components/ShopPage/Subscribe/Subscribe";
 import Footer from "../components/ShopPage/Footer/Footer";
+import "../components/CheckOut/CheckOutPage.css"
 
 function CheckOutPage() {
 
@@ -30,7 +31,6 @@ function CheckOutPage() {
 
       try {
         const productDetailsObj = {};
-        // Duyệt qua các item trong giỏ hàng và lấy thông tin sản phẩm
         for (let item of chosenItems) {
           if (item.product_id && !productDetailsObj[item.product_id]) {
             const response = await axios.get(`${apiURL}/products/${item.product_id}`, { headers });
@@ -47,6 +47,8 @@ function CheckOutPage() {
       fetchProductDetails();
     }
   }, [chosenItems]);
+
+
 
   // Hàm xử lý sau khi đặt hàng thành công
   const handleOrderSuccess = () => {
@@ -69,13 +71,13 @@ function CheckOutPage() {
         </div>
 
         <div className="checkout-cart-summary">
-          <h2>Your Cart</h2>
+          <h2>Giỏ hàng:</h2>
           {chosenItems.length === 0 ? (
-            <p>Your cart is empty. Please go back and select items.</p>
+            <p>Bạn chưa chọn đồ, hãy quay lại cửa hàng và tiếp tục.</p>
           ) : (
             <ul className="cart-summary-list">
               {chosenItems.map((item) => {
-                const product = productDetails[item.product_id]; // Lấy thông tin sản phẩm từ state
+                const product = productDetails[item.product_id]; 
                 return (
                   <li key={item.id} className="cart-summary-item">
                     {product && (
@@ -87,6 +89,7 @@ function CheckOutPage() {
                         />
                         <div className="cart-item-info">
                           <p>{product.name || "Unknown Product"}</p>
+                          <p>Size: {product.sizes}-{product.colors}</p>
                           <p>
                             {item.quantity} x {item.price_per_item.toLocaleString()} VND
                           </p>
@@ -99,7 +102,7 @@ function CheckOutPage() {
             </ul>
           )}
           <div className="cart-summary-total">
-            <p>Total:</p>
+            <p>Tổng số tiền:</p>
             <p>{calculateTotalPrice().toLocaleString()} VND</p>
           </div>
         </div>

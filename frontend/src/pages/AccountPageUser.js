@@ -11,10 +11,9 @@ const AccountPageUser = () => {
 
   const [userInfo, setUserInfo] = useState({});
   const [orders, setOrders] = useState([]);
-  const [orderDetails, setOrderDetails] = useState(null); // Lưu trữ chi tiết sản phẩm trong đơn hàng
+  const [orderDetails, setOrderDetails] = useState(null); 
   const [loading, setLoading] = useState(false);
 
-  // Lấy thông tin người dùng và danh sách đơn hàng khi trang được tải
   useEffect(() => {
     const fetchUserInfo = async () => {
       const token = localStorage.getItem("access_token");
@@ -39,7 +38,7 @@ const AccountPageUser = () => {
           headers: { Authorization: `Bearer ${token}` },
         });
         setOrders(response.data);
-        console.log("Orders Data:", response.data); // Gỡ lỗi
+        console.log("Orders Data:", response.data); 
       } catch (error) {
         console.error("Error fetching orders:", error);
       }
@@ -58,7 +57,7 @@ const AccountPageUser = () => {
     setLoading(true);
   
     try {
-      console.log(`Fetching order items for order ID: ${orderId}`); // Gỡ lỗi
+      console.log(`Fetching order items for order ID: ${orderId}`); 
   
       const orderItemsResponse = await axios.get(
         `${apiURL}/orders/${orderId}/items`,
@@ -79,7 +78,6 @@ const AccountPageUser = () => {
   
       const productDetails = [];
   
-      // Lấy thông tin chi tiết sản phẩm từ product_id
       for (let item of orderItems) {
         const productResponse = await axios.get(
           `${apiURL}/products/${item.product_id}`,
@@ -104,7 +102,7 @@ const AccountPageUser = () => {
     }
   };
 
-  // Xử lý khi nhấn "View Details"
+  // nhấn "View Details"
   const handleOrderClick = (order) => {
     fetchOrderDetails(order.id);
   };
