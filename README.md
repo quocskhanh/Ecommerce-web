@@ -18,7 +18,7 @@ Dự án **Ecommerce Web** là một nền tảng thương mại điện tử, n
 ## 📋 Công nghệ sử dụng
 
 - **Frontend**: 
-  - CSS, Tailwind CSS, JavaScript
+  - HTML, CSS, Tailwind CSS, JavaScript
   - Framework: React
   
 - **Backend**: 
